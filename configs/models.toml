@@ -1,0 +1,33 @@
+# Qwen defaults to Alibaba Cloud China site, Beijing (cn-beijing).
+# Create a key: https://bailian.console.aliyun.com/cn-beijing/model/settings/api-key
+# The configured DashScope URL is the official Beijing compatibility endpoint.
+# Recommended: replace base_url with the OpenAI-compatible URL for your workspace:
+# https://<WorkspaceId>.cn-beijing.maas.aliyuncs.com/compatible-mode/v1
+# Copy API Host from the key-creation dialog or workspace settings; append
+# /compatible-mode/v1 (not /chat/completions). The key must be from the same region.
+
+[models.qwen]
+provider = "openai_compatible"
+model = "qwen3.7-flash"
+base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+base_url_env = "DASHSCOPE_BASE_URL"
+api_key_env = "DASHSCOPE_API_KEY"
+request_options = { enable_thinking = false }
+
+[models.deepseek]
+provider = "openai_compatible"
+model = "deepseek-flash"
+base_url = "https://api.deepseek.com"
+api_key_env = "DEEPSEEK_API_KEY"
+request_options = { thinking = { type = "disabled" } }
+
+[models.claude]
+provider = "anthropic"
+# Confirm this model ID in your Claude console; model availability can vary.
+model = "claude-haiku-5-5"
+base_url = "https://api.anthropic.com/v1"
+api_key_env = "ANTHROPIC_API_KEY"
+
+[models.mock]
+provider = "mock"
+model = "mock"

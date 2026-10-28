@@ -1,0 +1,28 @@
+# Secrets and local Python environment
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.DS_Store
+
+# Large datasets and experiment outputs
+data/raw/*
+data/processed/*
+data/train/*
+artifacts/eval/*
+artifacts/train/*
+artifacts/checkpoints/*
+
+# The full train-pool manifest is reproducible but too large for this repo.
+# Keep the small frozen evaluation inputs in the first commit.
+data/splits/v1/train_pool.jsonl
+!data/processed/
+!data/processed/v1/
+!data/processed/v1/gold_products.jsonl
+!data/processed/v1/test_products.jsonl
