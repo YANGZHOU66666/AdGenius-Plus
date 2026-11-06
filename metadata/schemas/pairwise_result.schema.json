@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PairwiseResult v1",
+  "description": "Pairwise evaluation record. Model judges record AB and BA calls; human judges record one independent annotation. Candidate membership, distinct mapping values, and winner-to-mapping consistency require dataset-level validation.",
+  "oneOf": [
+    {"$ref": "#/$defs/model_result"},
+    {"$ref": "#/$defs/human_result"}
+  ],
+  "$defs": {
+    "nonblank_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "candidate_mapping": {
+      "type": "object",
+      "required": ["A", "B"],
+      "additionalProperties": false,
+      "properties": {
+        "A": {"$ref": "#/$defs/nonblank_id"},
+        "B": {"$ref": "#/$defs/nonblank_id"}
+      },
+      "description": "Fixed identity mapping for candidates A and B across both prompt orders."
+    },
+    "human_presentation": {
+      "type": "object",
+      "required": ["A", "B"],
+      "additionalProperties": false,
+      "properties": {
+        "A": {"$ref": "#/$defs/nonblank_id"},
+        "B": {"$ref": "#/$defs/nonblank_id"}
+      },
+      "description": "Candidate identities as displayed to this human annotator."
+    },
+    "model_call_result": {
+      "type": "object",
+      "required": [
+        "prompt_order",
+        "status",
+        "choice",
+        "winner_candidate_id",
+        "reason",
+        "error",
+        "trace_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "prompt_order": {
+          "type": "string",
+          "enum": ["AB", "BA"],
+          "description": "Order of candidate presentation in this individual LLM call."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["success", "failed"]
+        },
+        "choice": {
+          "type": ["string", "null"],
+          "enum": ["A", "B", "tie", null]
+        },
+        "winner_candidate_id": {
+          "anyOf": [
+            {"$ref": "#/$defs/nonblank_id"},
+            {"type": "null"}
+          ],
+          "description": "Derived from choice and the fixed candidate_mapping; null for tie or failed calls."
+        },
+        "reason": {
+          "type": ["string", "null"]
+        },
+        "error": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "pattern": "\\S",
+          "description": "Error code when failed; null when successful."
+        },
+        "trace_id": {
+          "anyOf": [
+            {"$ref": "#/$defs/nonblank_id"},
+            {"type": "null"}
+          ],
+          "description": "Call-log ID for this LLM request, if recorded."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "success"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {"error": {"type": "null"}},
+            "allOf": [
+              {
+                "if": {
+                  "properties": {"choice": {"const": "tie"}},
+                  "required": ["choice"]
+                },
+                "then": {
+                  "properties": {"winner_candidate_id": {"type": "null"}}
+                },
+                "else": {
+                  "properties": {
+                    "choice": {"enum": ["A", "B"]},
+                    "winner_candidate_id": {"$ref": "#/$defs/nonblank_id"}
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {"status": {"const": "failed"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "choice": {"type": "null"},
+              "winner_candidate_id": {"type": "null"},
+              "error": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      ]
+    },
+    "human_pairwise_result": {
+      "type": "object",
+      "required": [
+        "status",
+        "choice",
+        "winner_candidate_id",
+        "reason",
+        "error"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["success", "failed"]
+        },
+        "choice": {
+          "type": ["string", "null"],
+          "enum": ["A", "B", "tie", null]
+        },
+        "winner_candidate_id": {
+          "anyOf": [
+            {"$ref": "#/$defs/nonblank_id"},
+            {"type": "null"}
+          ],
+          "description": "Derived from choice and presentation; null for tie or failed annotations."
+        },
+        "reason": {
+          "type": ["string", "null"]
+        },
+        "error": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "pattern": "\\S",
+          "description": "Error code when failed; null when successful."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "success"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {"error": {"type": "null"}},
+            "allOf": [
+              {
+                "if": {
+                  "properties": {"choice": {"const": "tie"}},
+                  "required": ["choice"]
+                },
+                "then": {
+                  "properties": {"winner_candidate_id": {"type": "null"}}
+                },
+                "else": {
+                  "properties": {
+                    "choice": {"enum": ["A", "B"]},
+                    "winner_candidate_id": {"$ref": "#/$defs/nonblank_id"}
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {"status": {"const": "failed"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "choice": {"type": "null"},
+              "winner_candidate_id": {"type": "null"},
+              "error": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      ]
+    },
+    "model_result": {
+      "type": "object",
+      "required": [
+        "result_id",
+        "judge_type",
+        "pair_id",
+        "judge_run_id",
+        "protocol_version",
+        "candidate_mapping",
+        "pairwise_result"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "result_id": {"$ref": "#/$defs/nonblank_id"},
+        "judge_type": {"const": "model"},
+        "pair_id": {"$ref": "#/$defs/nonblank_id"},
+        "judge_run_id": {"$ref": "#/$defs/nonblank_id"},
+        "protocol_version": {"$ref": "#/$defs/nonblank_id"},
+        "candidate_mapping": {"$ref": "#/$defs/candidate_mapping"},
+        "pairwise_result": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"$ref": "#/$defs/model_call_result"},
+          "allOf": [
+            {
+              "contains": {
+                "properties": {"prompt_order": {"const": "AB"}},
+                "required": ["prompt_order"]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "properties": {"prompt_order": {"const": "BA"}},
+                "required": ["prompt_order"]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            }
+          ],
+          "description": "Exactly two independent LLM calls: one AB and one BA."
+        }
+      }
+    },
+    "human_result": {
+      "type": "object",
+      "required": [
+        "annotation_id",
+        "judge_type",
+        "annotation_set_id",
+        "pair_id",
+        "annotator_id",
+        "protocol_version",
+        "presentation",
+        "pairwise_result"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "annotation_id": {"$ref": "#/$defs/nonblank_id"},
+        "judge_type": {"const": "human"},
+        "annotation_set_id": {"$ref": "#/$defs/nonblank_id"},
+        "pair_id": {"$ref": "#/$defs/nonblank_id"},
+        "annotator_id": {"$ref": "#/$defs/nonblank_id"},
+        "protocol_version": {"$ref": "#/$defs/nonblank_id"},
+        "presentation": {"$ref": "#/$defs/human_presentation"},
+        "pairwise_result": {"$ref": "#/$defs/human_pairwise_result"}
+      }
+    }
+  }
+}

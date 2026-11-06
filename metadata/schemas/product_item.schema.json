@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProductItem v1",
+  "description": "评测与训练共用的商品记录；项目内 ID、源数据 ID 与原始商品属性分开保存。",
+  "type": "object",
+  "required": ["product_id", "source_id", "product_info"],
+  "additionalProperties": false,
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "description": "项目内稳定且唯一的商品 ID；不随划分、排序或运行变化。"
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "description": "原始数据集中的商品 ID；当前 Amazon 来源对应 parent_asin。"
+    },
+    "product_info": {
+      "type": "object",
+      "description": "除源 ID 字段之外的全部原始商品属性；保留字段名、JSON 类型和值，允许任意新增字段。",
+      "additionalProperties": true
+    }
+  }
+}

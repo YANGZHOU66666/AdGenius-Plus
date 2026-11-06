@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CandidatePair v1",
+  "description": "供 pairwise 评测使用的两个成功候选文案的冻结快照。",
+  "type": "object",
+  "required": ["pair_id", "product_id", "candidates"],
+  "additionalProperties": false,
+  "properties": {
+    "pair_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "description": "候选文案对的稳定唯一 ID。"
+    },
+    "product_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "description": "两条候选共同对应的 ProductItem ID。"
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["candidate_id", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "description": "来源 GenerationResult 的候选文案 ID。"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S",
+            "description": "来源 GenerationResult 中成功生成的非空广告文案快照。"
+          }
+        }
+      },
+      "description": "恰好两条候选；数组顺序是规范存储顺序，不代表 A/B 展示位置或优劣。"
+    }
+  }
+}

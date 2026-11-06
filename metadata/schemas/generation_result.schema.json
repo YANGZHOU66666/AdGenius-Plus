@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GenerationResult v1",
+  "description": "一个商品候选广告的一次标准化生成结果。",
+  "type": "object",
+  "required": [
+    "candidate_id",
+    "product_id",
+    "run_id",
+    "sample_index",
+    "generation_result",
+    "trace_id"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "description": "单条候选文案的稳定唯一 ID。"
+    },
+    "product_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "description": "关联 ProductItem 的项目内商品 ID。"
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "description": "本次生成运行的 ID；模型、prompt 和参数等运行信息由对应 manifest 记录。"
+    },
+    "sample_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "同一商品在同一生成运行中的采样序号，从 0 开始。"
+    },
+    "generation_result": {
+      "type": "object",
+      "required": ["status", "text", "error"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["success", "failed"],
+          "description": "生成是否得到可用的广告文案。"
+        },
+        "text": {
+          "type": ["string", "null"],
+          "description": "成功时的广告文案；失败时为 null。"
+        },
+        "error": {
+          "type": ["string", "null"],
+          "enum": [
+            null,
+            "timeout",
+            "network_error",
+            "rate_limit",
+            "auth_error",
+            "provider_error",
+            "empty_output",
+            "invalid_output",
+            "output_too_long"
+          ],
+          "description": "成功时为 null；失败时为固定错误代码。"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "success"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "text": {"type": "string", "minLength": 1},
+              "error": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"status": {"const": "failed"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "text": {"type": "null"},
+              "error": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      ]
+    },
+    "trace_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "关联 calls.jsonl 中具体 API 调用记录的 ID；没有调用日志时为 null。"
+    }
+  }
+}

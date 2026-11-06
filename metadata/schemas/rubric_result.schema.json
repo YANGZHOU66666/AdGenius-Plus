@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RubricResult v1",
+  "description": "一位模型或人工评委对一条候选文案的一次独立逐项评分；由 judge_type 区分记录结构。",
+  "oneOf": [
+    {"$ref": "#/$defs/model_result"},
+    {"$ref": "#/$defs/human_result"}
+  ],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "trace_id": {
+      "description": "具体 API 调用的日志 ID；没有调用日志时为 null。",
+      "oneOf": [
+        {"$ref": "#/$defs/identifier"},
+        {"type": "null"}
+      ]
+    },
+    "criterion": {
+      "type": "object",
+      "required": ["criterion_id", "value", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "criterion_id": {
+          "$ref": "#/$defs/identifier",
+          "description": "协议版本定义的指标 ID；同一结果中不得重复。"
+        },
+        "value": {
+          "type": "boolean",
+          "description": "该指标的独立判断；false 是有效评分，不代表调用失败。"
+        },
+        "reason": {
+          "type": ["string", "null"],
+          "description": "该指标的简短判断理由。"
+        }
+      }
+    },
+    "rubric_result": {
+      "type": "object",
+      "required": ["status", "criteria", "error"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["success", "failed"]
+        },
+        "criteria": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/criterion"},
+          "description": "按 protocol_version 定义的指标列表；成功时完整填写，失败时为空数组。"
+        },
+        "error": {
+          "oneOf": [
+            {"$ref": "#/$defs/identifier"},
+            {"type": "null"}
+          ],
+          "description": "成功时为 null，失败时为错误代码字符串。"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"status": {"const": "success"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "criteria": {"minItems": 1},
+              "error": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"status": {"const": "failed"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "criteria": {"maxItems": 0},
+              "error": {"$ref": "#/$defs/identifier"}
+            }
+          }
+        }
+      ]
+    },
+    "model_result": {
+      "type": "object",
+      "required": [
+        "result_id",
+        "judge_type",
+        "candidate_id",
+        "product_id",
+        "judge_run_id",
+        "protocol_version",
+        "rubric_result",
+        "trace_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "result_id": {"$ref": "#/$defs/identifier"},
+        "judge_type": {"const": "model"},
+        "candidate_id": {"$ref": "#/$defs/identifier"},
+        "product_id": {"$ref": "#/$defs/identifier"},
+        "judge_run_id": {
+          "$ref": "#/$defs/identifier",
+          "description": "模型评测运行 ID；模型身份、prompt 和参数由对应 manifest 记录。"
+        },
+        "protocol_version": {"$ref": "#/$defs/identifier"},
+        "rubric_result": {"$ref": "#/$defs/rubric_result"},
+        "trace_id": {"$ref": "#/$defs/trace_id"}
+      }
+    },
+    "human_result": {
+      "type": "object",
+      "required": [
+        "annotation_id",
+        "judge_type",
+        "annotation_set_id",
+        "candidate_id",
+        "product_id",
+        "annotator_id",
+        "protocol_version",
+        "rubric_result"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "annotation_id": {"$ref": "#/$defs/identifier"},
+        "judge_type": {"const": "human"},
+        "annotation_set_id": {"$ref": "#/$defs/identifier"},
+        "candidate_id": {"$ref": "#/$defs/identifier"},
+        "product_id": {"$ref": "#/$defs/identifier"},
+        "annotator_id": {
+          "$ref": "#/$defs/identifier",
+          "description": "独立人工标注者的 ID；不同标注者保留各自原始评分。"
+        },
+        "protocol_version": {"$ref": "#/$defs/identifier"},
+        "rubric_result": {"$ref": "#/$defs/rubric_result"}
+      }
+    }
+  }
+}
