@@ -1,4 +1,4 @@
-"""Small, synchronous, text-only client for OpenAI-compatible and Claude APIs.
+"""Small, synchronous, text-only client for common LLM APIs.
 
 No evaluation logic, automatic JSON repair, streaming, or implicit paid calls.
 """
@@ -6,6 +6,7 @@ No evaluation logic, automatic JSON repair, streaming, or implicit paid calls.
 from __future__ import annotations
 
 import copy
+import ipaddress
 import json
 import os
 import random
@@ -20,9 +21,11 @@ from typing import Any, Literal
 
 import httpx
 
-Provider = Literal["openai_compatible", "anthropic", "mock"]
+Provider = Literal["openai_compatible", "openai_compatible_local", "ollama",
+                   "anthropic", "google_generative", "mock"]
 _CORE_FIELDS = {"model", "messages", "system", "max_tokens", "max_completion_tokens",
-                "temperature", "stream", "n"}
+                "temperature", "stream", "n", "contents", "systemInstruction",
+                "generationConfig"}
 _RETRYABLE = {408, 429, 500, 502, 503, 504, 529}
 
 
@@ -31,13 +34,15 @@ class LLMError(RuntimeError):
 
     def __init__(self, message: str, *, attempts: int = 0,
                  status_code: int | None = None, request_id: str | None = None,
-                 raw_response: Any = None, may_have_completed: bool = False):
+                 raw_response: Any = None, may_have_completed: bool = False,
+                 retry_after: str | None = None):
         super().__init__(message)
         self.attempts = attempts
         self.status_code = status_code
         self.request_id = request_id
         self.raw_response = raw_response
         self.may_have_completed = may_have_completed
+        self.retry_after = retry_after
 
 
 @dataclass(frozen=True)
@@ -52,7 +57,8 @@ class ModelConfig:
     request_options: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        if self.provider not in {"openai_compatible", "anthropic", "mock"}:
+        if self.provider not in {"openai_compatible", "openai_compatible_local", "ollama",
+                                 "anthropic", "google_generative", "mock"}:
             raise ValueError(f"Unknown provider: {self.provider}")
         if not self.model:
             raise ValueError("model must not be empty")
@@ -60,9 +66,20 @@ class ModelConfig:
             raise ValueError("timeout_seconds must be positive; max_retries must be >= 0")
         if self.provider != "mock":
             url = httpx.URL(self.base_url)
-            if url.scheme != "https" or not url.host or url.userinfo or url.query or url.fragment:
-                raise ValueError("base_url must be an HTTPS API root without credentials or query")
-            if not self.api_key_env:
+            if url.userinfo or url.query or url.fragment or not url.host:
+                raise ValueError("base_url must be an API root without credentials or query")
+            if self.provider in {"openai_compatible_local", "ollama"}:
+                try:
+                    is_loopback = url.host == "localhost" or ipaddress.ip_address(
+                        url.host
+                    ).is_loopback
+                except ValueError:
+                    is_loopback = False
+                if url.scheme != "http" or not is_loopback:
+                    raise ValueError("local API base_url must use HTTP on localhost/loopback")
+            elif url.scheme != "https":
+                raise ValueError("remote API base_url must use HTTPS")
+            if self.provider not in {"openai_compatible_local", "ollama"} and not self.api_key_env:
                 raise ValueError("api_key_env is required")
 
     @classmethod
@@ -159,15 +176,61 @@ class LLMClient:
             raise ValueError("temperature must be between 0 and 2")
         options = copy.deepcopy(self.config.request_options)
         options.update(copy.deepcopy(dict(provider_options or {})))
+        google_generation_options = {}
+        if self.config.provider == "google_generative":
+            google_generation_options = options.pop("generationConfig", {})
+            if not isinstance(google_generation_options, dict):
+                raise ValueError("Google generationConfig must be an object")
+            if {"maxOutputTokens", "temperature", "candidateCount"} & google_generation_options.keys():
+                raise ValueError("generationConfig must not override core generation fields")
+            if json_mode and "responseMimeType" in google_generation_options:
+                raise ValueError("Use either json_mode or a native responseMimeType")
         if _CORE_FIELDS & options.keys():
             raise ValueError("provider_options must not override core request fields")
         if json_mode and "response_format" in options:
             raise ValueError("Use either json_mode or a native response_format")
 
-        body: dict[str, Any] = {"model": self.config.model, "messages": normalized,
-                                "max_tokens": max_output_tokens, "stream": False}
-        if temperature is not None:
-            body["temperature"] = temperature
+        if self.config.provider == "ollama":
+            body: dict[str, Any] = {
+                "model": self.config.model,
+                "messages": normalized,
+                "stream": False,
+                "options": {"num_predict": max_output_tokens},
+            }
+            if temperature is not None:
+                body["options"]["temperature"] = temperature
+            if json_mode:
+                body["format"] = "json"
+        elif self.config.provider == "google_generative":
+            system_parts = [m["content"] for m in normalized if m["role"] == "system"]
+            contents = [
+                {
+                    "role": "model" if message["role"] == "assistant" else "user",
+                    "parts": [{"text": message["content"]}],
+                }
+                for message in normalized
+                if message["role"] != "system"
+            ]
+            body = {
+                "contents": contents,
+                "generationConfig": {
+                    **google_generation_options,
+                    "maxOutputTokens": max_output_tokens,
+                },
+            }
+            if system_parts:
+                body["systemInstruction"] = {
+                    "parts": [{"text": "\n\n".join(system_parts)}]
+                }
+            if temperature is not None:
+                body["generationConfig"]["temperature"] = temperature
+            if json_mode:
+                body["generationConfig"]["responseMimeType"] = "application/json"
+        else:
+            body = {"model": self.config.model, "messages": normalized,
+                    "max_tokens": max_output_tokens, "stream": False}
+            if temperature is not None:
+                body["temperature"] = temperature
         if self.config.provider == "anthropic":
             if json_mode:
                 raise ValueError("Claude json_mode is not mapped; use native output_config")
@@ -175,7 +238,7 @@ class LLMClient:
             body["messages"] = [m for m in normalized if m["role"] != "system"]
             if systems:
                 body["system"] = "\n\n".join(systems)
-        elif json_mode:
+        elif json_mode and self.config.provider not in {"ollama", "google_generative"}:
             body["response_format"] = {"type": "json_object"}
         body.update(options)
         # Fail on non-JSON options (including NaN) before attempting the network.
@@ -188,19 +251,27 @@ class LLMClient:
                                0, False, "", self.config.snapshot(), body,
                                {"mock": True, "text": text})
 
-        key = os.environ.get(self.config.api_key_env, "").strip()
-        if not key:
+        key = os.environ.get(self.config.api_key_env, "").strip() if self.config.api_key_env else ""
+        if self.config.api_key_env and not key:
             raise ValueError(f"Set environment variable {self.config.api_key_env}")
         headers = {"content-type": "application/json"}
         if self.config.provider == "anthropic":
             headers.update({"x-api-key": key, "anthropic-version": "2023-06-01"})
             endpoint = "messages"
+        elif self.config.provider == "ollama":
+            endpoint = "api/chat"
+        elif self.config.provider == "google_generative":
+            headers["x-goog-api-key"] = key
+            endpoint = f"models/{self.config.model}:generateContent"
         else:
-            headers["authorization"] = f"Bearer {key}"
+            if key:
+                headers["authorization"] = f"Bearer {key}"
             endpoint = "chat/completions"
         url = f"{self.config.base_url.rstrip('/')}/{endpoint}"
         response, attempts = self._post(url, headers, body)
-        request_id = response.headers.get("request-id") or response.headers.get("x-request-id")
+        request_id = (response.headers.get("request-id") or
+                      response.headers.get("x-request-id") or
+                      response.headers.get("x-goog-request-id"))
         try:
             raw = response.json()
             text, model, usage, reason, response_id, content_missing = self._parse(raw)
@@ -232,16 +303,22 @@ class LLMClient:
                 _backoff(attempt, response.headers.get("retry-after"))
                 continue
             # Keep a short, redacted provider error for diagnosing wrong regions/models.
-            secret = headers.get("x-api-key") or headers["authorization"].removeprefix("Bearer ")
+            secret = headers.get("x-api-key") or headers.get("x-goog-api-key") or headers.get(
+                "authorization", ""
+            ).removeprefix("Bearer ")
             error_body = _safe_error_body(response, secret)
             raise LLMError(f"LLM API returned HTTP {response.status_code}", attempts=attempt,
                            status_code=response.status_code,
                            request_id=response.headers.get("request-id") or
-                           response.headers.get("x-request-id"), raw_response=error_body)
+                           response.headers.get("x-request-id") or
+                           response.headers.get("x-goog-request-id"), raw_response=error_body,
+                           retry_after=response.headers.get("retry-after"))
         raise AssertionError("unreachable")
 
     def _parse(self, raw: dict[str, Any]) -> tuple[str, str, TokenUsage, str | None, str | None, bool]:
         usage = raw.get("usage") or {}
+        if self.config.provider == "google_generative":
+            usage = raw.get("usageMetadata") or {}
         if self.config.provider == "anthropic":
             blocks = raw["content"]
             text = "".join(b["text"] for b in blocks if b.get("type") == "text")
@@ -256,6 +333,35 @@ class LLMClient:
             tokens = TokenUsage(inputs, outputs, _total(inputs, outputs), None,
                                 cache_read, cache_write)
             reason = raw.get("stop_reason")
+        elif self.config.provider == "ollama":
+            message = raw["message"]
+            text = message.get("content", "")
+            content_missing = not bool(text)
+            inputs = raw.get("prompt_eval_count")
+            outputs = raw.get("eval_count")
+            tokens = TokenUsage(inputs, outputs, _total(inputs, outputs))
+            reason = raw.get("done_reason")
+        elif self.config.provider == "google_generative":
+            candidates = raw.get("candidates")
+            if candidates:
+                candidate = candidates[0]
+            elif (raw.get("promptFeedback") or {}).get("blockReason"):
+                candidate = {"finishReason": raw["promptFeedback"]["blockReason"]}
+            else:
+                raise ValueError("Missing Google candidates or prompt block reason")
+            parts = candidate.get("content", {}).get("parts", [])
+            text = "".join(part.get("text", "") for part in parts
+                            if "text" in part and not part.get("thought", False))
+            content_missing = not bool(text)
+            inputs = usage.get("promptTokenCount")
+            outputs = usage.get("candidatesTokenCount")
+            reasoning = usage.get("thoughtsTokenCount")
+            # Other providers include reasoning in output-token usage as well.
+            total_outputs = (outputs + (reasoning or 0) if outputs is not None else None)
+            tokens = TokenUsage(inputs, total_outputs, usage.get("totalTokenCount",
+                                                             _total(inputs, total_outputs)),
+                                reasoning, usage.get("cachedContentTokenCount"))
+            reason = candidate.get("finishReason")
         else:
             choice = raw["choices"][0]
             content = choice["message"].get("content")
@@ -276,7 +382,9 @@ class LLMClient:
                                 (usage.get("completion_tokens_details") or {}).get("reasoning_tokens"),
                                 cached)
             reason = choice.get("finish_reason")
-        return text, raw.get("model", self.config.model), tokens, reason, raw.get("id"), content_missing
+        model = raw.get("modelVersion", raw.get("model", self.config.model))
+        response_id = raw.get("responseId", raw.get("id"))
+        return text, model, tokens, reason, response_id, content_missing
 
 
 def _validate_messages(messages: Sequence[Mapping[str, str]]) -> list[dict[str, str]]:

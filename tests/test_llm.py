@@ -248,6 +248,136 @@ class LLMTests(unittest.TestCase):
         self.assertEqual(config.base_url,
                          "https://dashscope.aliyuncs.com/compatible-mode/v1")
 
+    def test_candidate_model_configs_use_openai_compatible_routes(self):
+        config_path = os.path.join(os.path.dirname(__file__), "..", "configs", "models.toml")
+        expected = {
+            "qwen": ("qwen3.7-flash", "DASHSCOPE_API_KEY",
+                     "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"),
+            "mistral": ("mistral-small-2603", "MISTRAL_API_KEY",
+                        "https://api.mistral.ai/v1/chat/completions"),
+            "glm53_flash": ("glm-5.3-flash", "ZAI_API_KEY",
+                            "https://open.bigmodel.cn/api/paas/v4/chat/completions"),
+            "longcat": ("LongCat-2.5", "LONGCAT_API_KEY",
+                        "https://api.longcat.chat/openai/v1/chat/completions"),
+        }
+        for alias, (model, key_env, endpoint) in expected.items():
+            with self.subTest(alias=alias):
+                config = ModelConfig.from_toml(config_path, alias)
+                self.assertEqual(config.model, model)
+                self.assertEqual(config.api_key_env, key_env)
+                self.assertEqual(f"{config.base_url}/chat/completions", endpoint)
+
+    def test_google_generative_model_config(self):
+        config_path = os.path.join(os.path.dirname(__file__), "..", "configs", "models.toml")
+        config = ModelConfig.from_toml(config_path, "gemma_31b")
+        self.assertEqual(config.provider, "google_generative")
+        self.assertEqual(config.model, "gemma-4-31b-it")
+        self.assertEqual(config.api_key_env, "GEMINI_API_KEY")
+        self.assertEqual(config.base_url,
+                         "https://generativelanguage.googleapis.com/v1beta")
+
+    def test_local_openai_compatible_config_does_not_require_a_key(self):
+        config_path = os.path.join(os.path.dirname(__file__), "..", "configs", "models.toml")
+        config = ModelConfig.from_toml(config_path, "qwen_local")
+        self.assertEqual(config.provider, "ollama")
+        self.assertEqual(config.model, "qwen3.5:2b")
+        self.assertEqual(config.api_key_env, "")
+        self.assertEqual(f"{config.base_url}/api/chat", "http://127.0.0.1:11434/api/chat")
+
+    def test_local_provider_rejects_non_loopback_http(self):
+        with self.assertRaises(ValueError):
+            ModelConfig(provider="openai_compatible_local", model="local",
+                        base_url="http://example.test/v1")
+
+    def test_local_provider_can_call_without_authorization(self):
+        received = []
+
+        def handle(request):
+            received.append(request)
+            return compatible_response()
+
+        config = ModelConfig(provider="openai_compatible_local", model="local",
+                             base_url="http://127.0.0.1:11434/v1", max_retries=0)
+        with LLMClient(config, transport=httpx.MockTransport(handle)) as client:
+            response = client.generate(MESSAGES)
+        self.assertEqual(response.text, "Keep your papers together.")
+        self.assertNotIn("authorization", received[0].headers)
+
+    def test_ollama_native_payload_and_response(self):
+        received = []
+
+        def handle(request):
+            received.append(request)
+            return httpx.Response(200, json={
+                "model": "qwen3.5:2b",
+                "message": {"role": "assistant", "content": "A sturdy stapler."},
+                "done": True,
+                "done_reason": "stop",
+                "prompt_eval_count": 12,
+                "eval_count": 4,
+            })
+
+        config = ModelConfig(provider="ollama", model="qwen3.5:2b",
+                             base_url="http://127.0.0.1:11434", max_retries=0,
+                             request_options={"think": False})
+        with LLMClient(config, transport=httpx.MockTransport(handle)) as client:
+            response = client.generate(MESSAGES, max_output_tokens=64, temperature=0)
+        body = json.loads(received[0].content)
+        self.assertEqual(str(received[0].url), "http://127.0.0.1:11434/api/chat")
+        self.assertEqual(body["options"], {"num_predict": 64, "temperature": 0})
+        self.assertFalse(body["think"])
+        self.assertEqual(response.text, "A sturdy stapler.")
+        self.assertEqual(response.usage.total_tokens, 16)
+
+    def test_google_generative_native_payload_usage_and_key_redaction(self):
+        received = []
+
+        def handle(request):
+            received.append(request)
+            return httpx.Response(200, json={
+                "modelVersion": "gemma-4-31b-it",
+                "responseId": "google-response-1",
+                "candidates": [{
+                    "content": {"role": "model", "parts": [{"text": "A clear product ad."}]},
+                    "finishReason": "STOP",
+                }],
+                "usageMetadata": {
+                    "promptTokenCount": 31,
+                    "candidatesTokenCount": 7,
+                    "totalTokenCount": 38,
+                },
+            }, headers={"x-goog-request-id": "google-request-1"})
+
+        config = ModelConfig(provider="google_generative", model="gemma-4-31b-it",
+                             base_url="https://generativelanguage.googleapis.com/v1beta",
+                             api_key_env="LLM_TEST_KEY", max_retries=0)
+        with LLMClient(config, transport=httpx.MockTransport(handle)) as client:
+            response = client.generate(MESSAGES, max_output_tokens=120,
+                                       temperature=0.2, json_mode=False)
+        request = received[0]
+        body = json.loads(request.content)
+        self.assertEqual(str(request.url),
+                         "https://generativelanguage.googleapis.com/v1beta/models/"
+                         "gemma-4-31b-it:generateContent")
+        self.assertEqual(request.headers["x-goog-api-key"], "test-secret")
+        self.assertNotIn("authorization", request.headers)
+        self.assertEqual(body["systemInstruction"],
+                         {"parts": [{"text": "Write accurate copy."}]})
+        self.assertEqual(body["contents"], [
+            {"role": "user", "parts": [{"text": "A blue stapler."}]},
+        ])
+        self.assertEqual(body["generationConfig"],
+                         {"maxOutputTokens": 120, "temperature": 0.2})
+        self.assertEqual(response.text, "A clear product ad.")
+        self.assertEqual(response.provider, "google_generative")
+        self.assertEqual(response.model, "gemma-4-31b-it")
+        self.assertEqual(response.usage.input_tokens, 31)
+        self.assertEqual(response.usage.output_tokens, 7)
+        self.assertEqual(response.usage.total_tokens, 38)
+        self.assertEqual(response.finish_reason, "STOP")
+        self.assertEqual(response.request_id, "google-request-1")
+        self.assertNotIn("test-secret", json.dumps(response.to_dict()))
+
 
 if __name__ == "__main__":
     unittest.main()

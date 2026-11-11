@@ -12,7 +12,11 @@ from adgenius.shared.llm import LLMClient, ModelConfig
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", default="configs/models.toml")
-    parser.add_argument("--model", default="mock", help="Config alias: mock/qwen/deepseek/claude")
+    parser.add_argument(
+        "--model",
+        default="mock",
+        help="Config alias: mock/qwen/qwen_local/mistral/gemma_31b/glm53_flash/longcat/deepseek/claude",
+    )
     parser.add_argument("--output", type=Path, help="Optional response JSON file (no overwrite)")
     args = parser.parse_args()
     load_dotenv(Path(__file__).resolve().parents[1] / ".env")
@@ -25,7 +29,7 @@ def main():
              "Use only the supplied product facts. Return one or two sentences."},
             {"role": "user", "content": "Product: Blue desk stapler. Features: "
              "Metal construction; holds standard staples; staples up to 20 sheets."},
-        ], max_output_tokens=256)
+        ], max_output_tokens=2048 if args.model in {"glm53_flash", "gemma_31b"} else 256)
     record = json.dumps(response.to_dict(), ensure_ascii=False, indent=2)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

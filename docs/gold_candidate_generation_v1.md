@@ -27,7 +27,7 @@
 
 首次生成中，其余三个模型各成功 100 条；Gemma 成功 79 条，失败 21 条（11 条超时、10 条 HTTP 500）。随后通过 `scripts/retry_failed_candidates.py` 只补跑失败项，保留原来的模型、prompt、生成参数和候选 ID，将请求超时提高到 180 秒，并对临时错误做有限次数的退避重试。
 
-**补跑后四个模型均为 100/100 成功，共 400 条。后续标注使用 `artifacts/eval/gold_generation/v1/retried/` 中的四份完整 results 文件。** 同目录的 calls 文件保留原调用历史并追加补跑记录；原始目录中的文件保留不变。
+**补跑后四个模型均为 100/100 成功，共 400 条。后续标注直接使用 `artifacts/eval/gold_generation/v1/` 中的四份完整 results 文件。** 同目录的 calls 文件保留原调用历史并追加补跑记录，因此其中仍会出现失败尝试；以 results 文件判断最终生成状态。补跑前的文件备份在同级 `artifacts/eval/gold_generation/v1_original/`，不再保留 `retried/` 子目录。
 
 ## 后续人工标注
 

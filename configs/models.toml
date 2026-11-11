@@ -14,6 +14,50 @@ base_url_env = "DASHSCOPE_BASE_URL"
 api_key_env = "DASHSCOPE_API_KEY"
 request_options = { enable_thinking = false }
 
+[models.qwen_local]
+provider = "ollama"
+# Match this value to the model name served by Ollama.
+model = "qwen3.5:2b"
+base_url = "http://127.0.0.1:11434"
+timeout_seconds = 180.0
+max_retries = 0
+request_options = { think = false }
+
+# Candidate-generation models for the frozen gold-data pilot.
+# The wrapper appends /chat/completions to each base URL.
+[models.mistral]
+provider = "openai_compatible"
+model = "mistral-small-2603"
+base_url = "https://api.mistral.ai/v1"
+api_key_env = "MISTRAL_API_KEY"
+
+[models.glm53_flash]
+provider = "openai_compatible"
+# Direct BigModel API; the Bailian pilot was unavailable to this account.
+# Official model docs: https://docs.bigmodel.cn/cn/guide/models/vlm/glm-5.3-flash
+model = "glm-5.3-flash"
+base_url = "https://open.bigmodel.cn/api/paas/v4"
+api_key_env = "ZAI_API_KEY"
+request_options = { thinking = { type = "enabled" } }
+
+[models.gemma_31b]
+provider = "google_generative"
+# Google officially hosts Gemma 4 31B on the Gemini API.
+model = "gemma-4-31b-it"
+base_url = "https://generativelanguage.googleapis.com/v1beta"
+api_key_env = "GEMINI_API_KEY"
+# Gemma responses can take longer than the wrapper's default 60 seconds.
+timeout_seconds = 180.0
+
+[models.longcat]
+provider = "openai_compatible"
+model = "LongCat-2.5"
+# LongCat's SDK examples use https://api.longcat.chat/openai as the SDK
+# base and add /v1 themselves. This wrapper appends only the endpoint path,
+# so the explicit /v1 is required here.
+base_url = "https://api.longcat.chat/openai/v1"
+api_key_env = "LONGCAT_API_KEY"
+
 [models.deepseek]
 provider = "openai_compatible"
 model = "deepseek-flash"
