@@ -31,6 +31,7 @@ AdGenius-Plus/
 │   ├── checkpoints/              # 忽略：base model、LoRA adapter、tokenizer
 │   └── reports/                  # 报告图表和可提交素材
 ├── notebooks/                    # 临时探索；正式流程进入 src
+├── tools/                        # 本地人工标注页面等辅助工具
 ├── docs/
 └── tests/
 ```

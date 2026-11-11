@@ -11,6 +11,9 @@ dist/
 .pytest_cache/
 .DS_Store
 
+# Runtime locks used by the local human annotation tool.
+data/**/.pairwise_*.lock
+
 # Large datasets and experiment outputs
 data/raw/*
 data/processed/*

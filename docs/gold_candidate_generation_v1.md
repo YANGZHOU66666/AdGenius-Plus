@@ -31,7 +31,14 @@
 
 ## 后续人工标注
 
-1. **Pairwise gold：** 每个商品从四条候选中随机抽取两个不同模型的结果，组成一对，共 100 对。抽样时固定并记录随机种子；两位标注者独立标注同一组 100 对。标注材料展示商品信息和两条广告，隐藏模型来源，随机安排 A/B 位置；允许选择 A、B 或平局，并保存理由。人工结果用于校准 pairwise judge、评估人机一致率。抽样和标注是后续步骤，生成阶段没有产生这些标签。
+1. **Pairwise gold：** 每个商品从四条候选中随机抽取两个不同模型的结果，组成一对，共 100 对。已用固定种子 `42` 完成抽样，六种模型组合等概率，不强制平衡数量。两位标注者后续独立标注同一组 100 对：展示商品信息和两条广告，隐藏模型来源，随机安排 A/B 位置；允许选择 A、B 或平局，并保存理由。人工结果用于校准 pairwise judge、评估人机一致率。目前只生成待标注的 pair，尚无人工标签。
 2. **Rubric gold：** 保留全部 400 条候选，作为 rubric 人工标注与人机一致率评估的输入，不因 pairwise 的四选二抽样丢弃其他候选。具体标注规则由 rubric 协议约定。
 
 这些商品及其候选属于 gold 校准集，不用于训练；最终模型比较使用独立冻结的 test 集。
+
+## 已冻结的 pairwise 输入
+
+- `data/eval/gold/v1/candidate_pairs.jsonl`：100 条 `CandidatePair`，每条保留商品 ID、pair ID 和两条候选的 ID、文案。通过 `product_id` 关联同目录的 `product_items.jsonl`；候选数组顺序不代表人工标注时的 A/B 位置。
+- `data/eval/gold/v1/candidate_pairs.manifest.json`：记录种子、四份输入文件及摘要、商品覆盖、模型组合数量、抽样方法和输出摘要，不展示给标注者。
+
+抽样由 `scripts/build_candidate_pairs.py` 离线执行，直接读取 `artifacts/eval/gold_generation/v1/results_*.jsonl`；不调用模型、不修改 400 条候选，不覆盖已有 pair 文件。
