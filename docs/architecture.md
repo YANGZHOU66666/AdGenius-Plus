@@ -38,6 +38,8 @@ AdGenius-Plus/
 
 `eval/` 和 `train/` 是工作流边界；`shared/` 放两边都要用的能力。比如文案生成既会用于 eval baseline，也会用于 train 的 teacher 合成，所以放在 `shared/inference.py` 或 `shared/llm/`，而不是复制两套实现。
 
+本地 pairwise 人工标注工作台的设计、数据流、并发保护和 v2 完成批次见 [`docs/pairwise_annotation_workbench.md`](pairwise_annotation_workbench.md)。
+
 ## 2. 数据和产物怎么区分
 
 最重要的规则是：**`data/` 是可作为后续输入复用的数据集，`artifacts/` 是某一次运行的输出。** 运行输出只有经过确认并写入 provenance，才晋升为新的 dataset。

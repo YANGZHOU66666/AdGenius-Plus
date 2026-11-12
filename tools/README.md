@@ -2,6 +2,8 @@
 
 本目录存放本地人工标注页面及其启动入口。Pairwise 页面直接读写本地 JSON/JSONL，不需要模型 API 或额外前端依赖。
 
+设计思路、数据流、A/B 身份映射和同步保护见 [Pairwise Human Annotation Workbench](../docs/pairwise_annotation_workbench.md)。
+
 ## 启动
 
 从仓库根目录运行（沿用项目的 Python 环境）：
