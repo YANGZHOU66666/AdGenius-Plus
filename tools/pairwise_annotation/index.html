@@ -1,48 +1,48 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pairwise 人工标注 · AdGenius+</title>
+  <title>Pairwise Human Annotation · AdGenius+</title>
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <div class="brand"><span class="brand-mark" aria-hidden="true">a<span>+</span></span><div><div class="eyebrow">ADGENIUS+ · HUMAN EVALUATION</div><h1>Pairwise 标注工作台</h1></div></div>
+    <div class="brand"><span class="brand-mark" aria-hidden="true">a<span>+</span></span><div><div class="eyebrow">ADGENIUS+ · HUMAN EVALUATION</div><h1>Pairwise Annotation Workbench</h1></div></div>
     <div class="top-actions">
-      <span id="sync-status" class="sync-status" role="status" aria-live="polite">正在连接本地文件…</span>
-      <form id="annotator-form" class="annotator-form"><label for="annotator-input">标注者</label><input id="annotator-input" name="annotator" value="zhou" autocomplete="off" maxlength="64" spellcheck="false" required><button type="submit" class="button button-small">切换</button></form>
+      <span id="sync-status" class="sync-status" role="status" aria-live="polite">Connecting to local files…</span>
+      <form id="annotator-form" class="annotator-form"><label for="annotator-input">Annotator</label><input id="annotator-input" name="annotator" value="zhou" autocomplete="off" maxlength="64" spellcheck="false" required><button type="submit" class="button button-small">Switch</button></form>
     </div>
   </header>
 
   <main class="workspace">
     <div class="main-column">
-      <section class="progress-panel" aria-label="标注进度"><div><span class="subtle">你的标注进度</span><div class="progress-number"><strong id="done-count">0</strong><span>/ <span id="total-count">—</span> 对</span></div></div><div class="progress-copy"><span id="progress-copy">读取已冻结的对比数据</span><div class="progress-track"><div id="progress-bar" class="progress-fill"></div></div></div><button id="export-button" class="button" disabled>导出已标注</button></section>
+      <section class="progress-panel" aria-label="Annotation progress"><div><span class="subtle">Your progress</span><div class="progress-number"><strong id="done-count">0</strong><span>/ <span id="total-count">—</span> pairs</span></div></div><div class="progress-copy"><span id="progress-copy">Loading the frozen comparison set</span><div class="progress-track"><div id="progress-bar" class="progress-fill"></div></div></div><button id="export-button" class="button" disabled>Export annotations</button></section>
 
-      <section id="notice" class="notice" hidden aria-live="polite"><div><strong id="notice-title"></strong><p id="notice-message"></p></div><div class="notice-actions"><button id="load-remote" class="button" hidden>加载文件版本</button><button id="keep-local" class="button button-primary" hidden>保留当前修改重新保存</button><button id="retry-save" class="button" hidden>重新保存</button></div></section>
+      <section id="notice" class="notice" hidden aria-live="polite"><div><strong id="notice-title"></strong><p id="notice-message"></p></div><div class="notice-actions"><button id="load-remote" class="button" hidden>Load file version</button><button id="keep-local" class="button button-primary" hidden>Keep changes and save again</button><button id="retry-save" class="button" hidden>Retry save</button></div></section>
 
-      <div id="loading" class="loading-panel"><div class="spinner"></div><p id="loading-message">正在读取本地商品与候选文案…</p><button id="retry-load" class="button" hidden>重新连接</button></div>
+      <div id="loading" class="loading-panel"><div class="spinner"></div><p id="loading-message">Loading products and candidate ads…</p><button id="retry-load" class="button" hidden>Reconnect</button></div>
 
       <section id="annotation-panel" hidden>
-        <div class="question-heading"><div><div class="question-meta"><span id="question-number" class="question-number">PAIR 001</span><span id="entry-status" class="entry-status">未标注</span></div><h2>哪条广告更适合这个商品？</h2><p>先看事实依据，再看具体信息和表达质量。两条相当时可选平局。</p></div><span class="shuffle-note" title="每次进入条目独立随机左右位置；已保存结论始终跟随实际候选文案。">⇄ 每次进入随机排列</span></div>
+        <div class="question-heading"><div><div class="question-meta"><span id="question-number" class="question-number">PAIR 001</span><span id="entry-status" class="entry-status">Unlabeled</span></div><h2>Which ad is better for this product?</h2><p>Consider factual support, useful product information, and clear expression. Your choice is saved and the next unlabeled pair opens automatically.</p></div><span class="shuffle-note" title="The sides are randomized each time you enter a pair; saved choices follow the actual candidate.">⇄ Randomized sides</span></div>
 
         <details id="product-details" class="product-panel" open><summary><div><span class="section-kicker">PRODUCT INFORMATION</span><h3 id="product-title"></h3></div><span class="details-indicator" aria-hidden="true">⌄</span></summary><pre id="product-information" lang="en"></pre></details>
 
-        <div class="candidates" role="group" aria-label="两条候选广告">
-          <article id="card-a" class="candidate-card"><div class="candidate-heading"><span class="candidate-letter">A</span><span>左侧文案</span><span class="selected-indicator" aria-hidden="true">✓ 已选择</span></div><p id="copy-a" class="candidate-copy" lang="en"></p><button id="choose-a" type="button" class="choice-button" aria-pressed="false">选择 A 更好 <span aria-hidden="true">↗</span></button></article>
-          <article id="card-b" class="candidate-card"><div class="candidate-heading"><span class="candidate-letter">B</span><span>右侧文案</span><span class="selected-indicator" aria-hidden="true">✓ 已选择</span></div><p id="copy-b" class="candidate-copy" lang="en"></p><button id="choose-b" type="button" class="choice-button" aria-pressed="false">选择 B 更好 <span aria-hidden="true">↗</span></button></article>
+        <div class="candidates" role="group" aria-label="Two candidate ads">
+          <article id="card-a" class="candidate-card"><div class="candidate-heading"><span class="candidate-letter">A</span><span>Candidate A</span><span class="selected-indicator" aria-hidden="true">✓ Selected</span></div><p id="copy-a" class="candidate-copy" lang="en"></p><button id="choose-a" type="button" class="choice-button" aria-pressed="false">Choose A <span aria-hidden="true">↗</span></button></article>
+          <article id="card-b" class="candidate-card"><div class="candidate-heading"><span class="candidate-letter">B</span><span>Candidate B</span><span class="selected-indicator" aria-hidden="true">✓ Selected</span></div><p id="copy-b" class="candidate-copy" lang="en"></p><button id="choose-b" type="button" class="choice-button" aria-pressed="false">Choose B <span aria-hidden="true">↗</span></button></article>
         </div>
 
-        <div class="tie-row"><span>没有明显质量差距？</span><button id="choose-tie" type="button" class="button tie-button" aria-pressed="false">＝ 选择平局</button><button id="clear-button" class="text-button" type="button" disabled>清除本条标注</button></div>
+        <div class="annotation-actions"><button id="clear-button" class="text-button" type="button" disabled>Clear this annotation</button></div>
 
-        <section class="reason-panel"><div class="reason-label"><label for="reason">判断理由 <span>可用中文，建议简要指出文案差异</span></label><span id="reason-hint" class="subtle">选择和理由会自动保存</span></div><textarea id="reason" rows="3" placeholder="例如：A 提供了有依据的容量信息，B 使用了资料不支持的保证。"></textarea><div class="save-caption"><span id="save-caption">本条尚未标注</span><span id="saved-time"></span></div></section>
+        <section class="reason-panel"><div class="reason-label"><label for="reason">Reason <span>Briefly explain the difference; any language is fine.</span></label><span id="reason-hint" class="subtle">Your choice and reason are saved automatically</span></div><textarea id="reason" rows="3" placeholder="Example: A gives a supported capacity detail, while B makes an unsupported claim."></textarea><div class="save-caption"><span id="save-caption">This pair is not labeled yet</span><span id="saved-time"></span></div></section>
 
-        <footer class="question-navigation"><button id="previous" class="button" type="button">← 上一条</button><span id="page-number">1 / 100</span><div><button id="next-unannotated" class="button" type="button">下一条未标注</button><button id="next" class="button button-primary" type="button">下一条 →</button></div></footer>
+        <footer class="question-navigation"><button id="previous" class="button" type="button">← Previous</button><span id="page-number">1 / 100</span><div><button id="next-unannotated" class="button" type="button">Next unlabeled</button><button id="next" class="button button-primary" type="button">Next →</button></div></footer>
       </section>
     </div>
 
-    <aside class="navigator-panel"><details id="navigator-details" open><summary><div><span class="section-kicker">QUESTION NAVIGATOR</span><h2>标注目录 <span id="navigator-count">0 / —</span></h2></div><span class="details-indicator" aria-hidden="true">⌄</span></summary><div class="navigator-legend"><span><i class="legend-dot completed"></i>已标注</span><span><i class="legend-dot"></i>未标注</span><span><i class="legend-dot active"></i>当前</span></div><div id="question-grid" class="question-grid" aria-label="点击跳转到对应条目"></div><p class="navigator-tip">点击编号直接跳转。已标注条目再次打开时，会恢复对应文案的判断。</p></details><div class="annotation-principles"><strong>保持独立判断</strong><p>页面不展示模型来源或其他人的标签。左右位置变化不会改变你已选中的文案。</p></div><details class="file-details"><summary>本地数据文件</summary><dl id="file-paths"></dl></details></aside>
+    <aside class="navigator-panel"><details id="navigator-details" open><summary><div><span class="section-kicker">QUESTION NAVIGATOR</span><h2>Pair directory <span id="navigator-count">0 / —</span></h2></div><span class="details-indicator" aria-hidden="true">⌄</span></summary><div class="navigator-legend"><span><i class="legend-dot completed"></i>Labeled</span><span><i class="legend-dot"></i>Unlabeled</span><span><i class="legend-dot active"></i>Current</span></div><div id="question-grid" class="question-grid" aria-label="Jump to a pair"></div><p class="navigator-tip">Click a number to jump. Reopening a labeled pair restores the choice for the corresponding ad.</p></details><div class="annotation-principles"><strong>Judge independently</strong><p>Model sources and other annotators' labels are hidden. Changing the side order does not change the saved choice.</p></div><details class="file-details"><summary>Local data files</summary><dl id="file-paths"></dl></details></aside>
   </main>
   <div id="toast" class="toast" role="status" hidden></div>
 </body>

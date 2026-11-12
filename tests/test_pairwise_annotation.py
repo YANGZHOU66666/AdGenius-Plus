@@ -144,8 +144,8 @@ class PairwiseAnnotationTests(unittest.TestCase):
         self.assertEqual(second["presentation"], {"A": "cand_0_second", "B": "cand_0_first"})
         self.assertEqual(len(read_rows(self.result_path())), 1)
 
-    def test_tie_and_clear_are_distinct_and_clear_requires_current_record(self):
-        original = self.store.save(self.payload(choice="tie"))["annotation"]
+    def test_clear_removes_choice_and_requires_current_record(self):
+        original = self.store.save(self.payload(choice="A"))["annotation"]
         self.assert_human_record(original)
         payload = self.payload()
         self.assertEqual(payload["expected_annotation"], original)
@@ -153,6 +153,30 @@ class PairwiseAnnotationTests(unittest.TestCase):
         self.assertIsNone(response["annotation"])
         self.assertEqual(read_rows(self.result_path()), [])
         self.assertEqual(self.store.state("zhou")["annotations"], {})
+        self.assert_sources_unchanged()
+
+    def test_tie_save_is_rejected_without_changing_draft_or_existing_label(self):
+        state = self.store.state("zhou")
+        self.store.save_draft({
+            "annotator_id": "zhou", "pair_id": "pair_0",
+            "dataset_revision": state["dataset_revision"],
+            "expected_draft": None, "reason": "Needs review",
+        })
+        draft_path = self.annotations_dir / "pairwise_drafts_zhou.json"
+        draft_bytes = draft_path.read_bytes()
+        with self.assertRaises(annotation.APIError) as error:
+            self.store.save(self.payload(choice="tie"))
+        self.assertEqual(error.exception.status, 400)
+        self.assertFalse(self.result_path().exists())
+        self.assertEqual(draft_path.read_bytes(), draft_bytes)
+
+        original = self.store.save(self.payload(choice="B"))["annotation"]
+        label_bytes = self.result_path().read_bytes()
+        with self.assertRaises(annotation.APIError) as error:
+            self.store.save(self.payload(choice="tie"))
+        self.assertEqual(error.exception.status, 400)
+        self.assertEqual(self.result_path().read_bytes(), label_bytes)
+        self.assertEqual(self.store.state("zhou")["annotations"]["pair_0"], original)
         self.assert_sources_unchanged()
 
     def test_external_annotation_edits_are_visible_without_restarting(self):
@@ -234,7 +258,7 @@ class PairwiseAnnotationTests(unittest.TestCase):
         with self.assertRaises(annotation.APIError) as error:
             self.store.save_draft(stale)
         self.assertEqual(error.exception.status, 409)
-        payload = self.payload(choice="tie")
+        payload = self.payload(choice="B")
         completed = self.store.save(payload)["annotation"]
         current = self.store.state("zhou")
         self.assertEqual(current["annotations"]["pair_0"], completed)

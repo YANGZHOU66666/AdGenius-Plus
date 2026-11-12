@@ -9,7 +9,7 @@
     number: $("question-number"), entryStatus: $("entry-status"), pageNumber: $("page-number"),
     productDetails: $("product-details"), productTitle: $("product-title"), productInfo: $("product-information"),
     cardA: $("card-a"), cardB: $("card-b"), copyA: $("copy-a"), copyB: $("copy-b"),
-    chooseA: $("choose-a"), chooseB: $("choose-b"), chooseTie: $("choose-tie"), clear: $("clear-button"),
+    chooseA: $("choose-a"), chooseB: $("choose-b"), clear: $("clear-button"),
     reason: $("reason"), reasonHint: $("reason-hint"), saveCaption: $("save-caption"), savedTime: $("saved-time"),
     previous: $("previous"), next: $("next"), nextUnannotated: $("next-unannotated"),
     grid: $("question-grid"), navigatorCount: $("navigator-count"), filePaths: $("file-paths"), toast: $("toast"),
@@ -23,7 +23,7 @@
     choice: null, reason: "", dirty: false, writePending: 0, navBusy: false,
     conflict: null, saveError: null, debounceTimer: null, saveQueue: Promise.resolve(),
     pollTimer: null, toastTimer: null, pollPending: false, loadPending: false,
-    generation: 0, writeEpoch: 0,
+    generation: 0, writeEpoch: 0, advanceAfterSavePairId: null,
   };
 
   function apiError(status, message) {
@@ -64,7 +64,6 @@
   }
 
   function selectedId() {
-    if (app.choice === "tie") return null;
     if (app.choice === "A") return app.leftCandidate?.candidate_id || null;
     if (app.choice === "B") return app.rightCandidate?.candidate_id || null;
     return null;
@@ -101,6 +100,7 @@
   function initPairView({ shuffle = false } = {}) {
     const pair = currentPair();
     if (!pair) return;
+    app.advanceAfterSavePairId = null;
     if (shuffle || !app.leftCandidate ||
         !pair.candidates.some((candidate) => candidate.candidate_id === app.leftCandidate.candidate_id)) {
       randomOrientation(pair);
@@ -113,7 +113,7 @@
     const annotation = app.baselineAnnotation;
     if (annotation?.pairwise_result?.status === "success") {
       const winner = annotation.pairwise_result.winner_candidate_id;
-      app.choice = winner === null ? "tie" : winner === app.leftCandidate.candidate_id ? "A" : "B";
+      app.choice = winner === null ? null : winner === app.leftCandidate.candidate_id ? "A" : "B";
       app.reason = annotation.pairwise_result.reason || "";
     } else {
       app.choice = null;
@@ -138,30 +138,28 @@
     els.copyB.textContent = app.rightCandidate.text;
     els.chooseA.setAttribute("aria-pressed", String(app.choice === "A"));
     els.chooseB.setAttribute("aria-pressed", String(app.choice === "B"));
-    els.chooseTie.setAttribute("aria-pressed", String(app.choice === "tie"));
     els.cardA.classList.toggle("selected", app.choice === "A");
     els.cardB.classList.toggle("selected", app.choice === "B");
-    els.chooseTie.classList.toggle("selected", app.choice === "tie");
     els.clear.disabled = !app.baselineAnnotation && !app.baselineDraft && !app.choice && !app.reason;
     const complete = Boolean(app.baselineAnnotation?.pairwise_result?.status === "success");
-    els.entryStatus.textContent = complete ? "已标注" : app.baselineDraft?.reason ? "草稿已同步" : "未标注";
+    els.entryStatus.textContent = complete ? "Labeled" : app.baselineDraft?.reason ? "Draft saved" : "Unlabeled";
     els.entryStatus.classList.toggle("completed", complete);
     // A render after an in-flight save must not reset the textarea's caret or
     // discard characters typed after the request's snapshot was taken.
     if (els.reason.value !== app.reason) els.reason.value = app.reason;
-    els.reasonHint.textContent = app.choice ? "理由会和结论一起保存" : "未选择结论时，理由保存为草稿";
+    els.reasonHint.textContent = app.choice ? "Reason is saved with your choice" : "Without a choice, your reason is saved as a draft";
     if (app.writePending) {
-      els.saveCaption.textContent = "正在同步到本地文件…";
+      els.saveCaption.textContent = "Syncing to local files…";
     } else if (app.dirty) {
-      els.saveCaption.textContent = "有更改等待同步";
+      els.saveCaption.textContent = "Changes waiting to sync";
     } else if (complete) {
-      els.saveCaption.textContent = "结论已保存到本地文件";
+      els.saveCaption.textContent = "Choice saved to local file";
     } else if (app.baselineDraft?.reason) {
-      els.saveCaption.textContent = "理由草稿已保存；本条仍未标注";
+      els.saveCaption.textContent = "Reason draft saved; this pair is still unlabeled";
     } else {
-      els.saveCaption.textContent = "本条尚未标注";
+      els.saveCaption.textContent = "This pair is not labeled yet";
     }
-    els.savedTime.textContent = complete ? "已写入标注 JSONL" : "";
+    els.savedTime.textContent = complete ? "Saved to annotation JSONL" : "";
     els.previous.disabled = app.index === 0 || app.navBusy;
     els.next.disabled = app.index === app.state.pairs.length - 1 || app.navBusy;
     els.nextUnannotated.disabled = app.navBusy || !app.state.pairs.some((item) =>
@@ -177,7 +175,7 @@
     const drafts = app.state.pairs.filter((pair) => app.drafts[pair.pair_id]?.reason && !app.annotations[pair.pair_id]).length;
     els.done.textContent = String(completed);
     els.total.textContent = String(total);
-    els.progressCopy.textContent = drafts ? `${drafts} 条有未完成的理由草稿` : `${total - completed} 对待标注`;
+    els.progressCopy.textContent = drafts ? `${drafts} unfinished reason drafts` : `${total - completed} pairs remaining`;
     els.progressBar.style.width = `${total ? (completed / total) * 100 : 0}%`;
     els.navigatorCount.textContent = `${completed} / ${total}`;
     els.export.disabled = completed === 0;
@@ -191,8 +189,8 @@
       button.type = "button";
       button.className = "question-cell";
       button.textContent = String(index + 1).padStart(2, "0");
-      button.setAttribute("aria-label", `第 ${index + 1} 题，${app.annotations[pair.pair_id] ? "已标注" : app.drafts[pair.pair_id]?.reason ? "有草稿，未标注" : "未标注"}`);
-      button.title = `${pair.product_id} · ${app.annotations[pair.pair_id] ? "已标注" : app.drafts[pair.pair_id]?.reason ? "草稿" : "未标注"}`;
+      button.setAttribute("aria-label", `Pair ${index + 1}, ${app.annotations[pair.pair_id] ? "Labeled" : app.drafts[pair.pair_id]?.reason ? "Draft saved, unlabeled" : "Unlabeled"}`);
+      button.title = `${pair.product_id} · ${app.annotations[pair.pair_id] ? "Labeled" : app.drafts[pair.pair_id]?.reason ? "Draft" : "Unlabeled"}`;
       button.classList.toggle("completed", app.annotations[pair.pair_id]?.pairwise_result?.status === "success");
       button.classList.toggle("has-draft", Boolean(app.drafts[pair.pair_id]?.reason) && !app.annotations[pair.pair_id]);
       button.classList.toggle("current", index === app.index);
@@ -232,7 +230,7 @@
   function setConflict(title, message, remote, operation = app.conflict?.operation || "save") {
     app.conflict = { remote, operation };
     app.saveError = null;
-    setSync("error", "需要处理同步冲突");
+    setSync("error", "Resolve sync conflict");
     const actions = remote?.dataset_revision === app.datasetRevision ? ["load", "keep"] : ["load"];
     setNotice(title, message, actions);
     updateNavigationLock();
@@ -249,7 +247,6 @@
     els.reason.disabled = app.navBusy || app.loadPending || Boolean(app.conflict);
     els.chooseA.disabled = app.navBusy || app.loadPending || Boolean(app.conflict);
     els.chooseB.disabled = app.navBusy || app.loadPending || Boolean(app.conflict);
-    els.chooseTie.disabled = app.navBusy || app.loadPending || Boolean(app.conflict);
     els.annotatorInput.disabled = app.loadPending;
     els.annotatorForm.querySelector("button").disabled = app.loadPending;
   }
@@ -274,20 +271,20 @@
     // must not make the local/remote choice on behalf of the annotator.
     if (!initial && !force && app.conflict) {
       app.conflict.remote = payload;
-      setConflict("本地文件中的版本已变化", datasetChanged
-        ? "商品或候选文件已变化。请加载新数据集版本后继续。"
-        : "你的当前修改仍保留。请选择加载文件版本，或基于最新文件版本重新保存。", payload);
+      setConflict("The file version has changed", datasetChanged
+        ? "Product or candidate files have changed. Load the updated dataset to continue."
+        : "Your changes are still here. Load the file version, or save your changes against the latest version.", payload);
       return;
     }
 
     if (!initial && !force && (recordChanged || datasetChanged) && app.dirty) {
       if (app.writePending) return;
       app.conflict = { remote: payload };
-      setSync("error", "需要处理同步冲突");
+      setSync("error", "Resolve sync conflict");
       const sameDataset = payload.dataset_revision === app.datasetRevision;
-      setNotice("此条在其他位置已更新", sameDataset
-        ? "你的修改仍保留在页面中。请选择加载文件版本，或将当前修改基于最新版本重新保存。"
-        : "商品或候选文件已变化。你的当前修改仍保留；请加载新数据集版本后继续。",
+      setNotice("This pair was updated elsewhere", sameDataset
+        ? "Your changes are still on this page. Load the file version, or save your changes against the latest version."
+        : "Product or candidate files have changed. Your changes are still here; load the updated dataset to continue.",
       sameDataset ? ["load", "keep"] : ["load"]);
       renderProgress();
       renderGrid();
@@ -313,7 +310,7 @@
         app.baselineDraft = app.drafts[active.pair_id] || null;
         const winner = app.baselineAnnotation?.pairwise_result?.winner_candidate_id;
         app.choice = app.baselineAnnotation
-          ? (winner === null ? "tie" : winner === app.leftCandidate.candidate_id ? "A" : "B")
+          ? (winner === null ? null : winner === app.leftCandidate.candidate_id ? "A" : "B")
           : null;
         app.reason = app.baselineAnnotation?.pairwise_result?.reason
           || app.baselineDraft?.reason || "";
@@ -327,13 +324,13 @@
 
     if (oldDatasetRevision !== null && datasetChanged) {
       app.conflict = null;
-      setNotice("数据集文件已更新", "条目列表已从磁盘重新载入。", []);
+      setNotice("Dataset files updated", "The pair list has been reloaded from disk.", []);
     } else if (oldAnnotationRevision !== payload.annotations_revision
         || oldDraftRevision !== payload.drafts_revision) {
       if (!app.dirty && !app.saveError) setNotice();
     }
-    if (app.saveError) setSync("error", "保存失败，等待重试");
-    else if (!app.conflict) setSync("connected", "已同步到本地文件");
+    if (app.saveError) setSync("error", "Save failed; retry required");
+    else if (!app.conflict) setSync("connected", "Synced to local files");
     updateNavigationLock();
   }
 
@@ -359,7 +356,7 @@
     clearInterval(app.pollTimer);
     app.pollTimer = setInterval(() => {
       syncState().catch((error) => {
-        setSync("error", "本地同步暂不可用");
+        setSync("error", "Local sync is unavailable");
         if (!app.state) showLoadingError(error);
       });
     }, 1000);
@@ -367,7 +364,7 @@
 
   function showLoadingError(error) {
     els.loading.classList.add("error");
-    els.loadingMessage.textContent = `无法读取标注数据：${error.message}。请确认本地服务已启动。`;
+    els.loadingMessage.textContent = `Could not load annotation data: ${error.message}. Check that the local server is running.`;
     els.retryLoad.hidden = false;
   }
 
@@ -380,9 +377,9 @@
     els.panel.hidden = true;
     els.loading.hidden = false;
     els.loading.classList.remove("error");
-    els.loadingMessage.textContent = "正在读取本地商品与候选文案…";
+    els.loadingMessage.textContent = "Loading products and candidate ads…";
     els.retryLoad.hidden = true;
-    setSync("saving", "连接本地文件…");
+    setSync("saving", "Connecting to local files…");
     try {
       const payload = await fetchState();
       if (generation !== app.generation || annotatorId !== app.annotatorId) return;
@@ -399,11 +396,11 @@
       initPairView({ shuffle });
       renderPaths();
       startPolling();
-      setSync("connected", "已同步到本地文件");
-      if (!payload.pairs.length) showLoadingError(new Error("没有可标注的 pair"));
+      setSync("connected", "Synced to local files");
+      if (!payload.pairs.length) showLoadingError(new Error("No pairs available for annotation"));
     } catch (error) {
       if (generation !== app.generation) return;
-      setSync("error", "无法连接本地文件");
+      setSync("error", "Could not connect to local files");
       showLoadingError(error);
     } finally {
       if (generation === app.generation) {
@@ -421,9 +418,9 @@
     app.writeEpoch += 1;
     app.writePending += on ? 1 : -1;
     app.writePending = Math.max(0, app.writePending);
-    if (app.writePending) setSync("saving", "正在写入本地文件…");
-    else if (app.saveError) setSync("error", "保存失败，等待重试");
-    else if (!app.conflict) setSync("connected", "已同步到本地文件");
+    if (app.writePending) setSync("saving", "Saving to local files…");
+    else if (app.saveError) setSync("error", "Save failed; retry required");
+    else if (!app.conflict) setSync("connected", "Synced to local files");
     if (currentPair()) renderPair();
     updateNavigationLock();
   }
@@ -431,11 +428,11 @@
   async function refreshAfterConflict(operation = "save") {
     try {
       const payload = await fetchState();
-      setConflict("此条在其他位置已更新", "你的当前修改仍保留。选择加载磁盘版本，或基于最新文件版本重新保存。", payload, operation);
+      setConflict("This pair was updated elsewhere", "Your changes are still here. Load the disk version, or save your changes against the latest file version.", payload, operation);
     } catch (error) {
       app.saveError = { operation, message: error.message };
-      setNotice("保存时发生冲突", `${error.message}。当前页面修改仍保留，请重新连接后处理。`, ["retry"]);
-      setSync("error", "保存冲突待处理");
+      setNotice("Save conflict", `${error.message}. Your changes are still on this page. Reconnect to resolve this.`, ["retry"]);
+      setSync("error", "Save conflict needs attention");
     }
   }
 
@@ -446,11 +443,10 @@
       if (!snapshot) return;
       const pairId = snapshot.pair_id;
       const needsAnnotation = Boolean(snapshot.choice);
+      let advance = false;
       setSaving(true);
       try {
         if (needsAnnotation) {
-          const winnerId = snapshot.choice === "tie" ? null
-            : snapshot.choice === "A" ? snapshot.presentation.A : snapshot.presentation.B;
           const payload = await request("/api/annotation", {
             method: "PUT",
             body: JSON.stringify({
@@ -500,22 +496,32 @@
         renderProgress();
         renderGrid();
         renderPair();
+        advance = needsAnnotation && sameLocal && app.advanceAfterSavePairId === pairId;
         if (!sameLocal) queueSave(0);
       } catch (error) {
         if (error.status === 409) {
           await refreshAfterConflict();
         } else {
           app.saveError = { operation: "save", message: error.message };
-          setSync("error", "保存失败");
-          setNotice("未能保存到本地文件", `${error.message}。你的修改仍保留在当前页面。`, ["retry"]);
+          setSync("error", "Save failed");
+          setNotice("Could not save to local file", `${error.message}. Your changes are still on this page.`, ["retry"]);
         }
       } finally {
         setSaving(false);
       }
+      if (advance && !app.navBusy && !app.dirty && !app.saveError && !app.conflict
+          && currentPair()?.pair_id === pairId) {
+        app.advanceAfterSavePairId = null;
+        const nextIndex = nextUnannotatedIndex();
+        // This save already flushed the current values. Calling navigateTo here
+        // would wait on this same save queue, so switch the view directly.
+        if (nextIndex >= 0) showPair(nextIndex);
+        else showToast("All pairs are labeled");
+      }
     }).catch((error) => {
       app.saveError = { operation: "save", message: error.message };
-      setSync("error", "保存队列发生错误");
-      setNotice("保存失败", `${error.message}。你的修改仍保留在当前页面。`, ["retry"]);
+      setSync("error", "Save queue error");
+      setNotice("Save failed", `${error.message}. Your changes are still on this page.`, ["retry"]);
     });
     return app.saveQueue;
   }
@@ -540,8 +546,9 @@
   }
 
   function choose(choice) {
-    if (app.navBusy || app.conflict) return;
+    if (!["A", "B"].includes(choice) || app.navBusy || app.conflict) return;
     app.choice = choice;
+    app.advanceAfterSavePairId = currentPair()?.pair_id || null;
     app.saveError = null;
     app.dirty = true;
     renderPair();
@@ -553,7 +560,7 @@
     app.dirty = true;
     if (app.navBusy || app.conflict) return;
     app.saveError = null;
-    els.saveCaption.textContent = "理由已更改，正在同步…";
+    els.saveCaption.textContent = "Reason updated; syncing…";
     queueSave(320);
   }
 
@@ -566,29 +573,41 @@
     renderPair();
     const saved = await flushCurrent();
     if (!saved) { app.navBusy = false; renderPair(); return; }
-    app.index = target;
+    app.navBusy = false;
+    showPair(target);
+  }
+
+  function showPair(index) {
+    app.index = index;
     app.leftCandidate = null;
     initPairView({ shuffle: true });
-    app.navBusy = false;
     renderPair();
     renderGrid();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function navigateNextUnannotated() {
-    if (!app.state) return;
+  function nextUnannotatedIndex() {
+    if (!app.state) return -1;
     for (let offset = 1; offset < app.state.pairs.length; offset += 1) {
       const index = (app.index + offset) % app.state.pairs.length;
       const pair = app.state.pairs[index];
-      if (!app.annotations[pair.pair_id]) return navigateTo(index);
+      if (!app.annotations[pair.pair_id]) return index;
     }
-    showToast("所有 pair 都已标注");
+    return -1;
+  }
+
+  async function navigateNextUnannotated() {
+    if (!app.state) return;
+    const index = nextUnannotatedIndex();
+    if (index >= 0) return navigateTo(index);
+    showToast("All pairs are labeled");
   }
 
   async function clearAnnotation() {
     if (!app.state || app.navBusy || app.conflict) return;
     const pair = currentPair();
     if (!pair) return;
+    app.advanceAfterSavePairId = null;
     clearTimeout(app.debounceTimer);
     app.saveError = null;
     app.navBusy = true;
@@ -626,13 +645,13 @@
       setNotice();
       renderPair();
       renderGrid();
-      showToast("本条结论和草稿已清除");
+      showToast("Choice and draft cleared");
     } catch (error) {
       if (error.status === 409) await refreshAfterConflict("clear");
       else {
         app.saveError = { operation: "clear", message: error.message };
-        setSync("error", "清除失败");
-        setNotice("未能清除", `${error.message}。本地文件未确认更新。`, ["retry"]);
+        setSync("error", "Clear failed");
+        setNotice("Could not clear annotation", `${error.message}. The local file update could not be confirmed.`, ["retry"]);
       }
     } finally {
       setSaving(false);
@@ -669,13 +688,13 @@
       app.baselineDraft = app.drafts[pair.pair_id] || null;
       const winner = app.baselineAnnotation?.pairwise_result?.winner_candidate_id;
       app.choice = app.baselineAnnotation
-        ? (winner === null ? "tie" : winner === app.leftCandidate.candidate_id ? "A" : "B") : null;
+        ? (winner === null ? null : winner === app.leftCandidate.candidate_id ? "A" : "B") : null;
       app.reason = app.baselineAnnotation?.pairwise_result?.reason || app.baselineDraft?.reason || "";
       app.dirty = false;
     }
     app.conflict = null;
     setNotice();
-    setSync("connected", "已同步到本地文件");
+    setSync("connected", "Synced to local files");
     renderPair(); renderGrid(); renderProgress(); updateNavigationLock();
   }
 
@@ -695,7 +714,7 @@
     app.baselineDraft = app.drafts[pair.pair_id] || null;
     if (!app.choice && app.baselineAnnotation?.pairwise_result?.status === "success") {
       const winner = app.baselineAnnotation.pairwise_result.winner_candidate_id;
-      app.choice = winner === null ? "tie"
+      app.choice = winner === null ? null
         : winner === app.leftCandidate.candidate_id ? "A" : "B";
     }
     app.conflict = null;
@@ -707,7 +726,7 @@
     }
     app.dirty = true;
     setNotice();
-    setSync("saving", "基于文件新版本保存…");
+    setSync("saving", "Saving against the latest file version…");
     queueSave(0);
   }
 
@@ -722,21 +741,21 @@
     anchor.download = `pairwise_annotations_${app.annotatorId}.jsonl`;
     anchor.click();
     URL.revokeObjectURL(anchor.href);
-    showToast(`已导出 ${records.length} 条已标注结果`);
+    showToast(`Exported ${records.length} annotations`);
   }
 
   async function switchAnnotator(event) {
     event.preventDefault();
     const requested = els.annotatorInput.value.trim();
     if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(requested)) {
-      showToast("标注者 ID 需以字母或数字开头，后续可使用字母、数字、_ 或 -");
+      showToast("Annotator ID must start with a letter or digit and contain only letters, digits, _ or -");
       els.annotatorInput.value = app.annotatorId;
       return;
     }
     if (requested === app.annotatorId) return;
     if (!(await flushCurrent())) {
       els.annotatorInput.value = app.annotatorId;
-      showToast("请先解决当前保存状态，再切换标注者");
+      showToast("Resolve the current save status before switching annotators");
       return;
     }
     app.annotatorId = requested;
@@ -747,7 +766,6 @@
 
   els.chooseA.addEventListener("click", () => choose("A"));
   els.chooseB.addEventListener("click", () => choose("B"));
-  els.chooseTie.addEventListener("click", () => choose("tie"));
   els.reason.addEventListener("input", editReason);
   els.previous.addEventListener("click", () => navigateTo(app.index - 1));
   els.next.addEventListener("click", () => navigateTo(app.index + 1));
@@ -773,7 +791,6 @@
     if (event.key === "ArrowRight" && app.index < (app.state?.pairs.length || 0) - 1) navigateTo(app.index + 1);
     if (event.key.toLowerCase() === "a") choose("A");
     if (event.key.toLowerCase() === "b") choose("B");
-    if (event.key.toLowerCase() === "t") choose("tie");
   });
 
   window.addEventListener("beforeunload", (event) => {

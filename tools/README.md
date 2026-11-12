@@ -14,6 +14,26 @@
 
 默认加载下面的 gold v1 商品和 100 对候选，可通过 `--pairs`、`--products`、`--annotations-dir` 指定其他本地文件。`--annotation-set-id` 和 `--protocol-version` 用于指定标注批次与规则版本。
 
+## Completed v2 annotation batch
+
+The v2 batch contains 100 frozen products, one randomly sampled candidate pair per product, and 100 independent human preference annotations by `zhou`. Each pair was sampled from four model candidates using seed 42. All annotations are successful A/B choices with no ties and use the human variant of [PairwiseResult](../metadata/schemas/pairwise_result.schema.json), with `annotation_set_id=gold_pairwise_v2` and `protocol_version=pairwise-v0.1`. These are one annotator's labels; a second independent annotation and any consensus labels are separate records.
+
+The source products, frozen pairs, sampling manifest, and completed labels are stored together in [`data/eval/gold/v2/`](../data/eval/gold/v2/). The manifest records the source generation hashes and sampling procedure. The English interface preserves the saved winner when A/B positions are randomized.
+
+To open this batch from the repository root:
+
+```sh
+.venv/bin/python tools/pairwise_annotation.py \
+  --pairs data/eval/gold/v2/candidate_pairs.jsonl \
+  --products data/eval/gold/v2/product_items.jsonl \
+  --annotations-dir data/eval/gold/v2 \
+  --annotator zhou \
+  --annotation-set-id gold_pairwise_v2 \
+  --protocol-version pairwise-v0.1
+```
+
+The completed labels are in [`pairwise_annotations_zhou.jsonl`](../data/eval/gold/v2/pairwise_annotations_zhou.jsonl). Reasons are optional. Compare labels using `pair_id` and `winner_candidate_id`, since A/B positions can differ between annotators.
+
 ## 数据位置
 
 - 商品资料：[product_items.jsonl](../data/eval/gold/v1/product_items.jsonl)。
@@ -24,23 +44,25 @@
 
 ## 实时同步与翻页
 
-选择 A、B 或平局后立即保存；理由输入停顿约 300 毫秒后自动保存。翻页和跳题前会先完成当前保存，页面显示正在保存、已保存或错误状态。每条写入使用临时文件和原子替换，避免留下半条 JSONL。
+选择 A 或 B 后立即保存，保存成功后自动跳到下一条未标注，跳过已标注项并循环查找前面的空缺；全部完成时停留并提示。需要填写理由时可先写理由再选择，也可返回已标注条目补充理由，单独修改理由不会触发自动跳转。理由输入停顿约 300 毫秒后自动保存；仅保存草稿、保存失败或发生冲突时留在当前条目。
+
+翻页和跳题前会先完成当前保存，页面显示正在保存、已保存或错误状态。每条写入使用临时文件和原子替换，避免留下半条 JSONL。
 
 页面每秒重新读取本地文件：外部修改商品、候选或标注结果后自动反映在页面和目录中。文件格式有误时显示错误并停止保存，避免覆盖损坏内容；多个页面同时修改同一条时提示冲突，让标注者明确选择加载文件版本或保留当前修改再保存。
 
 每次进入一题（包括返回、目录跳转和刷新）重新随机左右位置；同一题停留期间不会因后台同步反复调换。已经标注的结果按获胜候选 ID 恢复，文案换边后选中状态跟随文案。A 对应当次左侧，B 对应当次右侧，实际映射随保存写入 `presentation`。
 
-题目目录列出全部条目，已标注、未标注及当前题使用颜色和状态标识区分；点击编号可直接跳转，也可以使用上一条、下一条。清除标注会恢复为未标注，不转换成平局。
+题目目录列出全部条目，已标注、未标注及当前题使用颜色和状态标识区分；点击编号可直接跳转，也可以使用上一条、下一条。清除标注会恢复为未标注。
 
 ## 页面设计
 
-一次展示一个 pair：商品资料、广告 A、广告 B，以及 `A 更好 / B 更好 / 平局` 三个选项和简短理由输入框。商品资料使用与生成时一致的字段和文本渲染；商品资料与广告保留英文原文，理由可用中文。
+一次展示一个 pair：商品资料、广告 A、广告 B，以及 `A 更好 / B 更好` 两个选项和简短理由输入框。商品资料使用与生成时一致的字段和文本渲染；商品资料与广告保留英文原文，理由可用中文。快捷键 A、B 选择对应文案，左右方向键翻页。
 
 隐藏模型名称、能力档位、对方标签和模型评委结果。两条广告使用相同排版，不显示来源模型的调用信息。
 
 支持上一条、下一条、题目目录跳转及自动保存。题目顺序保持稳定，A/B 位置按上文约定每次进入随机；两位标注者的进度和结果独立保存。
 
-需要待复核时可以只保存理由草稿、暂不选择结论，此题仍为未标注，不自动转换成平局。
+需要待复核时可以只保存理由草稿、暂不选择结论，此题仍为未标注。
 
 ## 标注流程建议
 
@@ -50,8 +72,8 @@
 
 建议将判断问题固定为：**在给定商品资料下，哪条广告更适合作为商品展示文案？** 依次考虑事实是否有依据、是否传达具体有用的商品信息，以及表达是否清楚、自然、简洁；不要求覆盖全部 features。
 
-平局表示没有明显质量差距。两条都不好也可以选出相对更好的一条；尚未核实或拿不准时先标待复核。
+不提供平局选项，最终结论需要在两条中选择相对更好的一条。两条都不好也按此原则判断；尚未核实或拿不准时先保留理由草稿。
 
-统计一致率时按 `pair_id` 对齐，并比较实际获胜的 `winner_candidate_id`，平局单独对齐；不能直接比较 A/B 字母，因为两位标注者的展示映射可能不同。
+统计一致率时按 `pair_id` 对齐，并比较实际获胜的 `winner_candidate_id`；不能直接比较 A/B 字母，因为两位标注者的展示映射可能不同。
 
 本文件是工具与流程的设计说明。正式使用的标注说明需在试标后冻结并记录 `protocol_version`，与对应 gold 数据一同保存。

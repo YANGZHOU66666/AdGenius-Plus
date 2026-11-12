@@ -44,7 +44,7 @@ def _read_jsonl(path: Path, *, optional: bool = False) -> tuple[list[dict], byte
     except FileNotFoundError:
         if optional:
             return [], b""
-        raise APIError(422, f"找不到输入文件：{path}") from None
+        raise APIError(422, f"Input file not found: {path}") from None
     rows = []
     try:
         for number, line in enumerate(raw.decode("utf-8").splitlines(), 1):
@@ -52,10 +52,10 @@ def _read_jsonl(path: Path, *, optional: bool = False) -> tuple[list[dict], byte
                 continue
             row = json.loads(line)
             if not isinstance(row, dict):
-                raise ValueError(f"第 {number} 行不是 JSON 对象")
+                raise ValueError(f"Line {number} is not a JSON object")
             rows.append(row)
     except (UnicodeDecodeError, ValueError) as error:
-        raise APIError(422, f"文件格式有误，未修改文件：{path.name}（{error}）") from None
+        raise APIError(422, f"Invalid file format; file left unchanged: {path.name} ({error})") from None
     return rows, raw
 
 
@@ -91,7 +91,7 @@ class AnnotationStore:
 
     def _annotator(self, value: Any) -> str:
         if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", value):
-            raise APIError(400, "标注者 ID 请使用 1–64 位英文字母、数字、下划线或短横线")
+            raise APIError(400, "Annotator ID must be 1–64 letters, digits, underscores, or hyphens, starting with a letter or digit")
         return value
 
     def _paths(self, annotator: str) -> tuple[Path, Path]:
@@ -112,13 +112,13 @@ class AnnotationStore:
         pairs, pair_raw = _read_jsonl(self.pairs_path)
         products, product_raw = _read_jsonl(self.products_path)
         if not pairs:
-            raise APIError(422, "候选对文件为空")
+            raise APIError(422, "The candidate pairs file is empty")
         product_map = {}
         for product in products:
             identifier = product.get("product_id")
             if (not _nonblank(identifier) or identifier in product_map
                     or not isinstance(product.get("product_info"), dict)):
-                raise APIError(422, "商品资料中存在缺失、重复的 product_id 或无效 product_info")
+                raise APIError(422, "Product data contains a missing or duplicate product_id, or invalid product_info")
             product_map[identifier] = product
         pair_map, seen_candidates, visible = {}, set(), []
         for pair in pairs:
@@ -128,16 +128,16 @@ class AnnotationStore:
                     or not _nonblank(pair_id) or pair_id in pair_map
                     or not _nonblank(product_id) or product_id not in product_map
                     or not isinstance(candidates, list) or len(candidates) != 2):
-                raise APIError(422, "候选对格式有误、pair_id 重复或缺少对应商品资料")
+                raise APIError(422, "Invalid candidate pair, duplicate pair_id, or missing product data")
             candidate_ids = set()
             for candidate in candidates:
                 if (not isinstance(candidate, dict) or set(candidate) != {"candidate_id", "text"}
                         or not _nonblank(candidate.get("candidate_id"))
                         or not _nonblank(candidate.get("text"))):
-                    raise APIError(422, f"候选文案格式有误：{pair_id}")
+                    raise APIError(422, f"Invalid candidate text: {pair_id}")
                 candidate_ids.add(candidate["candidate_id"])
             if len(candidate_ids) != 2 or candidate_ids & seen_candidates:
-                raise APIError(422, "候选 ID 重复；请检查冻结的候选对数据")
+                raise APIError(422, "Duplicate candidate IDs; check the frozen candidate pairs")
             seen_candidates.update(candidate_ids)
             pair_map[pair_id] = pair
             product = product_map[product_id]
@@ -160,19 +160,20 @@ class AnnotationStore:
                     or row.get("annotator_id") != annotator
                     or row.get("annotation_set_id") != self.annotation_set_id
                     or row.get("protocol_version") != self.protocol_version):
-                raise APIError(422, f"标注文件身份、协议或条目格式不匹配：{path.name}")
+                raise APIError(422, f"Annotation identity, protocol, or record format mismatch: {path.name}")
             self._presentation(row.get("presentation"), pair_map[pair_id])
             result = row.get("pairwise_result")
+            # Preserve historical tie records; new submissions only accept A/B.
             if (not isinstance(result, dict)
                     or set(result) != {"status", "choice", "winner_candidate_id", "reason", "error"}
                     or result.get("status") != "success" or result.get("error") is not None
                     or not isinstance(result.get("choice"), str) or result["choice"] not in {"A", "B", "tie"}
                     or not (result.get("reason") is None or isinstance(result.get("reason"), str))):
-                raise APIError(422, f"标注结论格式有误：{path.name} / {pair_id}")
+                raise APIError(422, f"Invalid annotation result: {path.name} / {pair_id}")
             winner = (None if result["choice"] == "tie"
                       else row["presentation"][result["choice"]])
             if result.get("winner_candidate_id") != winner:
-                raise APIError(422, f"标注的 choice 与候选 ID 不一致：{pair_id}")
+                raise APIError(422, f"Annotation choice does not match the candidate ID: {pair_id}")
             annotations[pair_id] = row
             ids.add(row["annotation_id"])
         return annotations, raw
@@ -186,13 +187,13 @@ class AnnotationStore:
         try:
             drafts = json.loads(raw)
             if not isinstance(drafts, dict):
-                raise ValueError("草稿必须是对象")
+                raise ValueError("Drafts must be a JSON object")
             for pair_id, draft in drafts.items():
                 if (pair_id not in pair_map or not isinstance(draft, dict)
                         or set(draft) != {"reason"} or not isinstance(draft["reason"], str)):
-                    raise ValueError("草稿条目格式有误或不属于当前数据集")
+                    raise ValueError("Invalid draft record or draft not in the current dataset")
         except (ValueError, UnicodeDecodeError) as error:
-            raise APIError(422, f"草稿文件格式有误，未修改：{path.name}（{error}）") from None
+            raise APIError(422, f"Invalid draft file; file left unchanged: {path.name} ({error})") from None
         return drafts, raw
 
     def _presentation(self, presentation: Any, pair: dict) -> None:
@@ -200,7 +201,7 @@ class AnnotationStore:
         if (not isinstance(presentation, dict) or set(presentation) != {"A", "B"}
                 or not all(isinstance(value, str) for value in presentation.values())
                 or set(presentation.values()) != expected):
-            raise APIError(400, "A/B 映射必须恰好包含本题的两个不同候选")
+            raise APIError(400, "The A/B mapping must contain exactly the two distinct candidates for this pair")
 
     def state(self, annotator_id: str) -> dict:
         annotator = self._annotator(annotator_id)
@@ -220,10 +221,10 @@ class AnnotationStore:
         annotator = self._annotator(payload.get("annotator_id"))
         _, pairs, revision = self._dataset()
         if payload.get("dataset_revision") != revision:
-            raise APIError(409, "商品或候选对文件已更新，请先加载磁盘上的最新内容")
+            raise APIError(409, "Product or candidate pair files have changed; load the latest version from disk first")
         pair_id = payload.get("pair_id")
         if not isinstance(pair_id, str) or pair_id not in pairs:
-            raise APIError(400, "找不到该候选对")
+            raise APIError(400, "Candidate pair not found")
         annotations, raw = self._annotations(annotator, pairs)
         return annotator, pairs, pairs[pair_id], annotations, raw
 
@@ -245,12 +246,12 @@ class AnnotationStore:
             _, pairs, pair, annotations, _ = self._context(payload)
             pair_id = pair["pair_id"]
             if "expected_annotation" not in payload or payload["expected_annotation"] != annotations.get(pair_id):
-                raise APIError(409, "这条标注已被本地文件或其他页面修改，请先核对最新版本")
+                raise APIError(409, "This annotation was changed on disk or in another page; review the latest version first")
             presentation, choice, reason = payload.get("presentation"), payload.get("choice"), payload.get("reason")
             self._presentation(presentation, pair)
-            if (not isinstance(choice, str) or choice not in {"A", "B", "tie"}
+            if (not isinstance(choice, str) or choice not in {"A", "B"}
                     or not (reason is None or isinstance(reason, str))):
-                raise APIError(400, "请选择 A、B 或平局；理由必须是文本")
+                raise APIError(400, "Choose A or B; the reason must be text")
             self._drafts(annotator, pairs)  # Validate before touching either file.
             previous = annotations.get(pair_id)
             record = {"annotation_id": previous["annotation_id"] if previous else f"human_pw_{uuid.uuid4().hex}",
@@ -258,7 +259,7 @@ class AnnotationStore:
                       "pair_id": pair_id, "annotator_id": annotator,
                       "protocol_version": self.protocol_version, "presentation": presentation,
                       "pairwise_result": {"status": "success", "choice": choice,
-                                          "winner_candidate_id": None if choice == "tie" else presentation[choice],
+                                          "winner_candidate_id": presentation[choice],
                                           "reason": reason, "error": None}}
             annotations[pair_id] = record
             raw = self._save_annotations(annotator, annotations, pairs)
@@ -271,7 +272,7 @@ class AnnotationStore:
             _, pairs, pair, annotations, _ = self._context(payload)
             pair_id = pair["pair_id"]
             if "expected_annotation" not in payload or payload["expected_annotation"] != annotations.get(pair_id):
-                raise APIError(409, "这条标注已被修改，请先加载磁盘上的最新内容")
+                raise APIError(409, "This annotation has changed; load the latest version from disk first")
             self._drafts(annotator, pairs)
             annotations.pop(pair_id, None)
             raw = self._save_annotations(annotator, annotations, pairs)
@@ -284,13 +285,13 @@ class AnnotationStore:
             _, pairs, pair, annotations, _ = self._context(payload)
             pair_id = pair["pair_id"]
             if pair_id in annotations:
-                raise APIError(409, "本题已有标注结论，请重新加载后编辑结论的理由")
+                raise APIError(409, "This pair already has an annotation; reload before editing its reason")
             drafts, _ = self._drafts(annotator, pairs)
             if "expected_draft" not in payload or payload["expected_draft"] != drafts.get(pair_id):
-                raise APIError(409, "这条草稿已被修改，请先加载磁盘上的最新内容")
+                raise APIError(409, "This draft has changed; load the latest version from disk first")
             reason = payload.get("reason")
             if not isinstance(reason, str):
-                raise APIError(400, "理由必须是文本")
+                raise APIError(400, "The reason must be text")
             if reason:
                 drafts[pair_id] = {"reason": reason}
             else:
@@ -336,42 +337,42 @@ def make_server(store: AnnotationStore, host: str = "127.0.0.1", port: int = 0,
                              "/style.css": ("style.css", "text/css"),
                              "/app.js": ("app.js", "text/javascript")}
                 if url.path not in filenames:
-                    raise APIError(404, "找不到这个地址")
+                    raise APIError(404, "Page not found")
                 filename, content_type = filenames[url.path]
                 self._send(200, (assets / filename).read_bytes(), f"{content_type}; charset=utf-8")
             except APIError as error:
                 self._json(error.status, {"error": str(error)})
             except OSError as error:
-                self._json(500, {"error": f"本地文件读写失败：{error}"})
+                self._json(500, {"error": f"Unable to read or write local files: {error}"})
 
         def _mutate(self, method: str) -> None:
             try:
                 origin = self.headers.get("Origin")
                 if origin and origin != f"http://{self.headers.get('Host')}":
-                    raise APIError(403, "请从本地标注页面保存")
+                    raise APIError(403, "Save from the local annotation page")
                 if self.headers.get_content_type() != "application/json":
-                    raise APIError(415, "请求必须使用 application/json")
+                    raise APIError(415, "The request must use application/json")
                 length = int(self.headers.get("Content-Length", "0"))
                 if not 0 < length <= 1_000_000:
-                    raise APIError(400, "请求内容为空或过大")
+                    raise APIError(400, "The request body is empty or too large")
                 try:
                     payload = json.loads(self.rfile.read(length))
                     if not isinstance(payload, dict):
                         raise ValueError()
                 except (ValueError, UnicodeDecodeError):
-                    raise APIError(400, "请求必须是 JSON 对象") from None
+                    raise APIError(400, "The request must be a JSON object") from None
                 path = urlsplit(self.path).path
                 operations = {("PUT", "/api/annotation"): store.save,
                               ("DELETE", "/api/annotation"): store.delete,
                               ("PUT", "/api/draft"): store.save_draft}
                 operation = operations.get((method, path))
                 if operation is None:
-                    raise APIError(404, "找不到这个操作")
+                    raise APIError(404, "Operation not found")
                 self._json(200, operation(payload))
             except APIError as error:
                 self._json(error.status, {"error": str(error)})
             except (OSError, ValueError) as error:
-                self._json(500, {"error": f"未能保存本地文件：{error}"})
+                self._json(500, {"error": f"Unable to save local files: {error}"})
 
         def do_PUT(self) -> None:
             self._mutate("PUT")
@@ -401,10 +402,10 @@ def main(argv: list[str] | None = None) -> int:
         server = make_server(store, port=args.port, default_annotator=args.annotator)
     except (APIError, OSError) as error:
         parser.error(str(error))
-    print(f"Pairwise 标注页面：http://127.0.0.1:{server.server_port}/?annotator_id={args.annotator}", flush=True)
-    print(f"共 {len(initial['pairs'])} 对；当前标注者已完成 {len(initial['annotations'])} 对", flush=True)
-    print(f"标注结果：{initial['paths']['annotations']}", flush=True)
-    print("保持终端运行；按 Ctrl+C 停止。", flush=True)
+    print(f"Pairwise annotation: http://127.0.0.1:{server.server_port}/?annotator_id={args.annotator}", flush=True)
+    print(f"{len(initial['pairs'])} pairs; current annotator completed {len(initial['annotations'])}", flush=True)
+    print(f"Annotations: {initial['paths']['annotations']}", flush=True)
+    print("Keep this terminal running; press Ctrl+C to stop.", flush=True)
     try:
         server.serve_forever(poll_interval=0.25)
     except KeyboardInterrupt:
