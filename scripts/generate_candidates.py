@@ -2,6 +2,8 @@
 
 The script uses the shared LLM wrapper and writes one GenerationResult JSONL
 and one calls JSONL per model. It does not create pairs or call a judge.
+Defaults read the 100 frozen gold products and write four model outputs to
+artifacts/eval/gold_generation/v2/ using the current short-copy prompt.
 Defaults select four live models;
 explicitly select ``--models mock`` for a dry run without API calls.
 """
@@ -26,99 +28,48 @@ from typing import Any
 from dotenv import load_dotenv
 
 from adgenius.shared.llm import LLMClient, LLMError, ModelConfig
+from adgenius.shared.product import _as_text, render_product_information as _product_prompt
 
 
 DEFAULT_MODELS = ("qwen_local", "gemma_31b", "glm53_flash", "longcat")
-SYSTEM_PROMPT = (
-    "You are writing short English promotional copy for an e-commerce product "
-    "listing.\n\n"
-    "Write one or two concise sentences that tell a shopper what the product "
-    "is and communicate one or two specific, useful product facts. Prefer "
-    "concrete details about the product's function, quantity, capacity, "
-    "material, size, compatibility, or stated use when available.\n\n"
-    "Use only information supported by the supplied product information. Do "
-    "not invent or infer specifications, benefits, guarantees, comparisons, "
-    "rankings, ratings, or customer outcomes. If the product information is "
-    "limited, keep the copy brief and factual rather than guessing.\n\n"
-    "Use clear, natural, consumer-facing language with a modest promotional "
-    "tone. Return only the promotional copy, with no title, bullets, quotation "
-    "marks, or explanation."
-)
+DEFAULT_INPUT = Path("data/eval/gold/v1/product_items.jsonl")
+DEFAULT_OUTPUT_DIR = Path("artifacts/eval/gold_generation/v2")
+SYSTEM_PROMPT = """You write concise English promotional copy for e-commerce product cards.
 
-# These fields are historical, commercial, or media metadata rather than
-# stable product facts for this text-only generation task.
-_EXCLUDED_DETAIL_KEYS = {
-    "best sellers rank",
-    "date first available",
-    "is discontinued by manufacturer",
-    "manufacturer",
-    "manufacturer part number",
-    "item model number",
-}
+Write a clear, engaging blurb that helps shoppers quickly understand
+the product and what makes it relevant to their needs.
 
+Content and composition:
+- You do not need to cover all supplied features or details.
+  Select the information you consider most important to shoppers
+  and most suitable for a short product ad. Leave out less relevant
+  details rather than trying to fit everything into the copy.
+- Organize the details into a coherent, natural message. Combine related
+  information smoothly and avoid a list-like sequence of specifications.
+- Give each detail a clear purpose in the copy. Remove repetition,
+  filler, and generic praise.
+- Use a short, natural product name or product type where appropriate.
 
-def _as_text(value: Any) -> str:
-    """Render a source value as readable text without exposing JSON syntax."""
-    if isinstance(value, list):
-        return "; ".join(_as_text(item) for item in value if _as_text(item))
-    if isinstance(value, dict):
-        return "; ".join(
-            f"{key}: {_as_text(item)}" for key, item in value.items()
-            if _as_text(item)
-        )
-    if value is None:
-        return ""
-    if isinstance(value, bool):
-        return "true" if value else "false"
-    return str(value).strip()
+Style and length:
+- Use clear, natural, consumer-facing language with a modest promotional tone.
+- Keep the copy concise and informative. Use as many words as needed
+  to communicate the product clearly, without unnecessary wording.
+- Prefer fewer than 25 English words. Do not exceed 35 words.
+- Use one or two short sentences.
 
+Factual accuracy:
+- Use only information supported by the supplied product information.
+- Preserve quantities, units, compatibility, and the relationship
+  between each attribute and the item it describes.
+- Do not let simplification or compression change the original meaning.
+- Do not invent benefits, specifications, guarantees, comparisons,
+  rankings, ratings, or customer outcomes.
 
-def _lines(value: Any) -> list[str]:
-    if isinstance(value, list):
-        return [text for item in value if (text := _as_text(item))]
-    text = _as_text(value)
-    return [text] if text else []
+Before returning the copy, check that it reads smoothly, contains useful
+product information, and has no unnecessary wording or unsupported claims.
 
-
-def _product_prompt(item: dict[str, Any]) -> str:
-    product_info = item.get("product_info")
-    if not isinstance(product_info, dict):
-        raise ValueError("ProductItem.product_info must be an object")
-
-    # Keep the ProductItem unchanged; this is only the model-input rendering.
-    # Product IDs and commercial/media metadata do not help write the ad.
-    sections: list[str] = ["Product information:"]
-
-    title = _as_text(product_info.get("title"))
-    if title:
-        sections.extend(["", "Product name:", title])
-
-    categories = _lines(product_info.get("categories"))
-    if categories:
-        sections.extend(["", "Categories:", *[f"- {value}" for value in categories]])
-
-    features = _lines(product_info.get("features"))
-    if features:
-        sections.extend(["", "Features:", *[f"- {value}" for value in features]])
-
-    descriptions = _lines(product_info.get("description"))
-    if descriptions:
-        sections.extend(["", "Description:", *descriptions])
-
-    details = product_info.get("details")
-    if isinstance(details, dict):
-        detail_lines = []
-        for key, value in details.items():
-            if str(key).strip().casefold() in _EXCLUDED_DETAIL_KEYS:
-                continue
-            text = _as_text(value)
-            if text:
-                detail_lines.append(f"- {key}: {text}")
-        if detail_lines:
-            sections.extend(["", "Product details:", *detail_lines])
-
-    return "\n".join(sections)
-
+Return only the promotional copy, without a heading, bullets, quotation
+marks, word count, or explanation."""
 
 def _error_code(error: BaseException) -> str:
     if isinstance(error, LLMError):
@@ -275,14 +226,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--input",
         type=Path,
-        required=True,
-        help="ProductItem JSONL input",
+        default=DEFAULT_INPUT,
+        help=f"ProductItem JSONL input (default: {DEFAULT_INPUT})",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        required=True,
-        help="Directory for results_<alias>.jsonl and calls_<alias>.jsonl; no overwrite",
+        default=DEFAULT_OUTPUT_DIR,
+        help=("Directory for results_<alias>.jsonl and calls_<alias>.jsonl; "
+              f"no overwrite (default: {DEFAULT_OUTPUT_DIR})"),
     )
     parser.add_argument(
         "--models",
@@ -292,7 +244,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--config", type=Path, default=Path("configs/models.toml"))
     parser.add_argument("--limit", type=int, help="Only process the first N products")
-    parser.add_argument("--max-output-tokens", type=int, default=256)
+    parser.add_argument("--max-output-tokens", type=int, default=2048,
+                        help="Output token budget, including reasoning where applicable (default: 2048)")
     parser.add_argument("--temperature", type=float, default=0.2)
     parser.add_argument("--max-retries", type=int, default=3,
                         help="Additional attempts per transient failure (default: 3)")

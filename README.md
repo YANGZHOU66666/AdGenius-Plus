@@ -2,6 +2,8 @@
 
 Office Products 广告文案生成、离线评测与小模型微调实验。仓库结构见 [docs/architecture.md](docs/architecture.md)。
 
+Pairwise LLM-as-judge 的 Qwen、DeepSeek、Claude、GPT-6 Luna AB/BA 评估入口、运行参数、当前数据入口和复核结果见 [docs/pairwise_llm_judge.md](docs/pairwise_llm_judge.md)。
+
 ## LLM API 包装
 
 Python 3.11+，使用 `httpx` 直接适配 OpenAI 兼容协议、Claude Messages、Google generateContent 和本地 Ollama，无需安装厂商 SDK。当前支持同步、非流式、纯文本消息。
@@ -20,7 +22,7 @@ export DASHSCOPE_API_KEY='your-key'
 python scripts/llm_smoke.py --model qwen
 ```
 
-也支持 `--model qwen_local`（本地 Ollama，无需 Key）、`--model mistral`（`MISTRAL_API_KEY`）、`--model gemma_31b`（Google 官方 Gemini API，`GEMINI_API_KEY`）、`--model glm53_flash`（智谱官方，`ZAI_API_KEY`）、`--model longcat`（`LONGCAT_API_KEY`）、`--model deepseek`（`DEEPSEEK_API_KEY`）或 `--model claude`（`ANTHROPIC_API_KEY`）。smoke 脚本显式加载根目录 `.env`；后续 eval/train 入口也应在程序启动时显式调用 `dotenv.load_dotenv()`。`.env` 已加入 `.gitignore`。
+也支持 `--model qwen_local`（本地 Ollama，无需 Key）、`--model mistral`（`MISTRAL_API_KEY`）、`--model gemma_31b`（Google 官方 Gemini API，`GEMINI_API_KEY`）、`--model glm53_flash`（智谱官方，`ZAI_API_KEY`）、`--model longcat`（`LONGCAT_API_KEY`）、`--model deepseek`（`DEEPSEEK_API_KEY`）、`--model claude`（`ANTHROPIC_API_KEY`）或 `--model gpt6_luna`（OpenAI 官方，`OPENAI_API_KEY`）。smoke 脚本显式加载根目录 `.env`；后续 eval/train 入口也应在程序启动时显式调用 `dotenv.load_dotenv()`。`.env` 已加入 `.gitignore`。
 
 当前候选生成选择四个模型来源，档位是实验预期，实际文案质量由标注检验：
 
@@ -62,18 +64,16 @@ PYTHONPATH=src python scripts/llm_smoke.py --model qwen_local
 
 本地调用不需要 `QWEN_LOCAL_API_KEY`，也不会产生 API 费用。
 
-生成 gold 候选时，`scripts/generate_candidates.py` 读取 100 个 `ProductItem`，四个模型分别生成一条广告，共 400 条候选记录。每个模型独立保存一份 `GenerationResult` JSONL 和一份调用日志，通过 `--output-dir` 指定保存目录：
+生成 gold 候选时，`scripts/generate_candidates.py` 默认读取 `data/eval/gold/v1/product_items.jsonl` 中冻结的 100 个商品，四个模型分别生成一条广告，共 400 条候选记录。当前默认使用新版短广告 prompt，输出到 `artifacts/eval/gold_generation/v2/`：不要求覆盖所有特点，由模型选择适合短广告的重要信息；优先少于 25 个英文词，最多 35 词。这里的 v2 是候选生成版本，沿用 v1 的商品及 ID。
+
+从仓库根目录运行；脚本自动加载 `.env`，本地 Qwen 的 Ollama 服务需已启动：
 
 ```sh
-PYTHONPATH=src python scripts/generate_candidates.py \
-  --input data/eval/gold/v1/product_items.jsonl \
-  --output-dir artifacts/eval/gold_generation/v1 \
-  --models qwen_local gemma_31b glm53_flash longcat \
-  --max-output-tokens 2048
+PYTHONPATH=src .venv/bin/python scripts/generate_candidates.py
 ```
 
 ```text
-artifacts/eval/gold_generation/v1/
+artifacts/eval/gold_generation/v2/
 ├── results_qwen_local.jsonl
 ├── results_gemma_31b.jsonl
 ├── results_glm53_flash.jsonl
@@ -84,7 +84,9 @@ artifacts/eval/gold_generation/v1/
 └── calls_longcat.jsonl
 ```
 
-完整跑完时，每个 results 文件 100 条记录；每个 calls 文件记录所有尝试，发生重试时会超过 100 行。每次尝试都有独立 `trace_id`，`attempt` 是本轮尝试序号，`retry_of_trace_id` 关联上一次失败调用；结果中的 `trace_id` 指向最终一次尝试。失败也保留一条结果，需区分记录总数与成功候选数。`GenerationResult` schema 保持不变。
+每个模型独立保存一份 `GenerationResult` JSONL 和一份调用日志。完整跑完时，每个 results 文件 100 条记录；每个 calls 文件记录所有尝试，发生重试时会超过 100 行。每次尝试都有独立 `trace_id`，`attempt` 是本轮尝试序号，`retry_of_trace_id` 关联上一次失败调用；结果中的 `trace_id` 指向最终一次尝试。失败也保留一条结果，需区分记录总数与成功候选数。`GenerationResult` schema 保持不变。
+
+可用 `--input`、`--output-dir`、`--models`、`--limit` 覆盖默认输入、输出、模型和商品数。默认输出预算为 2048 tokens，包含模型可能产生的思考 token；广告字数通过 prompt 约束，超出 35 词的完整正文不会自动截断或按质量筛除。完整调用日志保存实际 prompt 和推理参数，便于后续检查和补跑。
 
 调用前会检查全部配置、所需 Key 和八个输出路径，避免调用完成后才发现文件已存在。每个商品调用完成后立即写入对应 results/calls 文件并刷新，可在运行中查看进度；完整生成入口已有文件不会覆盖。候选 ID 根据 `run_id`、`product_id` 和 `sample_index` 生成稳定 hash，每次调用日志使用独立 `trace_id`；候选 ID 不包含模型名。截断正文记为 `output_too_long`。
 
@@ -96,11 +98,11 @@ artifacts/eval/gold_generation/v1/
 # 仅检查，既不联网也不创建文件。
 PYTHONPATH=src python scripts/retry_failed_candidates.py --dry-run
 
-# 默认检查 gold_generation/v1，仅补跑失败候选。
+# 默认检查 gold_generation/v2，仅补跑失败候选。
 PYTHONPATH=src python scripts/retry_failed_candidates.py
 ```
 
-默认从 `data/eval/gold/v1/product_items.jsonl` 和 `artifacts/eval/gold_generation/v1/` 读取，直接更新 `v1/` 中的四份 results 和四份 calls，不创建 `retried/` 子目录。成功记录原样保留，失败项以补跑结果替换，调用日志保留历史并追加新尝试。后续 rubric/pairwise 直接使用 `v1/` 中的完整 results；calls 中出现失败尝试不表示最终结果仍失败。首次更新前的八份 JSONL 备份在同级 `artifacts/eval/gold_generation/v1_original/`。
+默认从 `data/eval/gold/v1/product_items.jsonl` 和 `artifacts/eval/gold_generation/v2/` 读取，直接更新 `v2/` 中的四份 results 和四份 calls，不创建 `retried/` 子目录。成功记录原样保留，失败项以补跑结果替换，调用日志保留历史并追加新尝试。后续 rubric/pairwise 可使用 `v2/` 中的完整 results；calls 中出现失败尝试不表示最终结果仍失败。首次更新前的八份 JSONL 备份在同级 `artifacts/eval/gold_generation/v2_original/`。需要补跑历史 v1 时，显式传入 `--source-dir artifacts/eval/gold_generation/v1`。
 
 补跑从历史调用日志恢复模型、system prompt、输出预算、temperature 和 provider options，并核对商品输入，避免误用默认参数；仅把请求超时设为 180 秒、重试设为最多额外 3 次。`candidate_id`、`product_id`、`run_id`、`sample_index` 保留，重试设置及实际请求写入新调用日志。只需要有失败项的模型的 Key；其他模型无需启动本地服务或提供 Key。
 
@@ -113,7 +115,7 @@ PYTHONPATH=src python scripts/retry_failed_candidates.py
 ```sh
 PYTHONPATH=src python scripts/generate_candidates.py \
   --input data/eval/gold/v1/product_items.jsonl \
-  --output-dir /tmp/adgenius-gold-mock-v1 \
+  --output-dir /tmp/adgenius-gold-mock-v2 \
   --models mock --limit 2
 ```
 

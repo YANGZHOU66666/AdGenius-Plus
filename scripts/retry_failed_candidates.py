@@ -1,7 +1,7 @@
 """Repair failed candidates in place, keeping a resumable generation run.
 
-By default, update the gold v1 results/calls in their original directory.
-Before the first repair, preserve original JSONL files in sibling ``v1_original/``.
+By default, update the gold v2 results/calls in their original directory.
+Before the first repair, preserve original JSONL files in sibling ``v2_original/``.
 Generation settings are recovered from the original call logs, not CLI defaults.
 """
 
@@ -25,7 +25,13 @@ from typing import Any
 from dotenv import load_dotenv
 
 from adgenius.shared.llm import LLMClient, ModelConfig
-from generate_candidates import _load_items, _product_prompt, generate_with_retries
+from generate_candidates import (
+    DEFAULT_INPUT,
+    DEFAULT_OUTPUT_DIR,
+    _load_items,
+    _product_prompt,
+    generate_with_retries,
+)
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -258,9 +264,11 @@ def _plan(source: Path, output: Path, input_path: Path, items: dict[str, dict[st
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path,
-                        default=Path("data/eval/gold/v1/product_items.jsonl"))
+                        default=DEFAULT_INPUT,
+                        help=f"ProductItem JSONL input (default: {DEFAULT_INPUT})")
     parser.add_argument("--source-dir", type=Path,
-                        default=Path("artifacts/eval/gold_generation/v1"))
+                        default=DEFAULT_OUTPUT_DIR,
+                        help=f"Generation results and call logs (default: {DEFAULT_OUTPUT_DIR})")
     parser.add_argument("--output-dir", type=Path,
                         help="Default: update --source-dir in place; optional separate directory")
     parser.add_argument("--models", nargs="+", help="Only retry these aliases (default: all)")

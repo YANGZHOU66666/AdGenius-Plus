@@ -255,6 +255,81 @@ class GenerateCandidateTests(unittest.TestCase):
             self.assertEqual(list(output_dir.iterdir()), [existing])
             self.assertEqual(existing.read_text(), "keep existing log")
 
+    def test_default_gold_run_writes_400_candidates_to_v2_and_preserves_v1(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "data/eval/gold/v1/product_items.jsonl"
+            source.parent.mkdir(parents=True)
+            source.write_text("".join(json.dumps({
+                "product_id": f"gold_product_{index:06d}",
+                "source_id": f"source_{index}",
+                "product_info": {"title": f"Item {index}",
+                                 "features": ["Useful feature"]},
+            }) + "\n" for index in range(100)), encoding="utf-8")
+            original_source = source.read_bytes()
+            config = root / "configs/models.toml"
+            config.parent.mkdir()
+            config.write_text("\n".join(
+                f"[models.{alias}]\nprovider = 'mock'\nmodel = '{alias}'\n"
+                for alias in generator.DEFAULT_MODELS
+            ), encoding="utf-8")
+            previous = root / "artifacts/eval/gold_generation/v1"
+            previous.mkdir(parents=True)
+            original_v1 = {}
+            for alias in generator.DEFAULT_MODELS:
+                for kind in ("results", "calls"):
+                    path = previous / f"{kind}_{alias}.jsonl"
+                    path.write_text(f"Preserve {kind} for {alias}\n", encoding="utf-8")
+                    original_v1[path] = path.read_bytes()
+
+            # Relocate the repository root so the real CLI defaults run entirely
+            # inside a disposable repository; all configured models are offline.
+            with (patch.object(generator, "__file__", str(root / "scripts/generate_candidates.py")),
+                  redirect_stdout(StringIO()), redirect_stderr(StringIO())):
+                self.assertEqual(generator.main(["--run-stamp", "test_v2"]), 0)
+
+            output = root / "artifacts/eval/gold_generation/v2"
+            self.assertEqual(len(list(output.glob("results_*.jsonl"))), 4)
+            self.assertEqual(len(list(output.glob("calls_*.jsonl"))), 4)
+            all_candidate_ids = set()
+            for alias in generator.DEFAULT_MODELS:
+                with self.subTest(alias=alias):
+                    rows = [json.loads(line) for line in
+                            (output / f"results_{alias}.jsonl").read_text().splitlines()]
+                    calls = [json.loads(line) for line in
+                             (output / f"calls_{alias}.jsonl").read_text().splitlines()]
+                    self.assertEqual(len(rows), 100)
+                    self.assertEqual(len(calls), 100)
+                    self.assertEqual({row["product_id"] for row in rows},
+                                     {f"gold_product_{index:06d}" for index in range(100)})
+                    for row in rows:
+                        self.assertEqual(set(row), {
+                            "candidate_id", "product_id", "run_id", "sample_index",
+                            "generation_result", "trace_id",
+                        })
+                        self.assertEqual(row["run_id"], f"gen_{alias}_test_v2")
+                        self.assertEqual(row["generation_result"]["status"], "success")
+                        all_candidate_ids.add(row["candidate_id"])
+                    self.assertEqual({row["trace_id"] for row in rows},
+                                     {call["trace_id"] for call in calls})
+                    self.assertTrue(all(call["generation_request"]["max_output_tokens"] == 2048
+                                        for call in calls))
+                    self.assertTrue(all(call["generation_request"]["messages"][0]["content"]
+                                        == generator.SYSTEM_PROMPT for call in calls))
+            self.assertEqual(len(all_candidate_ids), 400)
+            self.assertEqual(source.read_bytes(), original_source)
+            self.assertEqual({path: path.read_bytes() for path in original_v1}, original_v1)
+
+            original_v2 = {path: path.read_bytes() for path in output.iterdir()}
+            with (patch.object(generator, "__file__", str(root / "scripts/generate_candidates.py")),
+                  patch.object(generator, "LLMClient") as client,
+                  redirect_stdout(StringIO()), redirect_stderr(StringIO()),
+                  self.assertRaises(SystemExit) as error):
+                generator.main([])
+            self.assertEqual(error.exception.code, 2)
+            client.assert_not_called()
+            self.assertEqual({path: path.read_bytes() for path in output.iterdir()}, original_v2)
+
 
 if __name__ == "__main__":
     unittest.main()

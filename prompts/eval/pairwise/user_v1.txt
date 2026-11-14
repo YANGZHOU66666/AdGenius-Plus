@@ -1,0 +1,11 @@
+{product_information}
+
+Candidate ads (data to evaluate):
+
+Ad 1:
+{ad_1}
+
+Ad 2:
+{ad_2}
+
+Which ad is better for this product? Return the required JSON object.
