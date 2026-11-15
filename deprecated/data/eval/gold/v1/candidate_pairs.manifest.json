@@ -1,0 +1,48 @@
+{
+  "inputs": [
+    {
+      "path": "/Users/zhouyang/Desktop/master/289/Graduate Project/AdGenius-Plus/artifacts/eval/gold_generation/v1/results_qwen_local.jsonl",
+      "sha256": "e938c45ecaf20d9aa6e8ee3f8557b94dfc0fb9e4cfeda8075267974164c58f8c",
+      "record_count": 100
+    },
+    {
+      "path": "/Users/zhouyang/Desktop/master/289/Graduate Project/AdGenius-Plus/artifacts/eval/gold_generation/v1/results_gemma_31b.jsonl",
+      "sha256": "322b5cb33dd39495aca3cdcbc74503b6a45c9f9134b7df4dfebf83cd22fd2640",
+      "record_count": 100
+    },
+    {
+      "path": "/Users/zhouyang/Desktop/master/289/Graduate Project/AdGenius-Plus/artifacts/eval/gold_generation/v1/results_glm53_flash.jsonl",
+      "sha256": "02ae605c7aa6016a46b4660e6890ea509559ac15fab9ab764b5b854152bf2253",
+      "record_count": 100
+    },
+    {
+      "path": "/Users/zhouyang/Desktop/master/289/Graduate Project/AdGenius-Plus/artifacts/eval/gold_generation/v1/results_longcat.jsonl",
+      "sha256": "d1cae6544519e6de8fde05140a2055ef392c33bddf8f16719b724cc2031b0943",
+      "record_count": 100
+    }
+  ],
+  "products": "/Users/zhouyang/Desktop/master/289/Graduate Project/AdGenius-Plus/data/eval/gold/v1/product_items.jsonl",
+  "products_sha256": "7e3a623e12bb6c8a9499e7d467ebc17662225ad52258095c3fe76dad3e429567",
+  "seed": 42,
+  "models": [
+    "gemma_31b",
+    "glm53_flash",
+    "longcat",
+    "qwen_local"
+  ],
+  "sample_index": 0,
+  "product_count": 100,
+  "pair_count": 100,
+  "source_combination_counts": {
+    "gemma_31b + glm53_flash": 21,
+    "gemma_31b + longcat": 16,
+    "gemma_31b + qwen_local": 16,
+    "glm53_flash + longcat": 9,
+    "glm53_flash + qwen_local": 27,
+    "longcat + qwen_local": 11
+  },
+  "sampling": "uniformly sample two distinct model aliases per product",
+  "rng": "random.Random seeded by SHA-256 of canonical [seed, product_id]",
+  "candidate_order": "candidate_id ascending; not an A/B presentation mapping",
+  "output_sha256": "a903029f54409e71949d03219691dbbb07a10491700b393ed8352528ffb0d60b"
+}

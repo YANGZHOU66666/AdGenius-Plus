@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pairwise Human Annotation · AdGenius+</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">a<span>+</span></span><div><div class="eyebrow">ADGENIUS+ · HUMAN EVALUATION</div><h1>Pairwise Annotation Workbench</h1></div></div>
+    <div class="top-actions">
+      <span id="sync-status" class="sync-status" role="status" aria-live="polite">Connecting to local files…</span>
+      <form id="annotator-form" class="annotator-form"><label for="annotator-input">Annotator</label><input id="annotator-input" name="annotator" value="zhou" autocomplete="off" maxlength="64" spellcheck="false" required><button type="submit" class="button button-small">Switch</button></form>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <div class="main-column">
+      <section class="progress-panel" aria-label="Annotation progress"><div><span class="subtle">Your progress</span><div class="progress-number"><strong id="done-count">0</strong><span>/ <span id="total-count">—</span> pairs</span></div></div><div class="progress-copy"><span id="progress-copy">Loading the frozen comparison set</span><div class="progress-track"><div id="progress-bar" class="progress-fill"></div></div></div><button id="export-button" class="button" disabled>Export annotations</button></section>
+
+      <section id="notice" class="notice" hidden aria-live="polite"><div><strong id="notice-title"></strong><p id="notice-message"></p></div><div class="notice-actions"><button id="load-remote" class="button" hidden>Load file version</button><button id="keep-local" class="button button-primary" hidden>Keep changes and save again</button><button id="retry-save" class="button" hidden>Retry save</button></div></section>
+
+      <div id="loading" class="loading-panel"><div class="spinner"></div><p id="loading-message">Loading products and candidate ads…</p><button id="retry-load" class="button" hidden>Reconnect</button></div>
+
+      <section id="annotation-panel" hidden>
+        <div class="question-heading"><div><div class="question-meta"><span id="question-number" class="question-number">PAIR 001</span><span id="entry-status" class="entry-status">Unlabeled</span></div><h2>Which ad is better for this product?</h2><p>Consider factual support, useful product information, and clear expression. Your choice is saved and the next unlabeled pair opens automatically.</p></div><span class="shuffle-note" title="The sides are randomized each time you enter a pair; saved choices follow the actual candidate.">⇄ Randomized sides</span></div>
+
+        <details id="product-details" class="product-panel" open><summary><div><span class="section-kicker">PRODUCT INFORMATION</span><h3 id="product-title"></h3></div><span class="details-indicator" aria-hidden="true">⌄</span></summary><pre id="product-information" lang="en"></pre></details>
+
+        <div class="candidates" role="group" aria-label="Two candidate ads">
+          <article id="card-a" class="candidate-card"><div class="candidate-heading"><span class="candidate-letter">A</span><span>Candidate A</span><span class="selected-indicator" aria-hidden="true">✓ Selected</span></div><p id="copy-a" class="candidate-copy" lang="en"></p><button id="choose-a" type="button" class="choice-button" aria-pressed="false">Choose A <span aria-hidden="true">↗</span></button></article>
+          <article id="card-b" class="candidate-card"><div class="candidate-heading"><span class="candidate-letter">B</span><span>Candidate B</span><span class="selected-indicator" aria-hidden="true">✓ Selected</span></div><p id="copy-b" class="candidate-copy" lang="en"></p><button id="choose-b" type="button" class="choice-button" aria-pressed="false">Choose B <span aria-hidden="true">↗</span></button></article>
+        </div>
+
+        <div class="annotation-actions"><button id="clear-button" class="text-button" type="button" disabled>Clear this annotation</button></div>
+
+        <section class="reason-panel"><div class="reason-label"><label for="reason">Reason <span>Briefly explain the difference; any language is fine.</span></label><span id="reason-hint" class="subtle">Your choice and reason are saved automatically</span></div><textarea id="reason" rows="3" placeholder="Example: A gives a supported capacity detail, while B makes an unsupported claim."></textarea><div class="save-caption"><span id="save-caption">This pair is not labeled yet</span><span id="saved-time"></span></div></section>
+
+        <footer class="question-navigation"><button id="previous" class="button" type="button">← Previous</button><span id="page-number">1 / 100</span><div><button id="next-unannotated" class="button" type="button">Next unlabeled</button><button id="next" class="button button-primary" type="button">Next →</button></div></footer>
+      </section>
+    </div>
+
+    <aside class="navigator-panel"><details id="navigator-details" open><summary><div><span class="section-kicker">QUESTION NAVIGATOR</span><h2>Pair directory <span id="navigator-count">0 / —</span></h2></div><span class="details-indicator" aria-hidden="true">⌄</span></summary><div class="navigator-legend"><span><i class="legend-dot completed"></i>Labeled</span><span><i class="legend-dot"></i>Unlabeled</span><span><i class="legend-dot active"></i>Current</span></div><div id="question-grid" class="question-grid" aria-label="Jump to a pair"></div><p class="navigator-tip">Click a number to jump. Reopening a labeled pair restores the choice for the corresponding ad.</p></details><div class="annotation-principles"><strong>Judge independently</strong><p>Model sources and other annotators' labels are hidden. Changing the side order does not change the saved choice.</p></div><details class="file-details"><summary>Local data files</summary><dl id="file-paths"></dl></details></aside>
+  </main>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

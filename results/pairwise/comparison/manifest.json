@@ -1,0 +1,39 @@
+{
+  "analysis_kind": "current_pairwise_calibration_comparison",
+  "organized_on": "2026-11-14",
+  "computed_on": "2026-11-13",
+  "new_api_calls": 0,
+  "dataset_manifest": {
+    "path": "data/eval/gold/manifest.json",
+    "sha256": "7bedcb74349a3c7b88798815957fe08beda55bdce0d318f90be42d7a435efda6"
+  },
+  "human_annotations": {
+    "path": "data/eval/gold/pairwise_annotations_zhou.jsonl",
+    "sha256": "16894ca15b4c3d7373c338278ad31970dbda6c511e8840cb500d93c3a79af62f"
+  },
+  "results": [
+    {
+      "path": "results/pairwise/deepseek41_gold_v2/results.jsonl",
+      "sha256": "ebd124024cb71753d5d363c1cd0f9f26e6cb891dd503f251afc7c7c3602d34d3"
+    },
+    {
+      "path": "results/pairwise/gpt6_luna_gold_v2/results.jsonl",
+      "sha256": "568d4e91d60e47ad0dc8942691096a6980d40158eadde8c2d41a8e86055bcad8"
+    },
+    {
+      "path": "results/pairwise/qwen37_gold_v2/results.jsonl",
+      "sha256": "720f9947db342d697ced233d36f176276d67c1ac66a627244efc36453e495107"
+    },
+    {
+      "path": "results/pairwise/claude55_gold_v2/results.jsonl",
+      "sha256": "069e60d42a60456f6611caadbe90204dda0ee52cc78803d6abb65c0459d09058"
+    }
+  ],
+  "metrics_sha256": "ce4ccfe086955281f6c5703d64b2dd7506b50e6db9f45687c23cbb01654b4947",
+  "archived_analysis": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614",
+  "notes": [
+    "Each run manifest preserves its original request provenance, code hash and original human-reference hash. It is not rewritten during organization.",
+    "Original-label metrics have been archived; metrics.json in this directory is the current reviewed-label comparison.",
+    "The four runs used the same products, pairs and judge prompts. Claude inference controls differ from the other three models."
+  ]
+}

@@ -17,7 +17,8 @@ def main():
         default="mock",
         help="Config alias: mock/qwen/qwen_local/mistral/gemma_31b/glm53_flash/longcat/deepseek/claude",
     )
-    parser.add_argument("--output", type=Path, help="Optional response JSON file (no overwrite)")
+    parser.add_argument("--output", type=Path,
+                        help="Optional raw response JSON, e.g. artifacts/smoke/response.json (no overwrite)")
     args = parser.parse_args()
     load_dotenv(Path(__file__).resolve().parents[1] / ".env")
     if args.output and args.output.exists():

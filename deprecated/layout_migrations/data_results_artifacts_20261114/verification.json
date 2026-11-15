@@ -1,0 +1,16 @@
+{
+  "project_entrypoints_executed": false,
+  "tests_executed": false,
+  "syntax_checked_python_files": 22,
+  "byte_identical_existing_payload_files": 39,
+  "backups_hash_checked": 12,
+  "unchanged_products": 100,
+  "unchanged_candidates": 400,
+  "unchanged_pairs": 100,
+  "unchanged_human_labels": 100,
+  "unchanged_judge_runs": 4,
+  "metrics_unchanged": true,
+  "formal_result_files_shared": true,
+  "runtime_logs_and_cache_ignored": true,
+  "existing_annotation_process_preserved": 66650
+}

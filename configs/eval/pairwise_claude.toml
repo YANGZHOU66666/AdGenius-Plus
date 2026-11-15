@@ -1,0 +1,19 @@
+# Official Anthropic Messages API; requires ANTHROPIC_API_KEY in .env.
+# https://platform.claude.com/docs/en/models/haiku-5-5/migration-guide
+[judge]
+model_alias = "claude"
+protocol_version = "pairwise-v0.2"
+input_mode = "ad_text_only"
+human_annotation_protocol_version = "pairwise-v0.1"
+system_prompt = "prompts/eval/pairwise/system_v2.txt"
+user_prompt = "prompts/eval/pairwise/user_v2.txt"
+# Haiku 5.5 rejects temperature/top_p/top_k. Omit temperature entirely.
+# Allow room for adaptive thinking as well as the short JSON answer.
+max_output_tokens = 2048
+timeout_seconds = 90.0
+max_retries = 3
+retry_delay = 2.0
+
+[judge.provider_options]
+thinking = { type = "adaptive" }
+output_config = { effort = "low" }

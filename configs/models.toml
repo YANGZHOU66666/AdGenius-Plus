@@ -75,3 +75,12 @@ api_key_env = "ANTHROPIC_API_KEY"
 [models.mock]
 provider = "mock"
 model = "mock"
+
+# Official OpenAI Chat Completions API; newer models use max_completion_tokens.
+[models.gpt6_luna]
+provider = "openai_compatible"
+model = "gpt-6-luna"
+base_url = "https://api.openai.com/v1"
+api_key_env = "OPENAI_API_KEY"
+max_tokens_parameter = "max_completion_tokens"
+request_options = { reasoning_effort = "none" }

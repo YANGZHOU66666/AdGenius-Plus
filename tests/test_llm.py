@@ -95,6 +95,38 @@ class LLMTests(unittest.TestCase):
         self.assertEqual(response.usage.cache_write_tokens, 5)
         self.assertEqual(response.request_id, "claude-req")
 
+    def test_openai_modern_token_limit_and_reasoning_options(self):
+        config_path = os.path.join(os.path.dirname(__file__), "..", "configs", "models.toml")
+        config = ModelConfig.from_toml(config_path, "gpt6_luna")
+
+        def handle(request):
+            self.assertEqual(str(request.url), "https://api.openai.com/v1/chat/completions")
+            self.assertEqual(request.headers["authorization"], "Bearer openai-test-secret")
+            body = json.loads(request.content)
+            self.assertEqual(body["model"], "gpt-6-luna")
+            self.assertEqual(body["max_completion_tokens"], 100)
+            self.assertNotIn("max_tokens", body)
+            self.assertEqual(body["reasoning_effort"], "none")
+            self.assertEqual(body["temperature"], 0)
+            self.assertEqual(body["response_format"], {"type": "json_object"})
+            return compatible_response()
+
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "openai-test-secret"}), \
+             LLMClient(config, transport=httpx.MockTransport(handle)) as client:
+            response = client.generate(MESSAGES, max_output_tokens=100, temperature=0,
+                                       json_mode=True)
+            for field in ("max_tokens", "max_completion_tokens"):
+                with self.subTest(field=field), self.assertRaises(ValueError):
+                    client.generate(MESSAGES, provider_options={field: 999})
+        self.assertEqual(response.config["max_tokens_parameter"], "max_completion_tokens")
+        self.assertNotIn("openai-test-secret", json.dumps(response.to_dict()))
+
+    def test_token_parameter_configuration_is_validated(self):
+        with self.assertRaisesRegex(ValueError, "max_tokens_parameter"):
+            self.config(max_tokens_parameter="max_output_tokens")
+        with self.assertRaisesRegex(ValueError, "OpenAI-compatible"):
+            self.config("anthropic", max_tokens_parameter="max_completion_tokens")
+
     def test_deepseek_cache_and_provider_options(self):
         def handle(request):
             self.assertEqual(json.loads(request.content)["thinking"], {"type": "disabled"})

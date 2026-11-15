@@ -55,6 +55,7 @@ class ModelConfig:
     timeout_seconds: float = 60.0
     max_retries: int = 2
     request_options: dict[str, Any] = field(default_factory=dict)
+    max_tokens_parameter: str = "max_tokens"
 
     def __post_init__(self) -> None:
         if self.provider not in {"openai_compatible", "openai_compatible_local", "ollama",
@@ -64,6 +65,11 @@ class ModelConfig:
             raise ValueError("model must not be empty")
         if self.timeout_seconds <= 0 or self.max_retries < 0:
             raise ValueError("timeout_seconds must be positive; max_retries must be >= 0")
+        if self.max_tokens_parameter not in {"max_tokens", "max_completion_tokens"}:
+            raise ValueError("max_tokens_parameter must be max_tokens or max_completion_tokens")
+        if self.max_tokens_parameter != "max_tokens" and self.provider not in {
+                "openai_compatible", "openai_compatible_local"}:
+            raise ValueError("max_completion_tokens requires an OpenAI-compatible provider")
         if self.provider != "mock":
             url = httpx.URL(self.base_url)
             if url.userinfo or url.query or url.fragment or not url.host:
@@ -107,6 +113,7 @@ class ModelConfig:
             "timeout_seconds": self.timeout_seconds,
             "max_retries": self.max_retries,
             "request_options": copy.deepcopy(self.request_options),
+            "max_tokens_parameter": self.max_tokens_parameter,
         }
 
 
@@ -228,7 +235,7 @@ class LLMClient:
                 body["generationConfig"]["responseMimeType"] = "application/json"
         else:
             body = {"model": self.config.model, "messages": normalized,
-                    "max_tokens": max_output_tokens, "stream": False}
+                    self.config.max_tokens_parameter: max_output_tokens, "stream": False}
             if temperature is not None:
                 body["temperature"] = temperature
         if self.config.provider == "anthropic":

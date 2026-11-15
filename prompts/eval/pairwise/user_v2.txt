@@ -1,0 +1,7 @@
+Ad 1:
+{ad_1}
+
+Ad 2:
+{ad_2}
+
+Which ad communicates more effectively in a social media feed?

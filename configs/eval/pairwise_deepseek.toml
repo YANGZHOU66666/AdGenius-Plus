@@ -1,0 +1,19 @@
+# Official API model ID deepseek-flash currently serves DeepSeek-V4.1-Flash-1017.
+# https://api-docs.deepseek.com/quick_start/pricing/
+# Credentials: DEEPSEEK_API_KEY in the repository .env or shell environment.
+[judge]
+model_alias = "deepseek"
+protocol_version = "pairwise-v0.2"
+input_mode = "ad_text_only"
+human_annotation_protocol_version = "pairwise-v0.1"
+system_prompt = "prompts/eval/pairwise/system_v2.txt"
+user_prompt = "prompts/eval/pairwise/user_v2.txt"
+temperature = 0.0
+max_output_tokens = 1024
+timeout_seconds = 90.0
+max_retries = 3
+retry_delay = 2.0
+
+# Use DeepSeek's native option, rather than Qwen's enable_thinking.
+[judge.provider_options]
+thinking = { type = "disabled" }
