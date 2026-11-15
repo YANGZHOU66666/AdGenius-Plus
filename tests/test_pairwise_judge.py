@@ -157,7 +157,7 @@ class PairwiseJudgeTests(unittest.TestCase):
         if not human_labels:
             cli_args.append("--no-human-annotations")
         args = pairwise.build_parser().parse_args([*cli_args, *extra_args])
-        with patch.dict(os.environ, {"DASHSCOPE_API_KEY": "test-key"}), \
+        with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "test-key"}), \
              patch("adgenius.eval.pairwise.LLMClient", return_value=fake):
             outcome = pairwise.run(args)
         return outcome, seen
@@ -169,10 +169,11 @@ class PairwiseJudgeTests(unittest.TestCase):
                 "--dry-run", "--limit", "1", "--output-dir", str(output), "--calls-dir", str(output),
                 "--no-human-annotations",
             ])
-            with patch.dict(os.environ, {"DASHSCOPE_API_KEY": ""}), \
+            with patch.dict(os.environ, {"DEEPSEEK_API_KEY": ""}), \
                  patch("adgenius.eval.pairwise.LLMClient", side_effect=AssertionError("network")):
                 result = pairwise.run(args)
             self.assertEqual(result["initial_judge_calls"], 2)
+            self.assertEqual(result["model"], "deepseek-flash")
             self.assertEqual(result["input_mode"], "ad_text_only")
             self.assertEqual(result["protocol_version"], "pairwise-v0.2")
             self.assertFalse(output.exists())
@@ -191,7 +192,7 @@ class PairwiseJudgeTests(unittest.TestCase):
             self.assertEqual(len(pairwise._read_jsonl(journals / "calls.jsonl")), 2)
             self.assertTrue((output / "results.jsonl").is_file())
             manifest = pairwise._strict_json((output / "manifest.json").read_bytes())
-            self.assertEqual(manifest["calls_file"], str(journals / "calls.jsonl"))
+            self.assertEqual(manifest["calls_file"], str((journals / "calls.jsonl").resolve()))
             original_calls = (journals / "calls.jsonl").read_bytes()
             _, resumed_requests = self.execute([], output, extra_args=args)
             self.assertEqual(resumed_requests, [])
@@ -220,7 +221,7 @@ class PairwiseJudgeTests(unittest.TestCase):
                 self.assertEqual(len(request["messages"]), 2)
                 for hidden in ("unprovided_product_123", "candidate_hidden", "pair_hidden"):
                     self.assertNotIn(hidden, json.dumps(request["messages"]))
-                self.assertEqual(request["provider_options"], {"enable_thinking": False})
+                self.assertEqual(request["provider_options"], {"thinking": {"type": "disabled"}})
             manifest = pairwise._strict_json((output / "manifest.json").read_bytes())
             self.assertNotIn("products", manifest["specification"]["input_files"])
             self.assertEqual(manifest["specification"]["settings"]["input_mode"], "ad_text_only")

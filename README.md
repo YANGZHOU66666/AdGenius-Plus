@@ -77,12 +77,14 @@ PYTHONPATH=src .venv/bin/python tools/pairwise_annotation.py
 
 [四模型最新统计](results/pairwise/comparison/report.md)已随仓库共享。Qwen、DeepSeek、Claude 和 GPT-6 Luna 使用相同的广告文本进行独立 AB/BA 判断；说明与参数见 [Judge 文档](docs/pairwise_llm_judge.md)。新运行使用新的 run ID，标准结果写入 results/pairwise/<run_id>/，调用日志写入 artifacts/pairwise/<run_id>/：
 
+默认评委已选定为 **DeepSeek**，综合依据见四模型对比报告。省略 `--eval-config` 时加载 `configs/eval/pairwise.toml`，使用 `DEEPSEEK_API_KEY`、temperature 0、关闭 thinking、最多 1,024 个输出 tokens。Qwen 对照使用 `configs/eval/pairwise_qwen.toml`。
+
 ```sh
 # 只检查计划，不联网、不写产物。
-PYTHONPATH=src .venv/bin/python scripts/evaluate_pairwise.py   --eval-config configs/eval/pairwise_deepseek.toml   --run-id deepseek_gold_new --dry-run
+PYTHONPATH=src .venv/bin/python scripts/evaluate_pairwise.py --run-id deepseek_gold_new --dry-run
 
 # 真实全量评测：100对，200次初始调用。
-PYTHONPATH=src .venv/bin/python scripts/evaluate_pairwise.py   --eval-config configs/eval/pairwise_deepseek.toml   --run-id deepseek_gold_new
+PYTHONPATH=src .venv/bin/python scripts/evaluate_pairwise.py --run-id deepseek_gold_new
 ```
 
 ## 候选生成与补跑

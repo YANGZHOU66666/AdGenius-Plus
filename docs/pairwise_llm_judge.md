@@ -2,6 +2,8 @@
 
 The evaluator compares ad communication quality against current human labels using two fresh, independent requests per pair. It supports Qwen Flash, DeepSeek, Claude Haiku and GPT-6 Luna through the shared client.
 
+**DeepSeek is the selected primary and default judge**, based on the combined agreement, order consistency, reliability and recorded latency in the [four-judge comparison](../results/pairwise/comparison/report.md). Omitting --eval-config loads configs/eval/pairwise.toml and requires DEEPSEEK_API_KEY. The explicit pairwise_deepseek.toml has the same judge settings; use pairwise_qwen.toml for a Qwen comparison.
+
 ## Inputs and protocol
 
 - Pairs: `data/eval/gold/candidate_pairs.jsonl` (100).
@@ -40,8 +42,9 @@ PYTHONPATH=src .venv/bin/python scripts/evaluate_pairwise.py   --eval-config con
 
 | Configuration | Credential | Provider-specific controls |
 |---|---|---|
-| `configs/eval/pairwise.toml` | `DASHSCOPE_API_KEY` | Qwen; thinking disabled, temperature 0, 1,024 output tokens |
+| `configs/eval/pairwise.toml` (default) | `DEEPSEEK_API_KEY` | DeepSeek; native thinking disabled, temperature 0, 1,024 output tokens |
 | `configs/eval/pairwise_deepseek.toml` | `DEEPSEEK_API_KEY` | DeepSeek; native thinking disabled, temperature 0, 1,024 output tokens |
+| `configs/eval/pairwise_qwen.toml` | `DASHSCOPE_API_KEY` | Qwen; thinking disabled, temperature 0, 1,024 output tokens |
 | `configs/eval/pairwise_claude.toml` | `ANTHROPIC_API_KEY` | Claude Messages; adaptive thinking, low effort, no temperature, 2,048 output tokens |
 | `configs/eval/pairwise_gpt6_luna.toml` | `OPENAI_API_KEY` | GPT-6 Luna; reasoning_effort none, temperature 0, 1,024 max_completion_tokens |
 

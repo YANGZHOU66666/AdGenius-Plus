@@ -1,6 +1,6 @@
-# Model credentials and endpoint live in configs/models.toml / environment.
+# Default judge: DeepSeek. Credentials and endpoint live in models.toml / environment.
 [judge]
-model_alias = "qwen"
+model_alias = "deepseek"
 protocol_version = "pairwise-v0.2"
 input_mode = "ad_text_only"
 # Compare with the existing human preferences without rewriting their protocol.
@@ -15,4 +15,4 @@ retry_delay = 2.0
 
 # Explicitly recorded in the manifest; tune this in a new run, not in-place.
 [judge.provider_options]
-enable_thinking = false
+thinking = { type = "disabled" }

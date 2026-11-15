@@ -575,7 +575,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--eval-config", type=Path, default=REPO_ROOT / "configs/eval/pairwise.toml")
     parser.add_argument("--model-config", type=Path, default=REPO_ROOT / "configs/models.toml")
-    parser.add_argument("--model-alias", help="Alias in models.toml; defaults to qwen")
+    parser.add_argument("--model-alias", help="Override the selected eval config's alias; default config uses DeepSeek")
     parser.add_argument("--pairs", type=Path, default=DEFAULT_PAIRS)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--human-annotations", type=Path, help="One annotator's file; default gold uses Zhou's labels")
