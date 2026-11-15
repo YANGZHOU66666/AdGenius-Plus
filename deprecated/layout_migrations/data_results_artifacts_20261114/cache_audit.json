@@ -1,0 +1,21 @@
+{
+  "cache_records": 709403,
+  "source_line_coverage": 710503,
+  "source_lines_min_max": [
+    1,
+    710503
+  ],
+  "gold_test_source_id_overlap": 0,
+  "gold_test_content_group_overlap": 0,
+  "legacy_manifest_sha256": "a2d9a8744ba3c06d0315b1a1ec408de00e815736b483a456f9e363f06c68f076",
+  "existing_cache_sha256": "3f2e2a9442bb22e4f8bbc5d8618c117d65aca5a2ce6cdc41c691f0e2b47b85d5",
+  "sample_id_fields": {
+    "product_id": "train_product_000000",
+    "source_id": "B001S28Q4Q"
+  },
+  "cache_bytes_changed": false,
+  "project_scripts_executed": false,
+  "legacy_hash_after_reversing_project_id_materialization": "a2d9a8744ba3c06d0315b1a1ec408de00e815736b483a456f9e363f06c68f076",
+  "hash_difference_explained_by_project_ids_and_source_id": true,
+  "all_project_ids_sequential": true
+}

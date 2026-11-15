@@ -19,6 +19,13 @@ from typing import Any
 DEFAULT_MODELS = ("qwen_local", "gemma_31b", "glm53_flash", "longcat")
 
 
+def _source_path(path: Path) -> str:
+    """Use portable paths for shared data inside the repository."""
+    resolved = path.resolve()
+    root = Path(__file__).resolve().parents[1]
+    return str(resolved.relative_to(root)) if resolved.is_relative_to(root) else str(resolved)
+
+
 def _canonical(value: Any) -> bytes:
     return json.dumps(value, ensure_ascii=False, sort_keys=True,
                       separators=(",", ":")).encode("utf-8")
@@ -175,14 +182,14 @@ def main(argv: list[str] | None = None) -> int:
         for path in args.input:
             rows, digest = _read_jsonl(path)
             records.extend(rows)
-            inputs.append({"path": str(path.resolve()), "sha256": digest,
+            inputs.append({"path": _source_path(path), "sha256": digest,
                            "record_count": len(rows)})
         expected_products, products_digest = (_product_ids(args.products) if args.products
                                               else (None, None))
         pairs, combinations = build_pairs(records, args.models, args.seed, expected_products)
         manifest = {
             "inputs": inputs,
-            "products": str(args.products.resolve()) if args.products else None,
+            "products": _source_path(args.products) if args.products else None,
             "products_sha256": products_digest,
             "seed": args.seed,
             "models": sorted(args.models),

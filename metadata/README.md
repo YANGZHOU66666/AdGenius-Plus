@@ -4,7 +4,7 @@
 
 | Schema | 用途 |
 | --- | --- |
-| [ProductItem](schemas/product_item.schema.json) | 完整商品资料，供生成和两种评测共用。 |
+| [ProductItem](schemas/product_item.schema.json) | 完整商品资料，用于广告生成、人工界面展示及后续 rubric 事实核查。 |
 | [GenerationResult](schemas/generation_result.schema.json) | 单条候选广告的生成结果。 |
 | [CandidatePair](schemas/candidate_pair.schema.json) | 两条成功候选的冻结比较对。 |
 | [PairwiseResult](schemas/pairwise_result.schema.json) | 模型 AB/BA 两次判断，或一位人工的一次独立判断。 |
@@ -79,7 +79,12 @@ JSON Schema：[schemas/product_item.schema.json](schemas/product_item.schema.jso
 
 ### 与模型输入的关系
 
-完整保存商品资料与选择模型输入是两个步骤。后续生成输入规则单独定义字段选择、渲染及截断，并保存实际输入记录；pairwise 和 rubric 评委使用与生成时相同的商品资料。
+完整保存商品资料与选择模型输入是两个步骤，各环节的输入约定如下：
+
+- **广告生成**：按生成规则选择商品字段并渲染为文本，实际请求保存在调用日志中；不会直接发送完整 ProductItem JSON。
+- **人工标注界面**：展示商品资料供标注者参考，展示字段与生成时使用相同的渲染函数。
+- **Pairwise 模型评委**：当前 `pairwise-v0.2` 协议只接收两条广告文本，不接收原始商品资料、生成模型身份或人工标签；判断信息流场景中的广告传播效果，事实核查由 rubric 负责。详见 [Pairwise Judge 协议与运行说明](../docs/pairwise_llm_judge.md)。
+- **Rubric 评估**：事实核查应以候选生成所依据的商品资料为参照；具体输入字段和渲染方式由后续 rubric 协议规定。当前仓库仅定义 rubric schema，尚未实现运行链路。
 
 本次仅定义数据格式，不转换或覆盖现有 `data/processed/v1/`、`data/splits/v1/` 或原始数据文件。
 

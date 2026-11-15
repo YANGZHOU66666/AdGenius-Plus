@@ -144,6 +144,8 @@ def build_split(source: Path, repo_root: Path, seed: int) -> dict[str, Any]:
     processed_dir = repo_root / "data" / "processed" / "v1"
     split_dir.mkdir(parents=True, exist_ok=True)
     processed_dir.mkdir(parents=True, exist_ok=True)
+    cache_dir = repo_root / "artifacts" / "cache" / "office_products"
+    cache_dir.mkdir(parents=True, exist_ok=True)
 
     source_sha256 = sha256_file(source)
     records, group_sizes, missing, errors = read_index(source)
@@ -176,13 +178,15 @@ def build_split(source: Path, repo_root: Path, seed: int) -> dict[str, Any]:
         for record in records
     }
 
-    split_paths = {name: split_dir / f"{name}.jsonl" for name in ("gold", "test", "train_pool")}
+    split_paths = {name: split_dir / f"{name}.jsonl" for name in ("gold", "test")}
+    split_paths["train_pool"] = cache_dir / "train_pool.jsonl"
     processed_paths = {
         name: processed_dir / f"{name}_products.jsonl" for name in ("gold", "test")
     }
     split_handles = {name: path.open("w", encoding="utf-8") for name, path in split_paths.items()}
     processed_handles = {name: path.open("w", encoding="utf-8") for name, path in processed_paths.items()}
     raw_written: Counter[str] = Counter()
+    train_index = 0
     try:
         with gzip.open(source, "rt", encoding="utf-8") as handle:
             for source_line, line in enumerate(handle, start=1):
@@ -200,6 +204,12 @@ def build_split(source: Path, repo_root: Path, seed: int) -> dict[str, Any]:
                     "source_dataset": "Amazon Reviews 2023 metadata / Office Products",
                     "source_sha256": source_sha256,
                 }
+                if split == "train_pool":
+                    # Match the existing cache's stable project IDs while keeping
+                    # the raw ASIN available for source lookup.
+                    manifest_record["product_id"] = f"train_product_{train_index:06d}"
+                    manifest_record["source_id"] = product_id
+                    train_index += 1
                 jsonl_write(split_handles[split], manifest_record)
                 if split in processed_handles:
                     jsonl_write(processed_handles[split], record)
@@ -236,6 +246,7 @@ def build_split(source: Path, repo_root: Path, seed: int) -> dict[str, Any]:
         },
         "missing_fields": dict(missing),
         "outputs_sha256": output_sha256,
+        "cache_paths": {"train_pool": split_paths["train_pool"].relative_to(repo_root).as_posix()},
         "notes": [
             "gold and test are frozen evaluation-only products; neither may enter training",
             "train_pool is the complete remainder and is a candidate pool, not a required training size",

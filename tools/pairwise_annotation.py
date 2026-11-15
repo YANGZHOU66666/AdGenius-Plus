@@ -387,11 +387,11 @@ def make_server(store: AnnotationStore, host: str = "127.0.0.1", port: int = 0,
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--pairs", type=Path, default=ROOT / "data/eval/gold/v1/candidate_pairs.jsonl")
-    parser.add_argument("--products", type=Path, default=ROOT / "data/eval/gold/v1/product_items.jsonl")
-    parser.add_argument("--annotations-dir", type=Path, default=ROOT / "data/eval/gold/v1")
+    parser.add_argument("--pairs", type=Path, default=ROOT / "data/eval/gold/candidate_pairs.jsonl")
+    parser.add_argument("--products", type=Path, default=ROOT / "data/eval/gold/product_items.jsonl")
+    parser.add_argument("--annotations-dir", type=Path, default=ROOT / "data/eval/gold")
     parser.add_argument("--annotator", default="zhou")
-    parser.add_argument("--annotation-set-id", default="gold_pairwise_v1")
+    parser.add_argument("--annotation-set-id", default="gold_pairwise_v2")
     parser.add_argument("--protocol-version", default="pairwise-v0.1")
     parser.add_argument("--port", type=int, default=8765)
     args = parser.parse_args(argv)

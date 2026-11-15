@@ -70,7 +70,7 @@ class PairwiseJudgeTests(unittest.TestCase):
             output = Path(directory) / "run"
             args = pairwise.build_parser().parse_args([
                 "--eval-config", str(pairwise.REPO_ROOT / "configs/eval/pairwise_gpt6_luna.toml"),
-                "--limit", "1", "--run-id", "gpt6_luna_test", "--output-dir", str(output),
+                "--limit", "1", "--run-id", "gpt6_luna_test", "--output-dir", str(output), "--calls-dir", str(output),
                 "--no-human-annotations",
             ])
             factory = lambda config: LLMClient(config, transport=httpx.MockTransport(handle))
@@ -119,7 +119,7 @@ class PairwiseJudgeTests(unittest.TestCase):
             output = Path(directory) / "run"
             args = pairwise.build_parser().parse_args([
                 "--eval-config", str(pairwise.REPO_ROOT / "configs/eval/pairwise_claude.toml"),
-                "--limit", "1", "--run-id", "claude_test", "--output-dir", str(output),
+                "--limit", "1", "--run-id", "claude_test", "--output-dir", str(output), "--calls-dir", str(output),
                 "--no-human-annotations",
             ])
             factory = lambda config: LLMClient(config, transport=httpx.MockTransport(handle))
@@ -140,7 +140,7 @@ class PairwiseJudgeTests(unittest.TestCase):
                 'model_alias = "claude"', 'model_alias = "claude"\ntemperature = 0.0'))
             output = Path(directory) / "run"
             args = pairwise.build_parser().parse_args([
-                "--eval-config", str(config_path), "--output-dir", str(output),
+                "--eval-config", str(config_path), "--output-dir", str(output), "--calls-dir", str(output),
                 "--limit", "1", "--no-human-annotations",
             ])
             with patch("adgenius.eval.pairwise.LLMClient", side_effect=AssertionError("network")), \
@@ -152,7 +152,7 @@ class PairwiseJudgeTests(unittest.TestCase):
         seen = []
         fake = FakeClient(texts, seen)
         cli_args = [
-            "--limit", "1", "--run-id", "judge_test", "--output-dir", str(output_dir),
+            "--limit", "1", "--run-id", "judge_test", "--output-dir", str(output_dir), "--calls-dir", str(output_dir),
         ]
         if not human_labels:
             cli_args.append("--no-human-annotations")
@@ -166,7 +166,7 @@ class PairwiseJudgeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "dry-run"
             args = pairwise.build_parser().parse_args([
-                "--dry-run", "--limit", "1", "--output-dir", str(output),
+                "--dry-run", "--limit", "1", "--output-dir", str(output), "--calls-dir", str(output),
                 "--no-human-annotations",
             ])
             with patch.dict(os.environ, {"DASHSCOPE_API_KEY": ""}), \
@@ -176,6 +176,26 @@ class PairwiseJudgeTests(unittest.TestCase):
             self.assertEqual(result["input_mode"], "ad_text_only")
             self.assertEqual(result["protocol_version"], "pairwise-v0.2")
             self.assertFalse(output.exists())
+
+    def test_separate_call_directory_preserves_resume_and_standard_results(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "results"
+            journals = Path(directory) / "artifacts"
+            args = ["--calls-dir", str(journals)]
+            _, requests = self.execute([
+                '{"choice":"1","reason":"More direct."}',
+                '{"choice":"2","reason":"More direct."}',
+            ], output, extra_args=args)
+            self.assertEqual(len(requests), 2)
+            self.assertFalse((output / "calls.jsonl").exists())
+            self.assertEqual(len(pairwise._read_jsonl(journals / "calls.jsonl")), 2)
+            self.assertTrue((output / "results.jsonl").is_file())
+            manifest = pairwise._strict_json((output / "manifest.json").read_bytes())
+            self.assertEqual(manifest["calls_file"], str(journals / "calls.jsonl"))
+            original_calls = (journals / "calls.jsonl").read_bytes()
+            _, resumed_requests = self.execute([], output, extra_args=args)
+            self.assertEqual(resumed_requests, [])
+            self.assertEqual((journals / "calls.jsonl").read_bytes(), original_calls)
 
     def test_requests_contain_only_ad_texts_in_both_orders(self):
         with tempfile.TemporaryDirectory() as directory:

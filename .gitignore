@@ -11,21 +11,16 @@ dist/
 .pytest_cache/
 .DS_Store
 
-# Runtime locks used by the local human annotation tool.
+# Curated data/ and formal results/ are shared; runtime files stay local.
+/artifacts/
 data/**/.pairwise_*.lock
+results/**/.run.lock
 
-# Large datasets and experiment outputs
-data/raw/*
-data/processed/*
-data/train/*
-artifacts/eval/*
-artifacts/train/*
-artifacts/checkpoints/*
+# Share only final human labels; keep original labels and review history local.
+/deprecated/artifacts/eval/gold_review/
+/deprecated/**/pairwise_annotations_*.jsonl
 
-# The full train-pool manifest is reproducible but too large for this repo.
-# Keep the small frozen evaluation inputs in the first commit.
-data/splits/v1/train_pool.jsonl
-!data/processed/
-!data/processed/v1/
-!data/processed/v1/gold_products.jsonl
-!data/processed/v1/test_products.jsonl
+# Bulky retired runtime outputs and unused raw downloads stay local.
+deprecated/artifacts/eval/gold_generation/
+deprecated/artifacts/eval/pairwise/
+deprecated/data/raw/

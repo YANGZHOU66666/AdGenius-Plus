@@ -1,0 +1,703 @@
+{
+  "organization_date": "2026-11-14",
+  "record_content_changed": false,
+  "moves": [
+    {
+      "source": "data/eval/gold/v2/.pairwise_zhou.lock",
+      "destination": "data/eval/gold/.pairwise_zhou.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "data/eval/gold/v2/candidate_pairs.jsonl",
+      "destination": "data/eval/gold/candidate_pairs.jsonl",
+      "sha256": "272895ca4931fdc918fc8a1be31c33878bb7f312017cef3c6481614ba5b4af59"
+    },
+    {
+      "source": "data/eval/gold/v2/pairwise_annotations_zhou.jsonl",
+      "destination": "data/eval/gold/pairwise_annotations_zhou.jsonl",
+      "sha256": "16894ca15b4c3d7373c338278ad31970dbda6c511e8840cb500d93c3a79af62f"
+    },
+    {
+      "source": "data/eval/gold/v2/product_items.jsonl",
+      "destination": "data/eval/gold/product_items.jsonl",
+      "sha256": "7e3a623e12bb6c8a9499e7d467ebc17662225ad52258095c3fe76dad3e429567"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/calls_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/calls_longcat.jsonl",
+      "sha256": "6e7bceb23b87eb30c8252ce2434785e7d3355c625f7d5ecd829fa46ad7d1ffcd"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/calls_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/calls_qwen_local.jsonl",
+      "sha256": "21ee894a8f20db091649ffd434de7658f61138b948f4f81ecd435a16a4064c46"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/length_summary.json",
+      "destination": "deprecated/artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/length_summary.json",
+      "sha256": "2bd9e724f86f19c5d8d51e94c67b77bfa22fb656fabbd55c690ab414c8efd8ed"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/pilot_manifest.json",
+      "destination": "deprecated/artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/pilot_manifest.json",
+      "sha256": "7f412126e2d7c65df1ef7b04f496f5aa109a92674644f6d8e7b107a020ad3f8e"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/product_items.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/product_items.jsonl",
+      "sha256": "7545b1b6039bb4e93910a44ad1f3b0b6d0acb96479ea875de2ea22ddda8edb11"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/results_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/results_longcat.jsonl",
+      "sha256": "6cbab09963c312a4dfe604bd233ac26d443ffb5c76a94ea9ee8c6f06bfebdf41"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/results_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/results_qwen_local.jsonl",
+      "sha256": "a71853a940dd9685a046f44de0e052f52fb4c00b6c2e3aed26dc3a9f5baf87ae"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/system_prompt.txt",
+      "destination": "deprecated/artifacts/eval/gold_generation/focused_copy_pilot_20261111T091702Z/system_prompt.txt",
+      "sha256": "cdf0b90c3637329bb1701fc6652389d8a191fff0909cccd46f2a60255209c851"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/pilot_calls.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/pilot_calls.jsonl",
+      "sha256": "3ec6fda9d58f1c1da839e9b90b217f84e357b80366de4ffe842cddef81320e60"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/pilot_results.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/pilot_results.jsonl",
+      "sha256": "65967f48124850652d2f1dab0721af936a9a91fef431ad30179bd7747b37c049"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/calls_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/calls_longcat.jsonl",
+      "sha256": "f8638ec5c225e55d200312352d30593cc9dd3c070ac4296ef6765e9dcf4df713"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/calls_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/calls_qwen_local.jsonl",
+      "sha256": "8818304da06eadf96014daa678edbd3ba4c14fa78ba53ae045c16ee5d5057f29"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/length_summary.json",
+      "destination": "deprecated/artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/length_summary.json",
+      "sha256": "ebeb6d866b59bf315d90d354b5d52c5391f86eeabf9fd2bab2f372a4bc05aae0"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/pilot_manifest.json",
+      "destination": "deprecated/artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/pilot_manifest.json",
+      "sha256": "ce5a2ea88d821e347247157037956249b49fd43588761bc8dbd989dd35ad8360"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/product_items.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/product_items.jsonl",
+      "sha256": "7545b1b6039bb4e93910a44ad1f3b0b6d0acb96479ea875de2ea22ddda8edb11"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/results_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/results_longcat.jsonl",
+      "sha256": "982d1560455b8bcc76284ce462d1ae1883e1c7afe57a475de13aba50a07f405b"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/results_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/results_qwen_local.jsonl",
+      "sha256": "74c9551123077e56d8238ba3afc9d398ee344eb0d6d594114578dd4ffcf3ffa8"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/system_prompt.txt",
+      "destination": "deprecated/artifacts/eval/gold_generation/selective_copy_pilot_20261111T092631Z/system_prompt.txt",
+      "sha256": "d6f4f261dde608f41c70e2cec583cf949ddb527647f506166cceb55ad809a259"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/calls_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/calls_longcat.jsonl",
+      "sha256": "11bc58c39039c44e34870b06bcd63b2e04f0b7546ade7f4bccaafd599da973a1"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/calls_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/calls_qwen_local.jsonl",
+      "sha256": "72ae59c7eb1e613e71193ef659450b35f1472e887f21e5c0bc3162136850a2b6"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/length_summary.json",
+      "destination": "deprecated/artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/length_summary.json",
+      "sha256": "54b530caa3f6928c8b8ac6aece6fbb5aa01f79f3a434c034af07c45c2ff5f187"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/pilot_manifest.json",
+      "destination": "deprecated/artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/pilot_manifest.json",
+      "sha256": "30c2b1aa360476ea90eedfbcbe04cfaa8d8220ba2b1d419729ab1cdabc096d61"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/product_items.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/product_items.jsonl",
+      "sha256": "7545b1b6039bb4e93910a44ad1f3b0b6d0acb96479ea875de2ea22ddda8edb11"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/results_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/results_longcat.jsonl",
+      "sha256": "861184c66464036e4bf0f02ccf9f09cf3aea9cd05e785f7a4bc7b9d8bc80f431"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/results_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/results_qwen_local.jsonl",
+      "sha256": "c868aa626fef5a474ff5d53b98d2889f8eb65d95d66cc20c2e49ec5d99b4d3c2"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/system_prompt.txt",
+      "destination": "deprecated/artifacts/eval/gold_generation/short_copy_pilot_20261111T091057Z/system_prompt.txt",
+      "sha256": "ee8fd4e4fdad55470103df488f4efa7d46e40075f1a1c905e675fdeea813af5b"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/calls_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/calls_longcat.jsonl",
+      "sha256": "36b73716ffb0583201fe985f4a82f43acae1d38927a1f7018c85c301f767b3e1"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/calls_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/calls_qwen_local.jsonl",
+      "sha256": "9673d614359f531d7f29c0aed8adadb5a2b288e605a9844ad26a6aefe9adfdd7"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/length_summary.json",
+      "destination": "deprecated/artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/length_summary.json",
+      "sha256": "1976a53c340979c7045a75c84e16a34b9bbadf359221165ccd9370cd75c2969f"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/pilot_manifest.json",
+      "destination": "deprecated/artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/pilot_manifest.json",
+      "sha256": "8962fb0fb124828e11389bf240a10d8ccf5cb91902fe8fdd96af503221213a50"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/product_items.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/product_items.jsonl",
+      "sha256": "7545b1b6039bb4e93910a44ad1f3b0b6d0acb96479ea875de2ea22ddda8edb11"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/results_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/results_longcat.jsonl",
+      "sha256": "a2b83e81fa4d0585770f9ce60f89e36b42f94561315899e7dc8e82d61a6cbfe3"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/results_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/results_qwen_local.jsonl",
+      "sha256": "c4d6ece5362d962b847d767f493f777920dd0fab0d0b54cd7d2db5480645cde0"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/system_prompt.txt",
+      "destination": "deprecated/artifacts/eval/gold_generation/under25_copy_pilot_20261111T092148Z/system_prompt.txt",
+      "sha256": "60833b63dfea124035dc96666d8b882be80c5291d781d6aac3130aa8fda2920a"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1/calls_gemma_31b.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1/calls_gemma_31b.jsonl",
+      "sha256": "d8623dd0b28047c659e520777fe3b186f20c8d2b757780acbe9aeec76217c652"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1/calls_glm53_flash.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1/calls_glm53_flash.jsonl",
+      "sha256": "3c733436e7fe24f71beff08629d1b38c671286f7b9174dee4fef16fe7495a871"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1/calls_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1/calls_longcat.jsonl",
+      "sha256": "cd80e33f34d7e5deb1af34220868212d274c2ab1bcca5824e6e8bfedd4b3b615"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1/calls_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1/calls_qwen_local.jsonl",
+      "sha256": "9b12e8805b3845263b132ed86b4430b57b36d6681bf3832f0ed70fb957819799"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1/results_gemma_31b.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1/results_gemma_31b.jsonl",
+      "sha256": "322b5cb33dd39495aca3cdcbc74503b6a45c9f9134b7df4dfebf83cd22fd2640"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1/results_glm53_flash.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1/results_glm53_flash.jsonl",
+      "sha256": "02ae605c7aa6016a46b4660e6890ea509559ac15fab9ab764b5b854152bf2253"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1/results_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1/results_longcat.jsonl",
+      "sha256": "d1cae6544519e6de8fde05140a2055ef392c33bddf8f16719b724cc2031b0943"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1/results_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1/results_qwen_local.jsonl",
+      "sha256": "e938c45ecaf20d9aa6e8ee3f8557b94dfc0fb9e4cfeda8075267974164c58f8c"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1/retry_manifest.json",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1/retry_manifest.json",
+      "sha256": "37125eabb2fd184fb92819cae46fde000282f37fb9f3cc754975731234c87c95"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1_original/calls_gemma_31b.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1_original/calls_gemma_31b.jsonl",
+      "sha256": "3b738333727cf270ce9753b823caf12b36eaa352a5869d47ba4ca9d9f4a22588"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1_original/calls_glm53_flash.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1_original/calls_glm53_flash.jsonl",
+      "sha256": "3c733436e7fe24f71beff08629d1b38c671286f7b9174dee4fef16fe7495a871"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1_original/calls_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1_original/calls_longcat.jsonl",
+      "sha256": "cd80e33f34d7e5deb1af34220868212d274c2ab1bcca5824e6e8bfedd4b3b615"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1_original/calls_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1_original/calls_qwen_local.jsonl",
+      "sha256": "9b12e8805b3845263b132ed86b4430b57b36d6681bf3832f0ed70fb957819799"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1_original/results_gemma_31b.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1_original/results_gemma_31b.jsonl",
+      "sha256": "d98295fe413b60d6c48107bd461ee8f7d515938cd5db24867f1e92958047607f"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1_original/results_glm53_flash.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1_original/results_glm53_flash.jsonl",
+      "sha256": "02ae605c7aa6016a46b4660e6890ea509559ac15fab9ab764b5b854152bf2253"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1_original/results_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1_original/results_longcat.jsonl",
+      "sha256": "d1cae6544519e6de8fde05140a2055ef392c33bddf8f16719b724cc2031b0943"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v1_original/results_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v1_original/results_qwen_local.jsonl",
+      "sha256": "e938c45ecaf20d9aa6e8ee3f8557b94dfc0fb9e4cfeda8075267974164c58f8c"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2/retry_manifest.json",
+      "destination": "deprecated/artifacts/eval/gold_generation/v2/retry_manifest.json",
+      "sha256": "92a2a7ca0dc754a1051aaee69e687a58291e1dcb8c599c867bc06b207c15a9be"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2_original/calls_gemma_31b.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v2_original/calls_gemma_31b.jsonl",
+      "sha256": "8d71743271bfa1af6d777f4bd504e0a08bbe28cd71f1f82d027e98f4a0202e04"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2_original/calls_glm53_flash.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v2_original/calls_glm53_flash.jsonl",
+      "sha256": "fa4f67598f26df4db18035e9de3fbfec4cb77d7d80be129f5ba57dd04a7b7ed3"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2_original/calls_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v2_original/calls_longcat.jsonl",
+      "sha256": "5e881d14d017255c14785da9f3169d828bfd93eb6b0c71b28ec2ac561dfea303"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2_original/calls_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v2_original/calls_qwen_local.jsonl",
+      "sha256": "94b5145bb957e771b7a0a9be77f44b3d2c4c368f3e475388082b890de26e3a1f"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2_original/results_gemma_31b.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v2_original/results_gemma_31b.jsonl",
+      "sha256": "d6333af2d3707cf2b532aea2d64ba837d25e9e7af58106ffa275e6efe04feb4c"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2_original/results_glm53_flash.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v2_original/results_glm53_flash.jsonl",
+      "sha256": "154ab09924b38dfd2c7bb8db5de3f84d13ed781a6e97c5af8f50fd4960e1e34f"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2_original/results_longcat.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v2_original/results_longcat.jsonl",
+      "sha256": "f920f5bca7641e7868734bfa2f89725eba39f628f0e048ab36108711a4b7d46d"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2_original/results_qwen_local.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_generation/v2_original/results_qwen_local.jsonl",
+      "sha256": "01597691ca634e65d95b2cf7043892e57f890a1234d950053cf9d1a86f675d89"
+    },
+    {
+      "source": "artifacts/eval/gold_review/20261113T224631865602Z/corrections.json",
+      "destination": "deprecated/artifacts/eval/gold_review/20261113T224631865602Z/corrections.json",
+      "sha256": "658935fb93b44baad297c321509b839373a5b70ed046a28ab3ec2d04eb4cb4d9"
+    },
+    {
+      "source": "artifacts/eval/gold_review/20261113T224631865602Z/pairwise_annotations_zhou.before.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_review/20261113T224631865602Z/pairwise_annotations_zhou.before.jsonl",
+      "sha256": "231890fdcf4dc9db8b95800f9d5823a0cb2b6f691d6519d48c139ee9e5436236"
+    },
+    {
+      "source": "artifacts/eval/gold_review/20261113T224952597513Z/corrections.json",
+      "destination": "deprecated/artifacts/eval/gold_review/20261113T224952597513Z/corrections.json",
+      "sha256": "2af93669712f3fbd29c2ecdbd3e130fb3dc32e01b59b8591af24b1c3283a8711"
+    },
+    {
+      "source": "artifacts/eval/gold_review/20261113T224952597513Z/pairwise_annotations_zhou.before.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_review/20261113T224952597513Z/pairwise_annotations_zhou.before.jsonl",
+      "sha256": "39dfb383c4a7bc1fb9d5930a919694f957f4e2d7af4aaf43e6c677d756e76020"
+    },
+    {
+      "source": "artifacts/eval/gold_review/20261113T225531140660Z/corrections.json",
+      "destination": "deprecated/artifacts/eval/gold_review/20261113T225531140660Z/corrections.json",
+      "sha256": "c41e7a1985ed44b283158b1f2855c640ab3c546ccd128a8cfce27537c8f40408"
+    },
+    {
+      "source": "artifacts/eval/gold_review/20261113T225531140660Z/pairwise_annotations_zhou.before.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_review/20261113T225531140660Z/pairwise_annotations_zhou.before.jsonl",
+      "sha256": "927fe1406067f9afed0787599fa479125ba08103b8d4ea6867f297c1226ac5f9"
+    },
+    {
+      "source": "artifacts/eval/gold_review/20261113T225640689035Z/corrections.json",
+      "destination": "deprecated/artifacts/eval/gold_review/20261113T225640689035Z/corrections.json",
+      "sha256": "bddb38d5156d3f27f195fc838a4858556ca32b087fab73740967728703b0314e"
+    },
+    {
+      "source": "artifacts/eval/gold_review/20261113T225640689035Z/pairwise_annotations_zhou.before.jsonl",
+      "destination": "deprecated/artifacts/eval/gold_review/20261113T225640689035Z/pairwise_annotations_zhou.before.jsonl",
+      "sha256": "aa0b4394de79e78eaefd6ff0e816917bcc2db601d211fe3e2317c0b627deadd0"
+    },
+    {
+      "source": "artifacts/eval/pairwise/claude55_gold_pilot_v2/.run.lock",
+      "destination": "deprecated/artifacts/eval/pairwise/claude55_gold_pilot_v2/.run.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "artifacts/eval/pairwise/claude55_gold_pilot_v2/calls.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/claude55_gold_pilot_v2/calls.jsonl",
+      "sha256": "64f2c1fb8bf084d9ae077ff20ea421c0a9259945678c68d872936deaf69b7776"
+    },
+    {
+      "source": "artifacts/eval/pairwise/claude55_gold_pilot_v2/decisions.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/claude55_gold_pilot_v2/decisions.jsonl",
+      "sha256": "d670744e3881fb251e75200cdcf515ccb07c26656a6f2492ba4dae383c8b88d3"
+    },
+    {
+      "source": "artifacts/eval/pairwise/claude55_gold_pilot_v2/manifest.json",
+      "destination": "deprecated/artifacts/eval/pairwise/claude55_gold_pilot_v2/manifest.json",
+      "sha256": "e8d1d9087180a087d17557376b80b395ee31ea212b698ab9c5efc2999bb24e31"
+    },
+    {
+      "source": "artifacts/eval/pairwise/claude55_gold_pilot_v2/metrics.json",
+      "destination": "deprecated/artifacts/eval/pairwise/claude55_gold_pilot_v2/metrics.json",
+      "sha256": "bb1ce67dda77e6a324dfcdf0d316bbffb323fa4005af50623745629baa60da4b"
+    },
+    {
+      "source": "artifacts/eval/pairwise/claude55_gold_pilot_v2/results.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/claude55_gold_pilot_v2/results.jsonl",
+      "sha256": "b42122330d7a861d174b798d01aa617306b549cf97ac855953d9dea388cff557"
+    },
+    {
+      "source": "artifacts/eval/pairwise/claude55_gold_v2/metrics.json",
+      "destination": "deprecated/artifacts/eval/pairwise/claude55_gold_v2/metrics.json",
+      "sha256": "bdef080d281aebee7e9102e3b72583ac69ac595ebb8756e00f3e87c25b182c87"
+    },
+    {
+      "source": "artifacts/eval/pairwise/deepseek41_gold_pilot_v2/.run.lock",
+      "destination": "deprecated/artifacts/eval/pairwise/deepseek41_gold_pilot_v2/.run.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "artifacts/eval/pairwise/deepseek41_gold_pilot_v2/calls.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/deepseek41_gold_pilot_v2/calls.jsonl",
+      "sha256": "d2cc03e4fb78cf3136376f0f6aae9774fa75746b415ac72e113f2d897e244573"
+    },
+    {
+      "source": "artifacts/eval/pairwise/deepseek41_gold_pilot_v2/decisions.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/deepseek41_gold_pilot_v2/decisions.jsonl",
+      "sha256": "e5efd2ac800e3fb83c6fe277dc3b560fd228a613c1da255392b3d42667f0eb12"
+    },
+    {
+      "source": "artifacts/eval/pairwise/deepseek41_gold_pilot_v2/manifest.json",
+      "destination": "deprecated/artifacts/eval/pairwise/deepseek41_gold_pilot_v2/manifest.json",
+      "sha256": "f0c13ea13d4821d0da8abd099cdddd1e1b7f6039011d06f7977876296a727be7"
+    },
+    {
+      "source": "artifacts/eval/pairwise/deepseek41_gold_pilot_v2/metrics.json",
+      "destination": "deprecated/artifacts/eval/pairwise/deepseek41_gold_pilot_v2/metrics.json",
+      "sha256": "45c2fb53a4ce0e6d3971b801c05171c28630d2585d294d3eb8e19d020176ed24"
+    },
+    {
+      "source": "artifacts/eval/pairwise/deepseek41_gold_pilot_v2/results.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/deepseek41_gold_pilot_v2/results.jsonl",
+      "sha256": "b9789ef41fba5609b27d6d7970f540d337d22022b1f81f691f71ffa0a70dc1f3"
+    },
+    {
+      "source": "artifacts/eval/pairwise/deepseek41_gold_v2/metrics.json",
+      "destination": "deprecated/artifacts/eval/pairwise/deepseek41_gold_v2/metrics.json",
+      "sha256": "5d4c77eab53216291ce676c18ec54becafc32b54213cd4bea84fe01f6b246d4c"
+    },
+    {
+      "source": "artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/.run.lock",
+      "destination": "deprecated/artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/.run.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/calls.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/calls.jsonl",
+      "sha256": "aa6df5b9fd8f737b030ead9fca6b7920614b754de62c49facbf53849bb21d7a6"
+    },
+    {
+      "source": "artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/decisions.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/decisions.jsonl",
+      "sha256": "e5efd2ac800e3fb83c6fe277dc3b560fd228a613c1da255392b3d42667f0eb12"
+    },
+    {
+      "source": "artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/manifest.json",
+      "destination": "deprecated/artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/manifest.json",
+      "sha256": "bdabd19d19bc251876b5fc0b0713ab4a79f90a18f36f39138ab16c1b663278e6"
+    },
+    {
+      "source": "artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/metrics.json",
+      "destination": "deprecated/artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/metrics.json",
+      "sha256": "fe9cd547431c4adc54e8424aa97a38d3ed29b93b43f85c4452edb2fb462ef405"
+    },
+    {
+      "source": "artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/results.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/gpt6_luna_gold_pilot_v2/results.jsonl",
+      "sha256": "9e73659d687fd06be7735f397a4e25c28d40a8cfc6f045478994efd9df1aacf8"
+    },
+    {
+      "source": "artifacts/eval/pairwise/gpt6_luna_gold_v2/metrics.json",
+      "destination": "deprecated/artifacts/eval/pairwise/gpt6_luna_gold_v2/metrics.json",
+      "sha256": "0bb1183a791b2a9bf211bcc41361c1de8df34b07e9ad827fc6d963d5d1ee0220"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_pilot_v1/.run.lock",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_pilot_v1/.run.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_pilot_v1/calls.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_pilot_v1/calls.jsonl",
+      "sha256": "79e8d95ce7b18489206d541b3eb47144d7ffff74172a6ac4f579dae478ae831b"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_pilot_v1/decisions.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_pilot_v1/decisions.jsonl",
+      "sha256": "c7acc9ebb56236d616ef66074710cd433465681055cb74c2eea55d59dc3c0cba"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_pilot_v1/manifest.json",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_pilot_v1/manifest.json",
+      "sha256": "7e2c99ed78da8b755b8c12f024437599dabe7ee11b3f5de3549da5db4de9a41a"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_pilot_v1/metrics.json",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_pilot_v1/metrics.json",
+      "sha256": "77acbde098076ad0d9ea8cfac23170afe05d1244f7b208a4466f42d918cca532"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_pilot_v1/results.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_pilot_v1/results.jsonl",
+      "sha256": "0e0da9ae34a54d8e86fcd48bfeed2c36cf25e23a0a60d6f277cedb9a2f537c8a"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_v1/.run.lock",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_v1/.run.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_v1/calls.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_v1/calls.jsonl",
+      "sha256": "69efaa867cf250f51018bd3c56c83b8d6fe6ede636b9ae5189badbeade74fe37"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_v1/decisions.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_v1/decisions.jsonl",
+      "sha256": "e05d5c4d2635769a7d3db91ae97f7de58ccb373fb40d27c0935c59531e15b6a3"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_v1/manifest.json",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_v1/manifest.json",
+      "sha256": "5e91423b89f7122c81015ec5e55980e7c53fbb8b613a3b1a57caf4e06941736c"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_v1/metrics.json",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_v1/metrics.json",
+      "sha256": "ecc7882b46dd14aba0d4cf99a1923c95b6514089f72cffe7eb36e59ff3f91d7f"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_v1/results.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_v1/results.jsonl",
+      "sha256": "32ebaeecce227b3cf85bf4606cf605678c2c19332f99b59a61d5556d17dfee6b"
+    },
+    {
+      "source": "artifacts/eval/pairwise/qwen37_gold_v2/metrics.json",
+      "destination": "deprecated/artifacts/eval/pairwise/qwen37_gold_v2/metrics.json",
+      "sha256": "9b860385ab9b3f1d975895645e8bca60d50e05a894d60dc3f4cabf6f2e84c49f"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/comparison.json",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/comparison.json",
+      "sha256": "eab369436ee86f48b0f6465051b5bae73b34a47a7f2b04a51c4b911b9e47bb38"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/human_annotations_original.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/human_annotations_original.jsonl",
+      "sha256": "231890fdcf4dc9db8b95800f9d5823a0cb2b6f691d6519d48c139ee9e5436236"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/human_annotations_reviewed.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/human_annotations_reviewed.jsonl",
+      "sha256": "16894ca15b4c3d7373c338278ad31970dbda6c511e8840cb500d93c3a79af62f"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/manifest.json",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/manifest.json",
+      "sha256": "517a12a3557e946923ecf6d5a4dc5171a15266e30e99c0bd6a29966014d267a0"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_claude55_gold_v2.json",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_claude55_gold_v2.json",
+      "sha256": "abecdc11eb77a69359af330931f89740f67a836b3b64a0f042f728588b9a0f6e"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_deepseek41_gold_v2.json",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_deepseek41_gold_v2.json",
+      "sha256": "91be7597966f71f7337568a597054c0fc340544d8e222c0b6d1a8ed5fe91509c"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_gpt6_luna_gold_v2.json",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_gpt6_luna_gold_v2.json",
+      "sha256": "a0592385fbbaf2914861fdfc00ce6b5a57ad861498ca848c9bfc9a3ad06ec904"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_original_claude55_gold_v2.json",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_original_claude55_gold_v2.json",
+      "sha256": "6463502a049e53d0e17325380cdc84d51eb7cdeba57a5ed56e9de900078c939d"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_original_deepseek41_gold_v2.json",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_original_deepseek41_gold_v2.json",
+      "sha256": "c0a96c411489e21f6cec188567df56fd052af1220e1a7188a682e8b15fa3c644"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_original_gpt6_luna_gold_v2.json",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_original_gpt6_luna_gold_v2.json",
+      "sha256": "d8d7f4303f0e2db4a0b0a8cb6705320c94314071e034fd880b30a1d671185360"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_original_qwen37_gold_v2.json",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_original_qwen37_gold_v2.json",
+      "sha256": "64842627d47bbf64b5400557eceaf63b599154ec4d38022533da8b28b5ee622f"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_qwen37_gold_v2.json",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/metrics_qwen37_gold_v2.json",
+      "sha256": "c53bec9c148ebfcac3add0bd59d63fa0edfa39e7cff15f9864cae00254c8e751"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/per_pair_comparison.jsonl",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/per_pair_comparison.jsonl",
+      "sha256": "255ebbb5d2639d2faff8bad3b5a3398b239b21b7d59a24518477e53992e2938e"
+    },
+    {
+      "source": "artifacts/eval/pairwise/reviewed_comparison_20261113_150614/report.md",
+      "destination": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/report.md",
+      "sha256": "3eddcd18cb22fb8c030aabdb845dd18e28106766c84468e2cb8b092bbaf65cb7"
+    },
+    {
+      "source": "data/eval/gold/v1/candidate_pairs.jsonl",
+      "destination": "deprecated/data/eval/gold/v1/candidate_pairs.jsonl",
+      "sha256": "a903029f54409e71949d03219691dbbb07a10491700b393ed8352528ffb0d60b"
+    },
+    {
+      "source": "data/eval/gold/v1/candidate_pairs.manifest.json",
+      "destination": "deprecated/data/eval/gold/v1/candidate_pairs.manifest.json",
+      "sha256": "8c2f0e1d33a5b23de2ed31f12a1c1915021c168fae7dce218d24f8a1fa762721"
+    },
+    {
+      "source": "data/eval/gold/v1/product_items.jsonl",
+      "destination": "deprecated/data/eval/gold/v1/product_items.jsonl",
+      "sha256": "7e3a623e12bb6c8a9499e7d467ebc17662225ad52258095c3fe76dad3e429567"
+    },
+    {
+      "source": "data/eval/gold/v2/candidate_pairs.manifest.json",
+      "destination": "deprecated/data/eval/gold/v2/candidate_pairs.manifest.json",
+      "sha256": "1aae1151ae4a62da3bc37966a9a97e3ca3ba4d5f4a45c0a95077adfac7788abb"
+    },
+    {
+      "source": "../data/raw/amazon_reviews_2023/meta_categories/meta_All_Beauty.jsonl.gz",
+      "destination": "deprecated/data/raw/amazon_reviews_2023/meta_All_Beauty.jsonl.gz",
+      "sha256": "51f8255c2794afd60e274c10d3e2d09dc1f671eba4ba35f74f748d8631216d05"
+    },
+    {
+      "source": "docs/gold_candidate_generation_v1.md",
+      "destination": "deprecated/docs/gold_candidate_generation_v1.md",
+      "sha256": "bcd2aefc40d5625db305586727eea1f69fca9ab5623d0a9becd2d766df0fc50c"
+    },
+    {
+      "source": "prompts/eval/pairwise/system_v1.txt",
+      "destination": "deprecated/prompts/eval/pairwise/system_v1.txt",
+      "sha256": "9c32cd25cfd4c779775a9994347355f9b7e99461459583a0796cc25e0d4e1b3e"
+    },
+    {
+      "source": "prompts/eval/pairwise/user_v1.txt",
+      "destination": "deprecated/prompts/eval/pairwise/user_v1.txt",
+      "sha256": "75ca33b5c76e8efb6000b1557d3031654166dced86766bc0c5e4377170bc7a2d"
+    },
+    {
+      "source": "docs/data_v1.md",
+      "destination": "docs/data_split.md",
+      "sha256": "433cf5a1fd93d6bef295865025ff95d7713e6275bf4bbac5b69b7647fb6e02d9"
+    }
+  ],
+  "copies": [
+    {
+      "source": "artifacts/eval/gold_generation/v2/results_gemma_31b.jsonl",
+      "destination": "data/eval/gold/results_gemma_31b.jsonl",
+      "sha256": "ad2903b996f48367198b97849435d8544aeddab9793230e215efbedaeebe9ef0"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2/results_glm53_flash.jsonl",
+      "destination": "data/eval/gold/results_glm53_flash.jsonl",
+      "sha256": "d45f76793e30eb94a6cdef05e707ded1316a4e42d0cd0b9d1a56008461890b6a"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2/results_longcat.jsonl",
+      "destination": "data/eval/gold/results_longcat.jsonl",
+      "sha256": "723dea261d1ee17069a5b8592191ce2f811e35cdb18b42e16142449dd6b593ab"
+    },
+    {
+      "source": "artifacts/eval/gold_generation/v2/results_qwen_local.jsonl",
+      "destination": "data/eval/gold/results_qwen_local.jsonl",
+      "sha256": "01597691ca634e65d95b2cf7043892e57f890a1234d950053cf9d1a86f675d89"
+    },
+    {
+      "source": "deprecated/artifacts/eval/pairwise/reviewed_comparison_20261113_150614/human_annotations_original.jsonl",
+      "destination": "deprecated/data/eval/gold/pairwise_annotations_zhou.original.jsonl",
+      "sha256": "231890fdcf4dc9db8b95800f9d5823a0cb2b6f691d6519d48c139ee9e5436236"
+    },
+    {
+      "source": "docs/architecture.md",
+      "destination": "deprecated/docs/architecture_before_cleanup.md",
+      "sha256": "79481f108c1560f80325a26793eb73d22ab8e25a95050f881ef415ca0df1e076"
+    },
+    {
+      "source": "docs/pairwise_llm_judge.md",
+      "destination": "deprecated/docs/pairwise_llm_judge_before_cleanup.md",
+      "sha256": "4cfe77e01dc17a72ee790bea098bf7ccc5222597ebfbed06a6194abe515496d5"
+    },
+    {
+      "source": "git:5b31b45:README.md",
+      "destination": "deprecated/docs/README_before_cleanup.md",
+      "sha256": "880faba0e6b0af8f41f7c44ecb0bc2f22e84df0f4d9a0b25c80b87bfa1777ba0"
+    },
+    {
+      "source": "git:5b31b45:tools/README.md",
+      "destination": "deprecated/docs/tools_README_before_cleanup.md",
+      "sha256": "a15861be0b3c6e97576f2a60d47f4fb7cc4ca293e957c80679bf2bbc2b617d0b"
+    }
+  ],
+  "notes": [
+    "Archived manifests and review records retain their captured original paths. Resolve moved files using this mapping.",
+    "Current generation runtime snapshots and call history remain under artifacts/eval/gold_generation/v2; the published frozen candidate dataset is under data/eval/gold.",
+    "The previous annotation service on port 8765 is being restarted using the primary checkout and new data paths."
+  ]
+}

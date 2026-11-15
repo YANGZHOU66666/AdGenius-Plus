@@ -68,10 +68,10 @@ flowchart LR
 
 ## File Layout
 
-The v2 batch is kept together so the frozen inputs and labels can be reviewed or reproduced as one unit:
+The current batch is kept together so the frozen inputs and labels can be reviewed or reproduced as one unit:
 
 ```text
-data/eval/gold/v2/
+data/eval/gold/
 ├── product_items.jsonl
 ├── candidate_pairs.jsonl
 ├── candidate_pairs.manifest.json
@@ -102,7 +102,7 @@ Each completed annotation follows the human variant of [PairwiseResult](../metad
 }
 ```
 
-The dataset-level checks require complete unique pair coverage, exactly the two candidates from the referenced pair in `presentation`, and a winner ID consistent with the selected side. The current v2 file has 100 successful records, no duplicate or missing pairs, no tie choices, and no unfinished drafts.
+The dataset-level checks require complete unique pair coverage, exactly the two candidates from the referenced pair in `presentation`, and a winner ID consistent with the selected side. The current file has 100 successful records, no duplicate or missing pairs, no tie choices, and no unfinished drafts.
 
 ## Browser Behavior
 
@@ -138,9 +138,9 @@ From the repository root, run the v2 batch with:
 
 ```sh
 .venv/bin/python tools/pairwise_annotation.py \
-  --pairs data/eval/gold/v2/candidate_pairs.jsonl \
-  --products data/eval/gold/v2/product_items.jsonl \
-  --annotations-dir data/eval/gold/v2 \
+  --pairs data/eval/gold/candidate_pairs.jsonl \
+  --products data/eval/gold/product_items.jsonl \
+  --annotations-dir data/eval/gold \
   --annotator zhou \
   --annotation-set-id gold_pairwise_v2 \
   --protocol-version pairwise-v0.1
@@ -161,3 +161,7 @@ The workbench has focused offline tests for:
 - final-pair completion behavior.
 
 The completed v2 inputs and labels pass the ProductItem, CandidatePair, and human PairwiseResult JSON Schemas, plus dataset-level coverage and winner-mapping checks. These checks validate the annotation artifact before it is used to calibrate an LLM judge.
+
+## Current dataset organization
+
+The complete 400 generated candidates are now shared alongside the frozen pairs in data/eval/gold. The current Zhou labels contain 15 user-confirmed model-assisted revisions; original labels and revision records are archived under deprecated. Record IDs, annotation-set ID gold_pairwise_v2, and protocol pairwise-v0.1 were retained. Full generation/judge call journals stay in artifacts. See [data/README.md](../data/README.md).

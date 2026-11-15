@@ -3,7 +3,7 @@
 The script uses the shared LLM wrapper and writes one GenerationResult JSONL
 and one calls JSONL per model. It does not create pairs or call a judge.
 Defaults read the 100 frozen gold products and write four model outputs to
-artifacts/eval/gold_generation/v2/ using the current short-copy prompt.
+artifacts/generation/gold/ using the current short-copy prompt.
 Defaults select four live models;
 explicitly select ``--models mock`` for a dry run without API calls.
 """
@@ -32,8 +32,8 @@ from adgenius.shared.product import _as_text, render_product_information as _pro
 
 
 DEFAULT_MODELS = ("qwen_local", "gemma_31b", "glm53_flash", "longcat")
-DEFAULT_INPUT = Path("data/eval/gold/v1/product_items.jsonl")
-DEFAULT_OUTPUT_DIR = Path("artifacts/eval/gold_generation/v2")
+DEFAULT_INPUT = Path("data/eval/gold/product_items.jsonl")
+DEFAULT_OUTPUT_DIR = Path("artifacts/generation/gold")
 SYSTEM_PROMPT = """You write concise English promotional copy for e-commerce product cards.
 
 Write a clear, engaging blurb that helps shoppers quickly understand

@@ -255,10 +255,10 @@ class GenerateCandidateTests(unittest.TestCase):
             self.assertEqual(list(output_dir.iterdir()), [existing])
             self.assertEqual(existing.read_text(), "keep existing log")
 
-    def test_default_gold_run_writes_400_candidates_to_v2_and_preserves_v1(self):
+    def test_default_gold_run_uses_formal_products_and_preserves_archived_outputs(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            source = root / "data/eval/gold/v1/product_items.jsonl"
+            source = root / "data/eval/gold/product_items.jsonl"
             source.parent.mkdir(parents=True)
             source.write_text("".join(json.dumps({
                 "product_id": f"gold_product_{index:06d}",
@@ -273,7 +273,7 @@ class GenerateCandidateTests(unittest.TestCase):
                 f"[models.{alias}]\nprovider = 'mock'\nmodel = '{alias}'\n"
                 for alias in generator.DEFAULT_MODELS
             ), encoding="utf-8")
-            previous = root / "artifacts/eval/gold_generation/v1"
+            previous = root / "deprecated/artifacts/eval/gold_generation/v1"
             previous.mkdir(parents=True)
             original_v1 = {}
             for alias in generator.DEFAULT_MODELS:
@@ -288,7 +288,7 @@ class GenerateCandidateTests(unittest.TestCase):
                   redirect_stdout(StringIO()), redirect_stderr(StringIO())):
                 self.assertEqual(generator.main(["--run-stamp", "test_v2"]), 0)
 
-            output = root / "artifacts/eval/gold_generation/v2"
+            output = root / "artifacts/generation/gold"
             self.assertEqual(len(list(output.glob("results_*.jsonl"))), 4)
             self.assertEqual(len(list(output.glob("calls_*.jsonl"))), 4)
             all_candidate_ids = set()

@@ -1,7 +1,7 @@
 """Repair failed candidates in place, keeping a resumable generation run.
 
-By default, update the gold v2 results/calls in their original directory.
-Before the first repair, preserve original JSONL files in sibling ``v2_original/``.
+By default, inspect results/calls in artifacts/generation/gold.
+Before the first repair, preserve original JSONL files in sibling ``gold_original/``.
 Generation settings are recovered from the original call logs, not CLI defaults.
 """
 

@@ -1,0 +1,49 @@
+{
+  "inputs": [
+    {
+      "path": "data/eval/gold/results_qwen_local.jsonl",
+      "sha256": "01597691ca634e65d95b2cf7043892e57f890a1234d950053cf9d1a86f675d89",
+      "record_count": 100
+    },
+    {
+      "path": "data/eval/gold/results_gemma_31b.jsonl",
+      "sha256": "ad2903b996f48367198b97849435d8544aeddab9793230e215efbedaeebe9ef0",
+      "record_count": 100
+    },
+    {
+      "path": "data/eval/gold/results_glm53_flash.jsonl",
+      "sha256": "d45f76793e30eb94a6cdef05e707ded1316a4e42d0cd0b9d1a56008461890b6a",
+      "record_count": 100
+    },
+    {
+      "path": "data/eval/gold/results_longcat.jsonl",
+      "sha256": "723dea261d1ee17069a5b8592191ce2f811e35cdb18b42e16142449dd6b593ab",
+      "record_count": 100
+    }
+  ],
+  "products": "data/eval/gold/product_items.jsonl",
+  "products_sha256": "7e3a623e12bb6c8a9499e7d467ebc17662225ad52258095c3fe76dad3e429567",
+  "seed": 42,
+  "models": [
+    "gemma_31b",
+    "glm53_flash",
+    "longcat",
+    "qwen_local"
+  ],
+  "sample_index": 0,
+  "product_count": 100,
+  "pair_count": 100,
+  "source_combination_counts": {
+    "gemma_31b + glm53_flash": 21,
+    "gemma_31b + longcat": 16,
+    "gemma_31b + qwen_local": 16,
+    "glm53_flash + longcat": 9,
+    "glm53_flash + qwen_local": 27,
+    "longcat + qwen_local": 11
+  },
+  "sampling": "uniformly sample two distinct model aliases per product",
+  "rng": "random.Random seeded by SHA-256 of canonical [seed, product_id]",
+  "candidate_order": "candidate_id ascending; not an A/B presentation mapping",
+  "output_sha256": "272895ca4931fdc918fc8a1be31c33878bb7f312017cef3c6481614ba5b4af59",
+  "archived_construction_manifest": "deprecated/data/eval/gold/v2/candidate_pairs.manifest.json"
+}

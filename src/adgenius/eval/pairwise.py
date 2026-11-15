@@ -15,7 +15,7 @@ import tempfile
 import time
 import tomllib
 import uuid
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from dataclasses import replace
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -31,8 +31,8 @@ from adgenius.shared.llm import LLMClient, LLMError, ModelConfig
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCHEMA_DIR = REPO_ROOT / "metadata" / "schemas"
-DEFAULT_PAIRS = REPO_ROOT / "data/eval/gold/v2/candidate_pairs.jsonl"
-DEFAULT_HUMAN = REPO_ROOT / "data/eval/gold/v2/pairwise_annotations_zhou.jsonl"
+DEFAULT_PAIRS = REPO_ROOT / "data/eval/gold/candidate_pairs.jsonl"
+DEFAULT_HUMAN = REPO_ROOT / "data/eval/gold/pairwise_annotations_zhou.jsonl"
 ORDERS = ("AB", "BA")
 
 
@@ -374,8 +374,8 @@ def _validate_order(result, mapping):
         raise ValueError("Saved judge result must reference a call trace")
 
 
-def _load_saved(output: Path, pairs, run_id, protocol):
-    calls = _read_jsonl(output / "calls.jsonl") if (output / "calls.jsonl").exists() else []
+def _load_saved(output: Path, calls_path: Path, pairs, run_id, protocol):
+    calls = _read_jsonl(calls_path) if calls_path.exists() else []
     results = _read_jsonl(output / "results.jsonl") if (output / "results.jsonl").exists() else []
     pair_map = {pair["pair_id"]: pair for pair in pairs}
     validator = _validator("pairwise_result.schema.json")
@@ -438,10 +438,10 @@ def _fingerprint(settings, config, paths, pairs, human_path):
             "orders": list(ORDERS), "display_labels": ["1", "2"]}
 
 
-def _execute(output, manifest, pairs, humans, config, system, template):
+def _execute(output, calls_path, manifest, pairs, humans, config, system, template):
     run_id, settings = manifest["run_id"], manifest["specification"]["settings"]
     protocol = settings["protocol_version"]
-    calls, results, cached = _load_saved(output, pairs, run_id, protocol)
+    calls, results, cached = _load_saved(output, calls_path, pairs, run_id, protocol)
     validator = _validator("pairwise_result.schema.json")
 
     def save_derived():
@@ -477,7 +477,7 @@ def _execute(output, manifest, pairs, humans, config, system, template):
                     messages = _messages(system, template, texts[slots["1"]], texts[slots["2"]])
                     by_order[order] = _call_order(client, pair=pair, order=order, messages=messages,
                                                  slots=slots, run_id=run_id, settings=settings,
-                                                 calls=calls, calls_path=output / "calls.jsonl")
+                                                 calls=calls, calls_path=calls_path)
                     record = _result_record(pair, run_id, protocol, by_order)
                     validator.validate(record)
                     results[pair_id] = record
@@ -495,7 +495,8 @@ def _execute(output, manifest, pairs, humans, config, system, template):
     manifest.update(status="completed" if not metrics["incomplete_pair_count"] else "completed_with_failures",
                     updated_at=_now())
     _write_json(output / "manifest.json", manifest)
-    return {"run_id": run_id, "output_dir": str(output), "status": manifest["status"], "metrics": metrics}
+    return {"run_id": run_id, "output_dir": str(output), "calls_file": str(calls_path),
+            "status": manifest["status"], "metrics": metrics}
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
@@ -533,31 +534,41 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     run_id = run_id or f"pairwise_{settings['model_alias']}_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}"
     if not isinstance(run_id, str) or re.fullmatch(r"[a-zA-Z0-9_-]+", run_id) is None:
         raise ValueError("run_id may contain only letters, digits, underscores, and hyphens")
-    output = Path(args.output_dir).resolve() if args.output_dir else REPO_ROOT / "artifacts/eval/pairwise" / run_id
+    output = Path(args.output_dir).resolve() if args.output_dir else REPO_ROOT / "results/pairwise" / run_id
+    calls_dir = Path(args.calls_dir).resolve() if args.calls_dir else REPO_ROOT / "artifacts/pairwise" / run_id
+    if calls_dir != output and (output in calls_dir.parents or calls_dir in output.parents):
+        raise ValueError("Result and call directories must be separate non-nested directories")
+    calls_path = calls_dir / "calls.jsonl"
     if args.dry_run:
         return {"dry_run": True, "run_id": run_id, "model": config.model, "pair_count": len(pairs),
                 "protocol_version": settings["protocol_version"], "input_mode": settings["input_mode"],
                 "human_annotation_protocol_version": settings["human_annotation_protocol_version"],
                 "human_label_count": len(humans), "initial_judge_calls": 2 * len(pairs),
                 "maximum_attempts_per_order": settings["max_retries"] + 1,
-                "output_dir": str(output), "config_fingerprint": fingerprint}
+                "output_dir": str(output), "calls_file": str(calls_path),
+                "config_fingerprint": fingerprint}
     if config.api_key_env and not os.environ.get(config.api_key_env, "").strip():
         raise ValueError(f"Set {config.api_key_env}, or pass --env-file /path/to/.env")
-    with _run_lock(output):
+    with _run_lock(output), (_run_lock(calls_dir) if calls_dir != output else nullcontext()):
         manifest_path = output / "manifest.json"
         if manifest_path.exists():
             manifest = _strict_json(manifest_path.read_bytes())
             if (manifest["run_id"] != run_id or manifest["config_fingerprint"] != fingerprint or
                     _hash(_json_bytes(manifest["specification"])) != fingerprint):
                 raise ValueError("Run inputs/config/code changed; use another --run-id/output directory")
+            if manifest.get("calls_file") != str(calls_path):
+                raise ValueError("Call journal location changed; resume with the original --calls-dir")
         else:
             existing = [path for path in output.iterdir() if path.name != ".run.lock"]
             if existing:
                 raise ValueError("Output directory has files without a run manifest; choose an empty directory")
+            if calls_path.exists():
+                raise ValueError("Call journal already exists without a matching result manifest; choose a new run")
             manifest = {"run_id": run_id, "created_at": _now(), "status": "created",
-                        "config_fingerprint": fingerprint, "specification": specification}
+                        "config_fingerprint": fingerprint, "specification": specification,
+                        "calls_file": str(calls_path)}
             _write_json(manifest_path, manifest)
-        return _execute(output, manifest, pairs, humans, config, system, template)
+        return _execute(output, calls_path, manifest, pairs, humans, config, system, template)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -570,7 +581,10 @@ def build_parser() -> argparse.ArgumentParser:
     group.add_argument("--human-annotations", type=Path, help="One annotator's file; default gold uses Zhou's labels")
     group.add_argument("--no-human-annotations", action="store_true")
     parser.add_argument("--env-file", type=Path, help="Defaults to the repository .env; does not override exported variables")
-    parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--output-dir", type=Path,
+                        help="Standard results directory; default results/pairwise/<run_id>")
+    parser.add_argument("--calls-dir", type=Path,
+                        help="Local HTTP journal directory; default artifacts/pairwise/<run_id>")
     parser.add_argument("--run-id", help="Reuse the same ID to resume failed/missing orders")
     parser.add_argument("--limit", type=int, help="First N pairs for a separate pilot run")
     parser.add_argument("--dry-run", action="store_true", help="Validate without network calls, API key, or output writes")

@@ -1,0 +1,131 @@
+{
+  "dataset_id": "gold_calibration",
+  "status": "frozen",
+  "organized_on": "2026-11-14",
+  "counts": {
+    "products": 100,
+    "generations": 400,
+    "pairs": 100,
+    "human_annotations": 100
+  },
+  "files": {
+    "product_items.jsonl": {
+      "path": "data/eval/gold/product_items.jsonl",
+      "sha256": "7e3a623e12bb6c8a9499e7d467ebc17662225ad52258095c3fe76dad3e429567",
+      "records": 100
+    },
+    "candidate_pairs.jsonl": {
+      "path": "data/eval/gold/candidate_pairs.jsonl",
+      "sha256": "272895ca4931fdc918fc8a1be31c33878bb7f312017cef3c6481614ba5b4af59",
+      "records": 100
+    },
+    "pairwise_annotations_zhou.jsonl": {
+      "path": "data/eval/gold/pairwise_annotations_zhou.jsonl",
+      "sha256": "16894ca15b4c3d7373c338278ad31970dbda6c511e8840cb500d93c3a79af62f",
+      "records": 100
+    },
+    "candidate_pairs.manifest.json": {
+      "path": "data/eval/gold/candidate_pairs.manifest.json",
+      "sha256": "77b4c47c71f441b44e4b5c5d5ef065d08d242a05f72bf02b9c7d147d719aff26",
+      "records": null
+    }
+  },
+  "generators": {
+    "gemma_31b": {
+      "path": "data/eval/gold/results_gemma_31b.jsonl",
+      "sha256": "ad2903b996f48367198b97849435d8544aeddab9793230e215efbedaeebe9ef0",
+      "records": 100,
+      "run_ids": [
+        "gen_gemma_31b_20261111T150521Z"
+      ],
+      "provider": "google_generative",
+      "model": "gemma-4-31b-it",
+      "temperature": 0.2,
+      "max_output_tokens": 2048,
+      "request_options": {},
+      "local_call_log": "artifacts/generation/gold/calls_gemma_31b.jsonl",
+      "call_log_sha256": "04954402639d042664c76ed60cdf17b5e88a78590d8172c64040e0bd274bf47b"
+    },
+    "glm53_flash": {
+      "path": "data/eval/gold/results_glm53_flash.jsonl",
+      "sha256": "d45f76793e30eb94a6cdef05e707ded1316a4e42d0cd0b9d1a56008461890b6a",
+      "records": 100,
+      "run_ids": [
+        "gen_glm53_flash_20261111T150521Z"
+      ],
+      "provider": "openai_compatible",
+      "model": "glm-5.3-flash",
+      "temperature": 0.2,
+      "max_output_tokens": 2048,
+      "request_options": {
+        "thinking": {
+          "type": "enabled"
+        }
+      },
+      "local_call_log": "artifacts/generation/gold/calls_glm53_flash.jsonl",
+      "call_log_sha256": "0c879f0b23bd8c0d9c4729a28a5e8bc186784a159238dbdd1725409c3ab4456a"
+    },
+    "longcat": {
+      "path": "data/eval/gold/results_longcat.jsonl",
+      "sha256": "723dea261d1ee17069a5b8592191ce2f811e35cdb18b42e16142449dd6b593ab",
+      "records": 100,
+      "run_ids": [
+        "gen_longcat_20261111T150521Z"
+      ],
+      "provider": "openai_compatible",
+      "model": "LongCat-2.5",
+      "temperature": 0.2,
+      "max_output_tokens": 2048,
+      "request_options": {},
+      "local_call_log": "artifacts/generation/gold/calls_longcat.jsonl",
+      "call_log_sha256": "bd9ee8628bda95ede9a3869ca33f7960a9a9ef62e7d78031ad3fc738cdfc7fdc"
+    },
+    "qwen_local": {
+      "path": "data/eval/gold/results_qwen_local.jsonl",
+      "sha256": "01597691ca634e65d95b2cf7043892e57f890a1234d950053cf9d1a86f675d89",
+      "records": 100,
+      "run_ids": [
+        "gen_qwen_local_20261111T150521Z"
+      ],
+      "provider": "ollama",
+      "model": "qwen3.5:2b",
+      "temperature": 0.2,
+      "max_output_tokens": 2048,
+      "request_options": {
+        "think": false
+      },
+      "local_call_log": "artifacts/generation/gold/calls_qwen_local.jsonl",
+      "call_log_sha256": "94b5145bb957e771b7a0a9be77f44b3d2c4c368f3e475388082b890de26e3a1f"
+    }
+  },
+  "generation": {
+    "system_prompt": "You write concise English promotional copy for e-commerce product cards.\n\nWrite a clear, engaging blurb that helps shoppers quickly understand\nthe product and what makes it relevant to their needs.\n\nContent and composition:\n- You do not need to cover all supplied features or details.\n  Select the information you consider most important to shoppers\n  and most suitable for a short product ad. Leave out less relevant\n  details rather than trying to fit everything into the copy.\n- Organize the details into a coherent, natural message. Combine related\n  information smoothly and avoid a list-like sequence of specifications.\n- Give each detail a clear purpose in the copy. Remove repetition,\n  filler, and generic praise.\n- Use a short, natural product name or product type where appropriate.\n\nStyle and length:\n- Use clear, natural, consumer-facing language with a modest promotional tone.\n- Keep the copy concise and informative. Use as many words as needed\n  to communicate the product clearly, without unnecessary wording.\n- Prefer fewer than 25 English words. Do not exceed 35 words.\n- Use one or two short sentences.\n\nFactual accuracy:\n- Use only information supported by the supplied product information.\n- Preserve quantities, units, compatibility, and the relationship\n  between each attribute and the item it describes.\n- Do not let simplification or compression change the original meaning.\n- Do not invent benefits, specifications, guarantees, comparisons,\n  rankings, ratings, or customer outcomes.\n\nBefore returning the copy, check that it reads smoothly, contains useful\nproduct information, and has no unnecessary wording or unsupported claims.\n\nReturn only the promotional copy, without a heading, bullets, quotation\nmarks, word count, or explanation.",
+    "system_prompt_sha256": "b4fe55a76e3b32682603210ca890a8507ae47378c4b03235f371fd8e507bc8f2",
+    "selection": "one successful sample_index=0 candidate per product and generator; all four generators retained"
+  },
+  "pair_sampling": {
+    "seed": 42,
+    "models_per_pair": 2,
+    "pairs_per_product": 1,
+    "manifest": "data/eval/gold/candidate_pairs.manifest.json"
+  },
+  "annotations": {
+    "annotator": "zhou",
+    "protocol_version": "pairwise-v0.1",
+    "revision": "reviewed",
+    "confirmed_revisions": 15,
+    "provenance": "The current labels include 15 user-confirmed model-assisted revisions. Original labels and review records are archived under deprecated/."
+  },
+  "source_split_manifest": "data/splits/v1/manifest.json",
+  "schemas": {
+    "products": "metadata/schemas/product_item.schema.json",
+    "generations": "metadata/schemas/generation_result.schema.json",
+    "pairs": "metadata/schemas/candidate_pair.schema.json",
+    "human_annotations": "metadata/schemas/pairwise_result.schema.json"
+  },
+  "notes": [
+    "Only this dataset is the current gold input; historical v1/v2 generation variants are not parallel formal datasets.",
+    "Original runtime results and call logs stay in artifacts; this directory is the frozen shared snapshot.",
+    "Trace IDs reference local call logs, which are not required to load or validate the shared dataset."
+  ]
+}

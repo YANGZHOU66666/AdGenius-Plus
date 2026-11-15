@@ -1,0 +1,574 @@
+{
+  "models": [
+    {
+      "model": "DeepSeek",
+      "run_id": "deepseek41_gold_v2",
+      "AB": {
+        "compared_count": 100,
+        "agreement_count": 82,
+        "agreement_rate": 0.82
+      },
+      "BA": {
+        "compared_count": 100,
+        "agreement_count": 85,
+        "agreement_rate": 0.85
+      },
+      "stable_agreement_count": 77,
+      "stable_count": 87,
+      "stable_agreement_rate": 0.8850574712643678,
+      "stable_disagree_count": 10,
+      "order_consistency_rate": 0.87,
+      "order_inconsistent_count": 13,
+      "stable_and_agree_rate_over_all_labels": 0.77,
+      "first_presented_choice_rate": 0.445,
+      "actual_calls": 200,
+      "failed_attempts": 0,
+      "mean_latency_seconds": 1.2464665356348268,
+      "mean_agreement_product_bootstrap_ci95": {
+        "lower": 0.77,
+        "upper": 0.895
+      },
+      "mean_agreement": 0.835
+    },
+    {
+      "model": "GPT-6 Luna",
+      "run_id": "gpt6_luna_gold_v2",
+      "AB": {
+        "compared_count": 100,
+        "agreement_count": 79,
+        "agreement_rate": 0.79
+      },
+      "BA": {
+        "compared_count": 100,
+        "agreement_count": 81,
+        "agreement_rate": 0.81
+      },
+      "stable_agreement_count": 76,
+      "stable_count": 92,
+      "stable_agreement_rate": 0.8260869565217391,
+      "stable_disagree_count": 16,
+      "order_consistency_rate": 0.92,
+      "order_inconsistent_count": 8,
+      "stable_and_agree_rate_over_all_labels": 0.76,
+      "first_presented_choice_rate": 0.51,
+      "actual_calls": 200,
+      "failed_attempts": 0,
+      "mean_latency_seconds": 1.6630665204313118,
+      "mean_agreement_product_bootstrap_ci95": {
+        "lower": 0.725,
+        "upper": 0.87
+      },
+      "mean_agreement": 0.8
+    },
+    {
+      "model": "Qwen Flash",
+      "run_id": "qwen37_gold_v2",
+      "AB": {
+        "compared_count": 100,
+        "agreement_count": 76,
+        "agreement_rate": 0.76
+      },
+      "BA": {
+        "compared_count": 100,
+        "agreement_count": 82,
+        "agreement_rate": 0.82
+      },
+      "stable_agreement_count": 65,
+      "stable_count": 72,
+      "stable_agreement_rate": 0.9027777777777778,
+      "stable_disagree_count": 7,
+      "order_consistency_rate": 0.72,
+      "order_inconsistent_count": 28,
+      "stable_and_agree_rate_over_all_labels": 0.65,
+      "first_presented_choice_rate": 0.4,
+      "actual_calls": 200,
+      "failed_attempts": 0,
+      "mean_latency_seconds": 1.5593414739868603,
+      "mean_agreement_product_bootstrap_ci95": {
+        "lower": 0.725,
+        "upper": 0.845
+      },
+      "mean_agreement": 0.79
+    },
+    {
+      "model": "Claude Haiku",
+      "run_id": "claude55_gold_v2",
+      "AB": {
+        "compared_count": 100,
+        "agreement_count": 72,
+        "agreement_rate": 0.72
+      },
+      "BA": {
+        "compared_count": 100,
+        "agreement_count": 75,
+        "agreement_rate": 0.75
+      },
+      "stable_agreement_count": 67,
+      "stable_count": 87,
+      "stable_agreement_rate": 0.7701149425287356,
+      "stable_disagree_count": 20,
+      "order_consistency_rate": 0.87,
+      "order_inconsistent_count": 13,
+      "stable_and_agree_rate_over_all_labels": 0.67,
+      "first_presented_choice_rate": 0.485,
+      "actual_calls": 202,
+      "failed_attempts": 2,
+      "mean_latency_seconds": 1.6839139997823127,
+      "mean_agreement_product_bootstrap_ci95": {
+        "lower": 0.655,
+        "upper": 0.81
+      },
+      "mean_agreement": 0.735
+    }
+  ],
+  "metrics": {
+    "DeepSeek": {
+      "expected_pair_count": 100,
+      "recorded_pair_count": 100,
+      "successful_order_count": 200,
+      "failed_or_missing_order_count": 0,
+      "order_success_rate": 1.0,
+      "both_orders_successful_count": 100,
+      "stable_winner_count": 87,
+      "order_inconsistent_count": 13,
+      "incomplete_pair_count": 0,
+      "stable_coverage_rate": 0.87,
+      "order_consistency_rate": 0.87,
+      "order_consistency_wilson_ci95": {
+        "lower": 0.7901964855992357,
+        "upper": 0.9224283257275948
+      },
+      "first_presented_choice_rate": 0.445,
+      "human_agreement": {
+        "annotated_pair_count": 100,
+        "valid_label_count": 100,
+        "stable_compared_count": 87,
+        "stable_agreement_count": 77,
+        "stable_agreement_rate": 0.8850574712643678,
+        "stable_agreement_wilson_ci95": {
+          "lower": 0.8011941795053155,
+          "upper": 0.9363545220434655
+        },
+        "stable_coverage_of_labeled_pairs": 0.87,
+        "stable_and_agree_rate_over_all_labels": 0.77,
+        "per_order": {
+          "AB": {
+            "compared_count": 100,
+            "agreement_count": 82,
+            "agreement_rate": 0.82
+          },
+          "BA": {
+            "compared_count": 100,
+            "agreement_count": 85,
+            "agreement_rate": 0.85
+          }
+        },
+        "judge_protocol_version": "pairwise-v0.2",
+        "annotation_protocol_versions": [
+          "pairwise-v0.1"
+        ],
+        "comparison_note": "Calibration against 100 current reviewed labels, including 15 user-confirmed model-assisted revisions. Human protocol v0.1; ad-text-only judge protocol v0.2.",
+        "mean_per_order_agreement_rate": 0.835,
+        "both_orders_agree_with_human_count": 77,
+        "one_order_agrees_with_human_count": 13,
+        "neither_order_agrees_with_human_count": 10,
+        "mean_agreement_product_bootstrap_ci95": {
+          "lower": 0.77,
+          "upper": 0.895
+        }
+      },
+      "api_attempt_count": 200,
+      "failed_attempt_count": 0,
+      "attempt_error_counts": {},
+      "token_usage_all_attempts": {
+        "input_tokens": {
+          "known_sum": 92028,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "output_tokens": {
+          "known_sum": 12362,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "total_tokens": {
+          "known_sum": 104390,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "reasoning_tokens": {
+          "known_sum": null,
+          "known_attempt_count": 0,
+          "unknown_attempt_count": 200
+        },
+        "cache_read_tokens": {
+          "known_sum": 26112,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "cache_write_tokens": {
+          "known_sum": null,
+          "known_attempt_count": 0,
+          "unknown_attempt_count": 200
+        }
+      },
+      "latency_seconds": {
+        "sum": 249.29330712696537,
+        "mean": 1.2464665356348268
+      },
+      "uncertainty_note": "The Wilson interval is descriptive for stable pairs only. AB/BA calls are not independent samples; repeated pairs for one product also share an input. Use product-level resampling for final model comparisons."
+    },
+    "GPT-6 Luna": {
+      "expected_pair_count": 100,
+      "recorded_pair_count": 100,
+      "successful_order_count": 200,
+      "failed_or_missing_order_count": 0,
+      "order_success_rate": 1.0,
+      "both_orders_successful_count": 100,
+      "stable_winner_count": 92,
+      "order_inconsistent_count": 8,
+      "incomplete_pair_count": 0,
+      "stable_coverage_rate": 0.92,
+      "order_consistency_rate": 0.92,
+      "order_consistency_wilson_ci95": {
+        "lower": 0.8500189229905127,
+        "upper": 0.9589065385156194
+      },
+      "first_presented_choice_rate": 0.51,
+      "human_agreement": {
+        "annotated_pair_count": 100,
+        "valid_label_count": 100,
+        "stable_compared_count": 92,
+        "stable_agreement_count": 76,
+        "stable_agreement_rate": 0.8260869565217391,
+        "stable_agreement_wilson_ci95": {
+          "lower": 0.7360155731778724,
+          "upper": 0.8900183033749829
+        },
+        "stable_coverage_of_labeled_pairs": 0.92,
+        "stable_and_agree_rate_over_all_labels": 0.76,
+        "per_order": {
+          "AB": {
+            "compared_count": 100,
+            "agreement_count": 79,
+            "agreement_rate": 0.79
+          },
+          "BA": {
+            "compared_count": 100,
+            "agreement_count": 81,
+            "agreement_rate": 0.81
+          }
+        },
+        "judge_protocol_version": "pairwise-v0.2",
+        "annotation_protocol_versions": [
+          "pairwise-v0.1"
+        ],
+        "comparison_note": "Calibration against 100 current reviewed labels, including 15 user-confirmed model-assisted revisions. Human protocol v0.1; ad-text-only judge protocol v0.2.",
+        "mean_per_order_agreement_rate": 0.8,
+        "both_orders_agree_with_human_count": 76,
+        "one_order_agrees_with_human_count": 8,
+        "neither_order_agrees_with_human_count": 16,
+        "mean_agreement_product_bootstrap_ci95": {
+          "lower": 0.725,
+          "upper": 0.87
+        }
+      },
+      "api_attempt_count": 200,
+      "failed_attempt_count": 0,
+      "attempt_error_counts": {},
+      "token_usage_all_attempts": {
+        "input_tokens": {
+          "known_sum": 88310,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "output_tokens": {
+          "known_sum": 11310,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "total_tokens": {
+          "known_sum": 99620,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "reasoning_tokens": {
+          "known_sum": 0,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "cache_read_tokens": {
+          "known_sum": 0,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "cache_write_tokens": {
+          "known_sum": null,
+          "known_attempt_count": 0,
+          "unknown_attempt_count": 200
+        }
+      },
+      "latency_seconds": {
+        "sum": 332.61330408626236,
+        "mean": 1.6630665204313118
+      },
+      "uncertainty_note": "The Wilson interval is descriptive for stable pairs only. AB/BA calls are not independent samples; repeated pairs for one product also share an input. Use product-level resampling for final model comparisons."
+    },
+    "Qwen Flash": {
+      "expected_pair_count": 100,
+      "recorded_pair_count": 100,
+      "successful_order_count": 200,
+      "failed_or_missing_order_count": 0,
+      "order_success_rate": 1.0,
+      "both_orders_successful_count": 100,
+      "stable_winner_count": 72,
+      "order_inconsistent_count": 28,
+      "incomplete_pair_count": 0,
+      "stable_coverage_rate": 0.72,
+      "order_consistency_rate": 0.72,
+      "order_consistency_wilson_ci95": {
+        "lower": 0.6251197129007884,
+        "upper": 0.7986031478881379
+      },
+      "first_presented_choice_rate": 0.4,
+      "human_agreement": {
+        "annotated_pair_count": 100,
+        "valid_label_count": 100,
+        "stable_compared_count": 72,
+        "stable_agreement_count": 65,
+        "stable_agreement_rate": 0.9027777777777778,
+        "stable_agreement_wilson_ci95": {
+          "lower": 0.8126495420487314,
+          "upper": 0.9521036800263443
+        },
+        "stable_coverage_of_labeled_pairs": 0.72,
+        "stable_and_agree_rate_over_all_labels": 0.65,
+        "per_order": {
+          "AB": {
+            "compared_count": 100,
+            "agreement_count": 76,
+            "agreement_rate": 0.76
+          },
+          "BA": {
+            "compared_count": 100,
+            "agreement_count": 82,
+            "agreement_rate": 0.82
+          }
+        },
+        "judge_protocol_version": "pairwise-v0.2",
+        "annotation_protocol_versions": [
+          "pairwise-v0.1"
+        ],
+        "comparison_note": "Calibration against 100 current reviewed labels, including 15 user-confirmed model-assisted revisions. Human protocol v0.1; ad-text-only judge protocol v0.2.",
+        "mean_per_order_agreement_rate": 0.79,
+        "both_orders_agree_with_human_count": 65,
+        "one_order_agrees_with_human_count": 28,
+        "neither_order_agrees_with_human_count": 7,
+        "mean_agreement_product_bootstrap_ci95": {
+          "lower": 0.725,
+          "upper": 0.845
+        }
+      },
+      "api_attempt_count": 200,
+      "failed_attempt_count": 0,
+      "attempt_error_counts": {},
+      "token_usage_all_attempts": {
+        "input_tokens": {
+          "known_sum": 94256,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "output_tokens": {
+          "known_sum": 13744,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "total_tokens": {
+          "known_sum": 108000,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "reasoning_tokens": {
+          "known_sum": null,
+          "known_attempt_count": 0,
+          "unknown_attempt_count": 200
+        },
+        "cache_read_tokens": {
+          "known_sum": 14592,
+          "known_attempt_count": 200,
+          "unknown_attempt_count": 0
+        },
+        "cache_write_tokens": {
+          "known_sum": null,
+          "known_attempt_count": 0,
+          "unknown_attempt_count": 200
+        }
+      },
+      "latency_seconds": {
+        "sum": 311.8682947973721,
+        "mean": 1.5593414739868603
+      },
+      "uncertainty_note": "The Wilson interval is descriptive for stable pairs only. AB/BA calls are not independent samples; repeated pairs for one product also share an input. Use product-level resampling for final model comparisons."
+    },
+    "Claude Haiku": {
+      "expected_pair_count": 100,
+      "recorded_pair_count": 100,
+      "successful_order_count": 200,
+      "failed_or_missing_order_count": 0,
+      "order_success_rate": 1.0,
+      "both_orders_successful_count": 100,
+      "stable_winner_count": 87,
+      "order_inconsistent_count": 13,
+      "incomplete_pair_count": 0,
+      "stable_coverage_rate": 0.87,
+      "order_consistency_rate": 0.87,
+      "order_consistency_wilson_ci95": {
+        "lower": 0.7901964855992357,
+        "upper": 0.9224283257275948
+      },
+      "first_presented_choice_rate": 0.485,
+      "human_agreement": {
+        "annotated_pair_count": 100,
+        "valid_label_count": 100,
+        "stable_compared_count": 87,
+        "stable_agreement_count": 67,
+        "stable_agreement_rate": 0.7701149425287356,
+        "stable_agreement_wilson_ci95": {
+          "lower": 0.6714172271485064,
+          "upper": 0.8459676828931757
+        },
+        "stable_coverage_of_labeled_pairs": 0.87,
+        "stable_and_agree_rate_over_all_labels": 0.67,
+        "per_order": {
+          "AB": {
+            "compared_count": 100,
+            "agreement_count": 72,
+            "agreement_rate": 0.72
+          },
+          "BA": {
+            "compared_count": 100,
+            "agreement_count": 75,
+            "agreement_rate": 0.75
+          }
+        },
+        "judge_protocol_version": "pairwise-v0.2",
+        "annotation_protocol_versions": [
+          "pairwise-v0.1"
+        ],
+        "comparison_note": "Calibration against 100 current reviewed labels, including 15 user-confirmed model-assisted revisions. Human protocol v0.1; ad-text-only judge protocol v0.2.",
+        "mean_per_order_agreement_rate": 0.735,
+        "both_orders_agree_with_human_count": 67,
+        "one_order_agrees_with_human_count": 13,
+        "neither_order_agrees_with_human_count": 20,
+        "mean_agreement_product_bootstrap_ci95": {
+          "lower": 0.655,
+          "upper": 0.81
+        }
+      },
+      "api_attempt_count": 202,
+      "failed_attempt_count": 2,
+      "attempt_error_counts": {
+        "output_too_long": 2
+      },
+      "token_usage_all_attempts": {
+        "input_tokens": {
+          "known_sum": 195136,
+          "known_attempt_count": 202,
+          "unknown_attempt_count": 0
+        },
+        "output_tokens": {
+          "known_sum": 26915,
+          "known_attempt_count": 202,
+          "unknown_attempt_count": 0
+        },
+        "total_tokens": {
+          "known_sum": 222051,
+          "known_attempt_count": 202,
+          "unknown_attempt_count": 0
+        },
+        "reasoning_tokens": {
+          "known_sum": null,
+          "known_attempt_count": 0,
+          "unknown_attempt_count": 202
+        },
+        "cache_read_tokens": {
+          "known_sum": 0,
+          "known_attempt_count": 202,
+          "unknown_attempt_count": 0
+        },
+        "cache_write_tokens": {
+          "known_sum": 0,
+          "known_attempt_count": 202,
+          "unknown_attempt_count": 0
+        }
+      },
+      "latency_seconds": {
+        "sum": 340.15062795602717,
+        "mean": 1.6839139997823127
+      },
+      "uncertainty_note": "The Wilson interval is descriptive for stable pairs only. AB/BA calls are not independent samples; repeated pairs for one product also share an input. Use product-level resampling for final model comparisons."
+    }
+  },
+  "paired_differences": [
+    {
+      "first": "DeepSeek",
+      "second": "GPT-6 Luna",
+      "mean_difference": 0.03499999999999992,
+      "paired_product_bootstrap_ci95": {
+        "lower": -0.020000000000000018,
+        "upper": 0.08999999999999997
+      }
+    },
+    {
+      "first": "DeepSeek",
+      "second": "Qwen Flash",
+      "mean_difference": 0.04499999999999993,
+      "paired_product_bootstrap_ci95": {
+        "lower": -0.0050000000000000044,
+        "upper": 0.09499999999999997
+      }
+    },
+    {
+      "first": "DeepSeek",
+      "second": "Claude Haiku",
+      "mean_difference": 0.09999999999999998,
+      "paired_product_bootstrap_ci95": {
+        "lower": 0.025000000000000022,
+        "upper": 0.17500000000000004
+      }
+    },
+    {
+      "first": "GPT-6 Luna",
+      "second": "Qwen Flash",
+      "mean_difference": 0.010000000000000009,
+      "paired_product_bootstrap_ci95": {
+        "lower": -0.050000000000000044,
+        "upper": 0.07000000000000006
+      }
+    },
+    {
+      "first": "GPT-6 Luna",
+      "second": "Claude Haiku",
+      "mean_difference": 0.06500000000000006,
+      "paired_product_bootstrap_ci95": {
+        "lower": -0.010000000000000009,
+        "upper": 0.14
+      }
+    },
+    {
+      "first": "Qwen Flash",
+      "second": "Claude Haiku",
+      "mean_difference": 0.05500000000000005,
+      "paired_product_bootstrap_ci95": {
+        "lower": -0.015000000000000013,
+        "upper": 0.125
+      }
+    }
+  ],
+  "bootstrap": {
+    "unit": "product",
+    "replicates": 10000,
+    "seed": 20261113,
+    "note": "AB and BA remain grouped. Intervals condition on the reviewed labels and do not account for model-assisted label selection or annotation uncertainty."
+  }
+}

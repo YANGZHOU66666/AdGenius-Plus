@@ -30,14 +30,27 @@
   "outputs_sha256": {
     "data/splits/v1/gold.jsonl": "298f4bca04c2d04d71b8288e3dd9320d88030335a1105a58995f9927f15a84e2",
     "data/splits/v1/test.jsonl": "dbb17e11f9871fba88695b71a16e58928111d2666fd80a5d40374f3c85ac065b",
-    "data/splits/v1/train_pool.jsonl": "a2d9a8744ba3c06d0315b1a1ec408de00e815736b483a456f9e363f06c68f076",
     "data/processed/v1/gold_products.jsonl": "ebb5a75a8fbb83bca03430a619958e8510222e4e4b3163aeadb4052c7f20f5ba",
-    "data/processed/v1/test_products.jsonl": "cde2e0e815470aca52b761f8d62d33fc4abf3648ca36f8d891920d43269da16c"
+    "data/processed/v1/test_products.jsonl": "cde2e0e815470aca52b761f8d62d33fc4abf3648ca36f8d891920d43269da16c",
+    "artifacts/cache/office_products/train_pool.jsonl": "3f2e2a9442bb22e4f8bbc5d8618c117d65aca5a2ce6cdc41c691f0e2b47b85d5"
   },
   "notes": [
     "gold and test are frozen evaluation-only products; neither may enter training",
     "train_pool is the complete remainder and is a candidate pool, not a required training size",
     "no reliable variant/family relation exists in this source; exact generation-content duplicates are kept together",
     "processed gold/test files contain original product records only; no generated copy or human labels"
-  ]
+  ],
+  "cache_paths": {
+    "train_pool": "artifacts/cache/office_products/train_pool.jsonl"
+  },
+  "cache_provenance": {
+    "train_pool": {
+      "path": "artifacts/cache/office_products/train_pool.jsonl",
+      "sha256": "3f2e2a9442bb22e4f8bbc5d8618c117d65aca5a2ce6cdc41c691f0e2b47b85d5",
+      "records": 709403,
+      "historically_recorded_sha256": "a2d9a8744ba3c06d0315b1a1ec408de00e815736b483a456f9e363f06c68f076",
+      "note": "The existing cache uses sequential train_product IDs and preserves raw ASINs in source_id. Reversing only that materialization reproduces the historical manifest hash exactly. Cache bytes and split membership were not changed during relocation.",
+      "legacy_representation_sha256": "a2d9a8744ba3c06d0315b1a1ec408de00e815736b483a456f9e363f06c68f076"
+    }
+  }
 }
