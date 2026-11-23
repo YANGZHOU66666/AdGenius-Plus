@@ -14,6 +14,17 @@ base_url_env = "DASHSCOPE_BASE_URL"
 api_key_env = "DASHSCOPE_API_KEY"
 request_options = { enable_thinking = false }
 
+# Teacher for the distillation experiments (docs/sft_opd_experiment_plan.md).
+# Thinking off; top_p 1.0 so samples follow the teacher's full distribution.
+[models.qwen397b]
+provider = "openai_compatible"
+model = "qwen3.5-397b-a17b"
+base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+base_url_env = "DASHSCOPE_BASE_URL"
+api_key_env = "DASHSCOPE_API_KEY"
+timeout_seconds = 120.0
+request_options = { enable_thinking = false, top_p = 1.0 }
+
 [models.qwen_local]
 provider = "ollama"
 # Match this value to the model name served by Ollama.
