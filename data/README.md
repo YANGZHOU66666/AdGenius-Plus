@@ -14,11 +14,11 @@ For the complete dataset descriptions, production lineage, ID joins and rebuild 
 | `eval/gold/candidate_pairs.manifest.json` | Pair sources and hashes, sampling seed and model combinations | Yes |
 | `splits/v1/` | Frozen gold 100, test 1,000 and partition metadata | Yes |
 | `processed/v1/` | Original source-format records for gold 100 and test 1,000 | Yes |
-| `train/` | Future curated training datasets; currently empty | Yes when published |
+| `train/v1/` | 200 dev and 8,000 train ProductItems from the train pool (nested 1k/2k/4k/8k by line order), their split index and manifest, and the frozen Qwen3.5-397B teacher ads with their manifest; see §11 of [the data pipeline](../docs/data_pipeline.md) | Yes |
 
 The four candidate files are `results_qwen_local.jsonl`, `results_gemma_31b.jsonl`, `results_glm53_flash.jsonl`, and `results_longcat.jsonl`. All 400 candidates are available to both pairwise and rubric work. The 100 pairs contain only 200 of those candidates. Join by `product_id` and `candidate_id`; human presentation letters are randomized and are not canonical candidate identities.
 
-Gold and test are disjoint evaluation products, and both are excluded from training. The 709,403-record train pool is a candidate pool, not a decision to train on every product. Validation will be selected from that pool. Test products are currently retained in source format; a standard ProductItem test-generation dataset has not yet been materialized.
+Gold and test are disjoint evaluation products, and both are excluded from training. The 709,403-record train pool is a candidate pool, not a decision to train on every product. The first frozen dev and train sets are in `train/v1/`, selected from that pool. Test products are currently retained in source format; a standard ProductItem test-generation dataset has not yet been materialized.
 
 The `v1` in splits/processed identifies the one frozen source partition. It does not mean that the old candidate generations are still active. Product, candidate and pair IDs, ad text and current human winners were preserved during organization.
 

@@ -53,6 +53,12 @@ flowchart TD
 | `data/eval/gold/candidate_pairs.manifest.json` | 一次 pair 抽样说明 | 输入哈希、seed、组合分布、输出哈希 | pair 构建脚本；当前路径已整理 |
 | `data/eval/gold/pairwise_annotations_zhou.jsonl` | 一位标注者对一个 pair 的偏好 | 100；当前人工参照 | 标注台 + 15 条已确认的复核修改 |
 | `data/eval/gold/manifest.json` | 当前 gold 数据集说明 | 文件哈希、数量、schema、生成 prompt/模型/参数和标签版本 | 发布、整理时维护的冻结索引 |
+| `data/train/v1/dev_products.jsonl` | 标准 `ProductItem` | 200；选学习率，不进入训练 | 训练池 → `build_train_split.py`，见第 11 节 |
+| `data/train/v1/train_products.jsonl` | 标准 `ProductItem`，行序即 rank | 8,000；前 1k/2k/4k/8k 行为嵌套数据规模 | 同上 |
+| `data/train/v1/split_index.jsonl` | 一件入选商品的 split、rank、内容组和原始行号 | 8,200；溯源 | 同上 |
+| `data/train/v1/manifest.json` | 训练/开发集划分说明 | 种子、过滤规则、剔除计数、各规模类别分布、输入输出哈希 | 同上 |
+| `data/train/v1/teacher_qwen397b_{dev,train}.jsonl` | 教师为一件商品写的一条广告（`GenerationResult`） | 200 / 8,000；SFT 目标与 dev 监控 | 上面两份商品 → `generate_teacher_data.py` |
+| `data/train/v1/teacher_qwen397b.manifest.json` | 教师数据说明 | 模型配置、prompt 哈希、采样参数、usage、长度统计、输入输出哈希 | 同上 |
 
 JSONL 文件均为每行一个 JSON 对象。`splits/v1` 和 `processed/v1` 的 `v1` 表示仍在使用的源划分，不表示存在多套并行使用的候选数据。当前正式 gold 只有 `data/eval/gold/` 这一套。
 
@@ -90,13 +96,14 @@ JSONL 文件均为每行一个 JSON 对象。`splits/v1` 和 `processed/v1` 的 
 | `artifacts/generation/gold/results_<alias>.jsonl` | 当前生成批次的本地最终快照；发布后的共享输入以 `data/eval/gold/` 为准 |
 | `artifacts/generation/gold/calls_<alias>.jsonl` | 各模型所有生成尝试的请求、响应、失败、重试关系和 usage |
 | `artifacts/pairwise/<run_id>/calls.jsonl` | judge 的调用日志；包括中途失败和补跑，行数可能大于 200 |
+| `artifacts/generation/train_v1/<split>/results_qwen397b.jsonl`、`calls_qwen397b.jsonl` | 教师数据生成的逐次结果和全部调用记录；续跑依据，冻结版本以 `data/train/v1/` 为准 |
 | `artifacts/annotation/workbench.log` | 标注服务运行日志；人工结论写在正式标签 JSONL 中 |
 | `deprecated/data/eval/gold/pairwise_annotations_zhou.original.jsonl` | 复核前的人工标签，按约定退出当前数据路径 |
 | `deprecated/artifacts/eval/gold_review/` | 四轮复核的修改记录和修改前快照 |
 | `deprecated/migration_manifest.json` | 第一轮整理的路径迁移和哈希索引 |
 | `deprecated/layout_migrations/data_results_artifacts_20261114/` | 后续目录调整前的元数据、迁移索引及静态校验记录 |
 
-其他旧候选、旧 prompt、试跑和旧统计见[归档目录说明](../deprecated/README.md)。锁文件和草稿侧文件属于运行辅助文件，不是完成的偏好标签。`data/train/` 当前没有正式训练集；模型权重也尚未产出。
+其他旧候选、旧 prompt、试跑和旧统计见[归档目录说明](../deprecated/README.md)。锁文件和草稿侧文件属于运行辅助文件，不是完成的偏好标签。`data/train/v1/` 是第一版训练集和开发集（第 11 节）；模型权重尚未产出。
 
 ## 3. 原始资料 → 固定划分
 
@@ -251,7 +258,9 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 | pair → 模型判断 | 有评测、日志和续跑机制 | 重调用不保证同一选择或理由；冻结结果是此次实验记录 |
 | 结果 → decisions / 常规一致率 | 有派生函数及离线校验 | 需要同一 pair 集与指定标签快照；完整资源统计另需日志 |
 | 四模型 comparison / bootstrap / report | 有冻结结果和计算口径 | 尚无专门批量重建 CLI，不能声称已一键复现 |
-| rubric、训练集、训练、最终 test 生成 | 尚未完成 | rubric 只有 schema；其余需要后续实现与实验记录 |
+| 训练池 → 训练集与开发集 | 有确定性脚本和离线测试 | 需要原始 gzip 与训练池索引；同一 seed 逐字节复现（第 11 节） |
+| 训练/开发商品 → 教师广告 | 有可续跑生成脚本 | 外部模型重调用不保证逐字相同；精确复现应读取 `data/train/v1/` 中的冻结版本 |
+| rubric、训练、最终 test 生成 | 尚未完成 | rubric 只有 schema；其余需要后续实现与实验记录 |
 
 离线校验入口为 [scripts/validate_gold_data.py](../scripts/validate_gold_data.py)：
 
@@ -270,3 +279,32 @@ PYTHONPATH=src .venv/bin/python scripts/validate_gold_data.py
 5. 同步本文及 data/results 索引；旧记录按约定归入 `deprecated/` 并保留迁移映射，不能让历史路径看起来像当前可直接续跑的配置。
 
 目前生产逻辑最需要后续补齐的两项是 **ProductItem 转换脚本** 和 **四模型对比报告重建脚本**。
+
+## 11. 训练池 → 训练集、开发集与教师广告（v1）
+
+用途与实验设计见 [SFT 与 OPD 蒸馏实验方案](sft_opd_experiment_plan.md)。
+
+**划分**，生产入口为 [scripts/build_train_split.py](../scripts/build_train_split.py)：
+
+1. 读取 `artifacts/cache/office_products/train_pool.jsonl`。gold 和 test 已在上游排除。每个 `group_id` 只取 ID 最小的一件，再按 `sha256("20261123:" + group_id)` 排序。
+2. 按顺序逐件检查，剔除以下商品：没有标题的；卖点和描述都为空的；渲染后的商品信息超过 6,000 字符的。v1 共检查 10,127 件，按两类原因分别剔除 1,917 件和 10 件。
+3. 前 200 件合格商品作为 dev，之后的 8,000 件作为 train。train 的行序就是 rank，前 1k、2k、4k、8k 行构成嵌套的数据规模。
+4. 写出 `ProductItem`（与 gold 格式相同，保留全部原始字段）、`split_index.jsonl` 和 manifest，并重新校验以下各项：数量、文件哈希、dev 与 train 没有重复的商品、ASIN 或内容组、与 gold/test 没有交集、rank 连续。
+
+```sh
+PYTHONPATH=src .venv/bin/python scripts/build_train_split.py            # 已存在时拒绝覆盖
+PYTHONPATH=src .venv/bin/python scripts/build_train_split.py --force    # 重建，结果逐字节相同
+```
+
+**教师广告**，生产入口为 [scripts/generate_teacher_data.py](../scripts/generate_teacher_data.py)：
+
+1. 用 `configs/models.toml` 中的 `qwen397b`（`qwen3.5-397b-a17b`，关闭思考，`top_p=1.0`）为每件商品写一条广告。temperature 为 1.0，输出上限 512 token。系统提示与 gold 冻结 prompt 相同，启动时会校验哈希。
+2. 每次尝试都写入 `artifacts/generation/train_v1/<split>/`。中断后重跑时，已有成功结果的商品会被跳过。
+3. 一个 split 的全部商品都成功后，按商品文件的行序冻结为 `data/train/v1/teacher_qwen397b_<split>.jsonl`，每条记录都通过 `GenerationResult` schema 校验，并同时更新 `teacher_qwen397b.manifest.json`。
+
+```sh
+PYTHONPATH=src .venv/bin/python scripts/generate_teacher_data.py --limit 5   # 冒烟测试，结果不会冻结
+PYTHONPATH=src .venv/bin/python scripts/generate_teacher_data.py --workers 8 # 全量，可以重复运行续跑
+```
+
+离线测试：`tests/test_train_split.py` 和 `tests/test_generate_teacher_data.py`（使用 mock 模型，不调用 API）。
