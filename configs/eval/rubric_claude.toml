@@ -1,0 +1,17 @@
+# Rubric judge (factual_support) comparison config; requires ANTHROPIC_API_KEY in .env.
+# Haiku 5.5 rejects temperature/top_p/top_k, so temperature is omitted.
+# The JSON schema output format is supplied by the rubric judge.
+[judge]
+model_alias = "claude"
+protocol_version = "rubric-v0.2"
+input_mode = "product_and_ad"
+human_annotation_protocol_version = "rubric-v0.2"
+criteria = ["factual_support"]
+system_prompt = "prompts/eval/rubric/system_v1.txt"
+user_prompt = "prompts/eval/rubric/user_v1.txt"
+max_output_tokens = 2048
+max_attempts = 4
+
+[judge.provider_options]
+thinking = { type = "adaptive" }
+output_config = { effort = "low" }

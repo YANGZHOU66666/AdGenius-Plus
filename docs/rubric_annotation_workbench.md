@@ -164,6 +164,6 @@ Use a different annotator ID for an independent label file. The server listens o
 
 ## Current Labels
 
-`rubric_annotations_zhou.jsonl` holds 130 labels (all items), 17 of them `false`. All 17 are `qwen_local` ads (17 of 100); none of the 30 ads from the other three models conflicts with its information. Every `false` label quotes the conflicting ad text and information text in its reason.
+`rubric_annotations_zhou.jsonl` holds 130 labels (all items), 18 of them `false`. All 18 are `qwen_local` ads (18 of 100); none of the 30 ads from the other three models conflicts with its information. Every `false` label quotes the conflicting ad text and information text in its reason.
 
 `scripts/validate_gold_data.py` and `data/eval/gold/manifest.json` do not yet cover the rubric sample or labels.

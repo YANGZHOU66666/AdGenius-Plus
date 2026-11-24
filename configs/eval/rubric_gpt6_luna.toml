@@ -1,0 +1,15 @@
+# Rubric judge (factual_support) comparison config; requires OPENAI_API_KEY in the repository .env.
+[judge]
+model_alias = "gpt6_luna"
+protocol_version = "rubric-v0.2"
+input_mode = "product_and_ad"
+human_annotation_protocol_version = "rubric-v0.2"
+criteria = ["factual_support"]
+system_prompt = "prompts/eval/rubric/system_v1.txt"
+user_prompt = "prompts/eval/rubric/user_v1.txt"
+temperature = 0.0
+max_output_tokens = 1024
+max_attempts = 4
+
+[judge.provider_options]
+reasoning_effort = "none"

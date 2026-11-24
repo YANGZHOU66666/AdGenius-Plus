@@ -42,6 +42,7 @@
 
 1. 由标题决定：文案与标题一致就不算冲突；与标题冲突就算。标题明显是另一件商品（数据贴错）时，忽略标题。
 2. 标题不能决定时，与资料任何一处冲突都算；但 product details 中明显不属于本商品的零散字段，以及明显的笔误，不算。
+3. 正文（标题、features、description）已经给出某个数值时，product details 里的同类数值字段（如 Item Weight、Product Dimensions，可能包含包装）不推翻正文：文案与正文一致不算冲突，文案照 details 写而与正文冲突则算。
 
 **判定：**
 
@@ -76,7 +77,8 @@
 | 标题、feature、描述都写 “leather-look”，只有 details 写 “Cover Material: Leather”；文案写 leather-look（076） | True：details 零散字段不算 |
 | 资料写 “leather-look cover”，文案写 “leather cover”（125、037 中的 simulated leather） | False：资料排除了真皮 |
 | 标题、数量字段和“6 色各 100 个”都是 600 个，描述中一句写 1200；文案写 600（047、116） | True：明显笔误不算 |
-| 尺寸照标题和 features 写，只与 details 的 Product Dimensions 不同（003、008、018） | True |
+| 重量或尺寸照正文写，只与 details 的 Item Weight / Product Dimensions 不同（003、008、018） | True：正文优先于 details 数值字段 |
+| 资料写外壳是不锈钢、内部是防刮衬里；文案写 “stainless steel interior”（016） | False：把外壳材质安到了内部 |
 | 资料列出若干 CX 型号；文案写 “for CX series printers”（111） | True：简称不读成“全部” |
 | 资料写适合前端高度 0.39–0.71 英寸的 Tenkeyless 键盘；文案写 “Perfect for all Tenkeyless keyboards”（041） | False：大于资料给出的限制 |
 | 资料把对齐功能归于 Active Feed，文案归于 Perfect Page；商品确实能对齐 | True：两者可以同时成立 |
@@ -96,4 +98,5 @@
 
 - 当前只有一位标注者（`zhou`），没有第二人独立标注，不能写作两人一致的共识标签。
 - 上面的边界裁定和“资料自相矛盾时”的规则是在这 130 条上定下来的。用这批标签评估 judge prompt 时，若 prompt 直接写入这些例子，一致率会偏高；应同时报告只用核心定义的 prompt 的结果，或另取一批未参与定规则的文案验证。
+- 016 是在看过 judge 结果后改为 False 的（2026-11-24），同时补了上面第 3 条规则；两者都属于事后修改，报告 judge 一致率时需注明。
 - `concrete_product_info` 尚未按任何版本标注。

@@ -1,0 +1,258 @@
+{
+  "deepseek41_rubric_v1": {
+    "n": 130,
+    "agree": 122,
+    "accuracy": 0.9384615384615385,
+    "kappa": 0.7155361050328227,
+    "human_false": 18,
+    "model_false": 14,
+    "caught": 12,
+    "missed": 6,
+    "extra_false": 2,
+    "recall": 0.6666666666666666,
+    "precision": 0.8571428571428571,
+    "items": 130,
+    "failed_or_missing": 0,
+    "ci95": {
+      "accuracy": [
+        0.8923,
+        0.9769
+      ],
+      "kappa": [
+        0.5035,
+        0.8837
+      ],
+      "recall": [
+        0.44,
+        0.8824
+      ]
+    },
+    "by_generator": {
+      "qwen_local": {
+        "n": 100,
+        "agree": 92,
+        "accuracy": 0.92,
+        "kappa": 0.7032640949554897,
+        "human_false": 18,
+        "model_false": 14,
+        "caught": 12,
+        "missed": 6,
+        "extra_false": 2,
+        "recall": 0.6666666666666666,
+        "precision": 0.8571428571428571
+      },
+      "other_generators": {
+        "n": 30,
+        "agree": 30,
+        "accuracy": 1.0,
+        "kappa": null,
+        "human_false": 0,
+        "model_false": 0,
+        "caught": 0,
+        "missed": 0,
+        "extra_false": 0,
+        "recall": null,
+        "precision": null
+      }
+    },
+    "false_without_quoted_conflict": 0,
+    "calls": {
+      "attempts": 130,
+      "failed_attempts": 0,
+      "input_tokens": 134765,
+      "output_tokens": 9283
+    }
+  },
+  "claude55_rubric_v1": {
+    "n": 130,
+    "agree": 119,
+    "accuracy": 0.9153846153846154,
+    "kappa": 0.6534173533688801,
+    "human_false": 18,
+    "model_false": 19,
+    "caught": 13,
+    "missed": 5,
+    "extra_false": 6,
+    "recall": 0.7222222222222222,
+    "precision": 0.6842105263157895,
+    "items": 130,
+    "failed_or_missing": 0,
+    "ci95": {
+      "accuracy": [
+        0.8615,
+        0.9615
+      ],
+      "kappa": [
+        0.4348,
+        0.8342
+      ],
+      "recall": [
+        0.5,
+        0.9286
+      ]
+    },
+    "by_generator": {
+      "qwen_local": {
+        "n": 100,
+        "agree": 90,
+        "accuracy": 0.9,
+        "kappa": 0.6612466124661247,
+        "human_false": 18,
+        "model_false": 18,
+        "caught": 13,
+        "missed": 5,
+        "extra_false": 5,
+        "recall": 0.7222222222222222,
+        "precision": 0.7222222222222222
+      },
+      "other_generators": {
+        "n": 30,
+        "agree": 29,
+        "accuracy": 0.9666666666666667,
+        "kappa": 0.0,
+        "human_false": 0,
+        "model_false": 1,
+        "caught": 0,
+        "missed": 0,
+        "extra_false": 1,
+        "recall": null,
+        "precision": 0.0
+      }
+    },
+    "false_without_quoted_conflict": 2,
+    "calls": {
+      "attempts": 130,
+      "failed_attempts": 0,
+      "input_tokens": 242653,
+      "output_tokens": 26708
+    }
+  },
+  "gpt6_luna_rubric_v1": {
+    "n": 130,
+    "agree": 119,
+    "accuracy": 0.9153846153846154,
+    "kappa": 0.6685210941121928,
+    "human_false": 18,
+    "model_false": 21,
+    "caught": 14,
+    "missed": 4,
+    "extra_false": 7,
+    "recall": 0.7777777777777778,
+    "precision": 0.6666666666666666,
+    "items": 130,
+    "failed_or_missing": 0,
+    "ci95": {
+      "accuracy": [
+        0.8615,
+        0.9615
+      ],
+      "kappa": [
+        0.4601,
+        0.8359
+      ],
+      "recall": [
+        0.5625,
+        0.9474
+      ]
+    },
+    "by_generator": {
+      "qwen_local": {
+        "n": 100,
+        "agree": 89,
+        "accuracy": 0.89,
+        "kappa": 0.6501272264631044,
+        "human_false": 18,
+        "model_false": 21,
+        "caught": 14,
+        "missed": 4,
+        "extra_false": 7,
+        "recall": 0.7777777777777778,
+        "precision": 0.6666666666666666
+      },
+      "other_generators": {
+        "n": 30,
+        "agree": 30,
+        "accuracy": 1.0,
+        "kappa": null,
+        "human_false": 0,
+        "model_false": 0,
+        "caught": 0,
+        "missed": 0,
+        "extra_false": 0,
+        "recall": null,
+        "precision": null
+      }
+    },
+    "false_without_quoted_conflict": 0,
+    "calls": {
+      "attempts": 130,
+      "failed_attempts": 0,
+      "input_tokens": 130146,
+      "output_tokens": 8123
+    }
+  },
+  "qwen37_rubric_v1": {
+    "n": 130,
+    "agree": 97,
+    "accuracy": 0.7461538461538462,
+    "kappa": 0.047090182141270684,
+    "human_false": 18,
+    "model_false": 23,
+    "caught": 4,
+    "missed": 14,
+    "extra_false": 19,
+    "recall": 0.2222222222222222,
+    "precision": 0.17391304347826086,
+    "items": 130,
+    "failed_or_missing": 0,
+    "ci95": {
+      "accuracy": [
+        0.6692,
+        0.8231
+      ],
+      "kappa": [
+        -0.1226,
+        0.2409
+      ],
+      "recall": [
+        0.05,
+        0.4348
+      ]
+    },
+    "by_generator": {
+      "qwen_local": {
+        "n": 100,
+        "agree": 72,
+        "accuracy": 0.72,
+        "kappa": 0.05149051490514902,
+        "human_false": 18,
+        "model_false": 18,
+        "caught": 4,
+        "missed": 14,
+        "extra_false": 14,
+        "recall": 0.2222222222222222,
+        "precision": 0.2222222222222222
+      },
+      "other_generators": {
+        "n": 30,
+        "agree": 25,
+        "accuracy": 0.8333333333333334,
+        "kappa": 0.0,
+        "human_false": 0,
+        "model_false": 5,
+        "caught": 0,
+        "missed": 0,
+        "extra_false": 5,
+        "recall": null,
+        "precision": 0.0
+      }
+    },
+    "false_without_quoted_conflict": 1,
+    "calls": {
+      "attempts": 154,
+      "failed_attempts": 24,
+      "input_tokens": 167892,
+      "output_tokens": 56662
+    }
+  }
+}

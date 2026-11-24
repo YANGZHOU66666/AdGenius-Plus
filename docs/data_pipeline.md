@@ -28,12 +28,14 @@ flowchart TD
     J --> M
     C --> RS[抽 130 条 rubric 样本]
     RS --> RH[人工 rubric 标签：130 条 factual_support]
-    RH -.-> U[后续 rubric judge 与评估]
+    RS --> RJ[四种 rubric judge 各判 130 条]
+    RH --> RM[rubric 人机一致率]
+    RJ --> RM
     P -.-> V[后续训练与验证数据]
     T -.-> W[后续最终测试]
 ```
 
-虚线部分尚未落地。**gold 与 test 是两个互不重叠的商品集合；两者都排除在训练池之外。** gold 用于评委校准，最终 test 不参与 prompt 调整或评委选择。当前没有标准化 test ProductItem、测试广告、rubric 模型评分或 SFT 数据；rubric 目前只有人工标签（见第 9 节）。
+虚线部分尚未落地。**gold 与 test 是两个互不重叠的商品集合；两者都排除在训练池之外。** gold 用于评委校准，最终 test 不参与 prompt 调整或评委选择。当前没有标准化 test ProductItem、测试广告或 SFT 数据；rubric 目前只有 `factual_support` 的人工标签和评委结果（见第 9 节）。
 
 ## 2. 当前文件清单
 
@@ -56,7 +58,9 @@ flowchart TD
 | `data/eval/gold/pairwise_annotations_zhou.jsonl` | 一位标注者对一个 pair 的偏好 | 100；当前人工参照 | 标注台 + 15 条已确认的复核修改 |
 | `data/eval/gold/rubric_sample.jsonl` | rubric 标注用的一条候选及其生成模型 | 130；冻结样本 | 四份候选 → `build_rubric_sample.py` |
 | `data/eval/gold/rubric_sample.manifest.json` | 一次 rubric 抽样说明 | 输入哈希、seed、模型分布、输出哈希 | 同上 |
-| `data/eval/gold/rubric_annotations_zhou.jsonl` | 一位标注者对一条候选的 rubric 判断 | 130；当前 rubric 人工参照，17 条 False | zhou 定稿，规则见 [rubric v0.2](individual_rubric_v0.2.md) |
+| `data/eval/gold/rubric_annotations_zhou.jsonl` | 一位标注者对一条候选的 rubric 判断 | 130；当前 rubric 人工参照，18 条 False | zhou 定稿，规则见 [rubric v0.2](individual_rubric_v0.2.md) |
+| `results/rubric/<run_id>/results.jsonl` | 一个评委对一条候选的 `factual_support` 判断（RubricResult model 记录） | 四个评委各 130 条 | `evaluate_rubric.py` 的格式，见第 9 节 |
+| `results/rubric/comparison/` | 四个评委与人工标签的一致率统计和 manifest | 一份 | `compare_rubric.py` |
 | `data/eval/gold/manifest.json` | 当前 gold 数据集说明 | 文件哈希、数量、schema、生成 prompt/模型/参数和标签版本 | 发布、整理时维护的冻结索引 |
 
 JSONL 文件均为每行一个 JSON 对象。`splits/v1` 和 `processed/v1` 的 `v1` 表示仍在使用的源划分，不表示存在多套并行使用的候选数据。当前正式 gold 只有 `data/eval/gold/` 这一套。
@@ -95,6 +99,7 @@ JSONL 文件均为每行一个 JSON 对象。`splits/v1` 和 `processed/v1` 的 
 | `artifacts/generation/gold/results_<alias>.jsonl` | 当前生成批次的本地最终快照；发布后的共享输入以 `data/eval/gold/` 为准 |
 | `artifacts/generation/gold/calls_<alias>.jsonl` | 各模型所有生成尝试的请求、响应、失败、重试关系和 usage |
 | `artifacts/pairwise/<run_id>/calls.jsonl` | judge 的调用日志；包括中途失败和补跑，行数可能大于 200 |
+| `artifacts/rubric/<run_id>/calls.jsonl` | rubric 评委的每次尝试及原始返回文本；导入时重建，没有调用时间和延迟 |
 | `artifacts/annotation/workbench.log` | 标注服务运行日志；人工结论写在正式标签 JSONL 中 |
 | `deprecated/data/eval/gold/pairwise_annotations_zhou.original.jsonl` | 复核前的人工标签，按约定退出当前数据路径 |
 | `deprecated/artifacts/eval/gold_review/` | 四轮复核的修改记录和修改前快照 |
@@ -225,7 +230,7 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 
 读取和校验共享结果不需要调用日志；重新统计完整历史 tokens/耗时、排查请求或续跑原运行则需要对应日志。标签若再次修改，当前 comparison 不会自动刷新，需要显式重新统计与更新 manifest。
 
-## 9. 候选 → rubric 样本与人工标签
+## 9. 候选 → rubric 样本、人工标签与评委
 
 本节状态截至 **2026-11-23**。
 
@@ -239,9 +244,11 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 
 **标注。** 生产入口：[tools/rubric_annotation.py](../tools/rubric_annotation.py)。[标注台文档](rubric_annotation_workbench.md)说明隐藏生成模型、商品资料渲染、即时 JSONL 同步和并发写入保护；判定规则见 [rubric v0.2](individual_rubric_v0.2.md)。
 
-当前 `rubric_annotations_zhou.jsonl` 是 zhou 定稿的 130 条标签，只含 `factual_support`。人工 schema 使用 [RubricResult v1](../metadata/schemas/rubric_result.schema.json) 的 human 记录，`annotation_set_id="gold_rubric_v1"`、`protocol_version="rubric-v0.2"`。结果为 17 条 False，全部来自 qwen_local（100 条中 17 条）；其他三个模型的 30 条均为 True。每条 False 在理由中引用冲突的文案原文和资料原文。
+当前 `rubric_annotations_zhou.jsonl` 是 zhou 定稿的 130 条标签，只含 `factual_support`。人工 schema 使用 [RubricResult v1](../metadata/schemas/rubric_result.schema.json) 的 human 记录，`annotation_set_id="gold_rubric_v1"`、`protocol_version="rubric-v0.2"`。结果为 18 条 False，全部来自 qwen_local（100 条中 18 条）；其他三个模型的 30 条均为 True。每条 False 在理由中引用冲突的文案原文和资料原文。
 
 这是单人标签，不能写作两人独立标注的一致共识。v0.2 中的边界裁定是在这 130 条上定下来的，用这批标签评估 judge 时需注意 prompt 是否直接写入了这些例子。
+
+**评委与一致率。** 生产入口：[scripts/evaluate_rubric.py](../scripts/evaluate_rubric.py)，实现为 [eval/rubric.py](../src/adgenius/eval/rubric.py)；统计入口 [scripts/compare_rubric.py](../scripts/compare_rubric.py)，实现为 [eval/rubric_metrics.py](../src/adgenius/eval/rubric_metrics.py)。四个评委（DeepSeek、Claude Haiku、GPT-6 Luna、Qwen Flash）使用 [system_v1.txt](../prompts/eval/rubric/system_v1.txt) 各判 130 条，结果在 `results/rubric/<run_id>/`，调用日志在 `artifacts/rubric/<run_id>/calls.jsonl`。DeepSeek 一致率最高（0.938，kappa 0.716），被选为默认 rubric 评委。实验设置、结果和限制见[人机一致率报告](rubric_judge_agreement.md)。
 
 跨文件比较 rubric 结果时使用 `candidate_id`；`item_id` 只是样本内的展示编号。`scripts/validate_gold_data.py` 和 gold `manifest.json` 目前还不覆盖 rubric 样本与标签。
 
@@ -279,7 +286,8 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 | 四模型 comparison / bootstrap / report | 有冻结结果和计算口径 | 尚无专门批量重建 CLI，不能声称已一键复现 |
 | 候选 → rubric 样本 | 有确定性脚本 | 四份冻结候选、商品全集、seed 20261123；脚本默认覆盖冻结文件，重建时指定新 `--output` |
 | rubric 样本 → 人工标签 | 有标注台及当前标签 | 人工决定无法由脚本重建；`validate_gold_data.py` 尚不校验 |
-| rubric judge、训练集、训练、最终 test 生成 | 尚未完成 | rubric 只有人工标签，没有模型评分；其余需要后续实现与实验记录 |
+| rubric 样本 → 评委判断 / 一致率 | 有评委脚本、冻结结果和统计脚本 | 重调用不保证同一判断；四次运行由探索脚本跑出后导入，见各 manifest 的 `provenance` |
+| 训练集、训练、最终 test 生成 | 尚未完成 | 需要后续实现与实验记录 |
 
 离线校验入口为 [scripts/validate_gold_data.py](../scripts/validate_gold_data.py)：
 
