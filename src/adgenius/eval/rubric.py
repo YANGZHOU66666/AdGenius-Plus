@@ -39,6 +39,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 GOLD = REPO_ROOT / "data" / "eval" / "gold"
 SCHEMA_DIR = REPO_ROOT / "metadata" / "schemas"
 CRITERION = "factual_support"
+METRICS_SCHEMA_VERSION = "rubric_generator_metrics_v1"
 OUTPUT_SCHEMA = {
     "type": "object", "additionalProperties": False, "required": ["value", "conflicts", "reason"],
     "properties": {
@@ -125,9 +126,10 @@ def generator_name(run_id: str) -> str:
 
 def load_candidates(candidate_paths: list[Path], products_path: Path,
                     limit: int | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """Every successful GenerationResult in the given files, in file order.
+    """Every usable GenerationResult in the given files, in file order.
 
-    Failed generations have no ad to judge; they are counted per generator and skipped.
+    Success and truncated ads are judged (a truncated ad is what the generator produced). Failed
+    generations have no ad to judge; they are counted per generator and skipped.
     """
     products = {p["product_id"]: p for p in _read_jsonl(products_path)}
     validator = _validator("generation_result.schema.json")
@@ -144,7 +146,7 @@ def load_candidates(candidate_paths: list[Path], products_path: Path,
                 raise ValueError(f"Candidate {candidate_id} refers to a product missing from {products_path}")
             generator = generator_name(row["run_id"])
             result = row["generation_result"]
-            if result["status"] != "success" or not (result["text"] or "").strip():
+            if result["status"] not in ("success", "truncated") or not (result["text"] or "").strip():
                 skipped[generator] = skipped.get(generator, 0) + 1
                 continue
             items.append({"item_id": candidate_id, "candidate_id": candidate_id, "product_id": product_id,
@@ -219,7 +221,7 @@ def _relative(path: Path) -> str:
 def specification(settings, config, paths, items) -> dict[str, Any]:
     code = [Path(__file__), Path(__file__).with_name("rubric_metrics.py"), REPO_ROOT / "src/adgenius/shared/llm.py",
             REPO_ROOT / "src/adgenius/shared/product.py", SCHEMA_DIR / "rubric_result.schema.json",
-            SCHEMA_DIR / "generation_result.schema.json"]
+            SCHEMA_DIR / "generation_result.schema.json", SCHEMA_DIR / "rubric_generator_metrics.schema.json"]
     return {"settings": settings, "model_config": config.snapshot(),
             "input_files": {name: {"path": _relative(path), "sha256": _hash(path.read_bytes())}
                             for name, path in paths.items()},
@@ -331,8 +333,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         list(pool.map(work, todo))
     save()
     failed = sum(saved[it["candidate_id"]]["rubric_result"]["status"] != "success" for it in items)
-    metrics = generator_rates([saved[it["candidate_id"]] for it in items], items, calls)
-    metrics.update(run_id=run_id, input_mode=mode, **extra)
+    metrics = {"schema_version": METRICS_SCHEMA_VERSION, "run_id": run_id, "input_mode": mode,
+               **generator_rates([saved[it["candidate_id"]] for it in items], items, calls), **extra}
+    _validator("rubric_generator_metrics.schema.json").validate(metrics)
     (output / "metrics.json").write_bytes(_json_bytes(metrics))
     manifest.update(status="completed" if not failed else "completed_with_failures", updated_at=_now())
     manifest_path.write_bytes(_json_bytes(manifest))

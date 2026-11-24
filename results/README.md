@@ -28,6 +28,10 @@ Each result file has 100 PairwiseResult records with independent AB and BA judgm
 
 Each result file has 130 RubricResult model records (`factual_support`) on data/eval/gold/rubric_sample.jsonl. rubric/comparison/ holds agreement with the current human labels (metrics.json, manifest.json); it is rebuilt by scripts/compare_rubric.py without API calls. The report is [docs/rubric_judge_agreement.md](../docs/rubric_judge_agreement.md). New rubric runs default to results/rubric/<run_id>/ and artifacts/rubric/<run_id>/. With `--candidates`, scripts/evaluate_rubric.py judges every successful ad in the given GenerationResult files and writes metrics.json with the judged conflict rate per generator; see [the rubric judge guide](../docs/rubric_llm_judge.md).
 
+## Bradley–Terry comparisons
+
+scripts/summarize_bt.py writes results/bt/<design name>/ (metrics.json, report.md, manifest.json): win/tie/loss per compared system pair and Bradley–Terry scores with product-bootstrap intervals, computed from pairwise judge results without API calls. Designs live in configs/eval/bt/. See [the Bradley–Terry guide](../docs/bradley_terry_eval.md). No formal run yet.
+
 ## Future runs
 
 Pairwise evaluation defaults to results/pairwise/<run_id>/ for results, decisions, metrics and the run manifest, and artifacts/pairwise/<run_id>/ for calls.jsonl. --output-dir and --calls-dir can override those locations. Use a fresh run ID after changing inputs, labels, prompts, code or parameters. A frozen run is not silently resumed with a new protocol.

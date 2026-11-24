@@ -1,0 +1,66 @@
+# Final test design: SFT and OPD checkpoints at four data scales plus three references (18 comparisons).
+# System files are GenerationResult files on the 1,000 test products; import raw student outputs with
+# scripts/import_generation_outputs.py. Comparisons list the system expected to be stronger first.
+[design]
+name = "test_sft_opd_v1"
+products = "data/eval/test/product_items.jsonl"
+anchor = "base"
+pairs = "data/eval/test/bt_pairs_test_sft_opd_v1.jsonl"
+include_truncated = true
+
+[systems]
+base = "data/eval/test/results_base.jsonl"
+sft_1k = "data/eval/test/results_sft_1k.jsonl"
+sft_2k = "data/eval/test/results_sft_2k.jsonl"
+sft_4k = "data/eval/test/results_sft_4k.jsonl"
+sft_8k = "data/eval/test/results_sft_8k.jsonl"
+opd_1k = "data/eval/test/results_opd_1k.jsonl"
+opd_2k = "data/eval/test/results_opd_2k.jsonl"
+opd_4k = "data/eval/test/results_opd_4k.jsonl"
+opd_8k = "data/eval/test/results_opd_8k.jsonl"
+glm53_flash = "data/eval/test/results_glm53_flash.jsonl"
+teacher_397b = "data/eval/test/results_teacher_397b.jsonl"
+
+# Main result: OPD vs SFT at each scale.
+[[comparisons]]
+systems = ["opd_1k", "sft_1k"]
+[[comparisons]]
+systems = ["opd_2k", "sft_2k"]
+[[comparisons]]
+systems = ["opd_4k", "sft_4k"]
+[[comparisons]]
+systems = ["opd_8k", "sft_8k"]
+
+# Scale chains.
+[[comparisons]]
+systems = ["sft_2k", "sft_1k"]
+[[comparisons]]
+systems = ["sft_4k", "sft_2k"]
+[[comparisons]]
+systems = ["sft_8k", "sft_4k"]
+[[comparisons]]
+systems = ["opd_2k", "opd_1k"]
+[[comparisons]]
+systems = ["opd_4k", "opd_2k"]
+[[comparisons]]
+systems = ["opd_8k", "opd_4k"]
+
+# Starting point (also closes cycles through each chain).
+[[comparisons]]
+systems = ["sft_1k", "base"]
+[[comparisons]]
+systems = ["opd_1k", "base"]
+[[comparisons]]
+systems = ["sft_8k", "base"]
+[[comparisons]]
+systems = ["opd_8k", "base"]
+
+# References.
+[[comparisons]]
+systems = ["glm53_flash", "sft_8k"]
+[[comparisons]]
+systems = ["glm53_flash", "opd_8k"]
+[[comparisons]]
+systems = ["glm53_flash", "teacher_397b"]
+[[comparisons]]
+systems = ["teacher_397b", "sft_8k"]
