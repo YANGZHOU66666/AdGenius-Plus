@@ -22,8 +22,9 @@ Each result file has 100 PairwiseResult records with independent AB and BA judgm
 | Experiment | Contents | Report |
 |---|---|---|
 | training/opd_lr_sweep_v1 | OPD learning-rate and beta selection on 200 dev products: 7 GenerationResult files (untrained student and 6 runs), CandidatePairs, per-run manifests, selection | [report](training/opd_lr_sweep_v1/report.md) |
+| training/sft_lr_sweep_v1 | SFT learning-rate selection on the same 200 dev products: 3 GenerationResult files (the untrained student is shared with opd_lr_sweep_v1), CandidatePairs, per-run manifests, selection | [report](training/sft_lr_sweep_v1/report.md) |
 
-Its seven DeepSeek judge runs are under pairwise/opd_sweep_dev_*/ in the same layout as the gold judge runs, with call journals in artifacts/pairwise/<run_id>/. The scripts are in scripts/opd/ (training code) and scripts/opd/lr_sweep/ (sweep orchestration). Training logs, VM archives, frozen prompts and the exact code versions that ran stay in ignored artifacts/train/opd_lr_sweep_v1/; the experiment manifest records their hashes. Model checkpoints were not retained.
+Their DeepSeek judge runs are under pairwise/opd_sweep_dev_*/ and pairwise/sft_sweep_dev_*/ in the same layout as the gold judge runs, with call journals in artifacts/pairwise/<run_id>/. The scripts are in scripts/opd/ and scripts/sft/ (training code) with lr_sweep/ subfolders (sweep orchestration). Training logs, VM archives, frozen prompts or SFT examples and the exact code versions that ran stay in ignored artifacts/train/<experiment>/; each experiment manifest records their hashes. Model checkpoints were not retained.
 
 ## Future runs
 

@@ -1,4 +1,4 @@
-"""Offline tests for the training helpers in scripts/ and scripts/opd (no GPU, Colab or API calls)."""
+"""Offline tests for the training helpers in scripts/, scripts/opd and scripts/sft (no GPU, Colab or API calls)."""
 
 import importlib.util
 import json
@@ -24,6 +24,9 @@ proxy = load("teacher_proxy", OPD / "teacher_proxy.py")
 select = load("select_from_pairwise", OPD / "lr_sweep" / "select_from_pairwise.py")
 watchdog = load("training_watchdog", OPD / "lr_sweep" / "watchdog.py")
 candidates = load("generate_candidates", ROOT / "scripts" / "generate_candidates.py")
+SFT = SCRIPTS / "sft"
+select_sft = load("select_sft", SFT / "lr_sweep" / "select_sft.py")
+watchdog_sft = load("watchdog_sft", SFT / "lr_sweep" / "watchdog_sft.py")
 
 
 class PromptTests(unittest.TestCase):
@@ -95,6 +98,62 @@ class WatchdogTests(unittest.TestCase):
             self.assertFalse(watchdog.alive())
         with patch.object(watchdog, "colab", return_value=(0, "[sweep] gpu-a100 | Hardware: A100")):
             self.assertTrue(watchdog.alive())
+
+
+class SftTests(unittest.TestCase):
+    def test_sft_uses_the_opd_data_order(self):
+        import re
+
+        def body(path, name):
+            source = path.read_text()
+            fn = re.search(rf"def {name}\(.*?\n(?=\n\n)", source, re.S).group(0)
+            return [line for line in fn.splitlines()[1:] if not line.strip().startswith('"""')]
+
+        self.assertEqual(body(OPD / "opd_train.py", "ordered_prompts"), body(SFT / "sft_train.py", "ordered_rows"))
+        self.assertIn('train_sampling_strategy="sequential"', (SFT / "sft_train.py").read_text())
+
+    def test_tie_with_the_runner_up_picks_the_smaller_learning_rate(self):
+        lrs = select_sft.LRS
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp)
+            products = [f"p{i}" for i in range(200)]
+            dev_rows = "".join(json.dumps({"product_id": p, "text": "An ad.", "finish_reason": "stop"}) + "\n"
+                               for p in products)
+            for lr in lrs:
+                run_dir = work / "results" / select_sft.run(lr)
+                run_dir.mkdir(parents=True)
+                (run_dir / "run_report.json").write_text(json.dumps({"diverged": False}))
+                (run_dir / "dev.jsonl").write_text(dev_rows)
+            (work / "base.jsonl").write_text(dev_rows)
+            # lr[1] beats lr[0] on 104 of 200 products (inside noise); both beat lr[2] on every product.
+            wins_for_a = {(lrs[0], lrs[1]): 96, (lrs[0], lrs[2]): 200, (lrs[1], lrs[2]): 200}
+            for (a, b), a_wins in wins_for_a.items():
+                matchup, rid = f"{select_sft.run(a)}__vs__{select_sft.run(b)}", select_sft.judge_run_id(a, b)
+                cand_a = {p: f"{a}_{p}" for p in products}
+                (work / "eval/pairs").mkdir(parents=True, exist_ok=True)
+                (work / "eval/pairwise" / rid).mkdir(parents=True)
+                (work / "eval/pairs" / f"{matchup}.excluded.json").write_text(json.dumps(
+                    {"candidate_a": cand_a, "excluded": []}))
+                lines = []
+                for i, p in enumerate(products):
+                    winner = cand_a[p] if i < a_wins else f"{b}_{p}"
+                    lines.append(json.dumps({"candidate_mapping": {"A": cand_a[p], "B": f"{b}_{p}"}, "pairwise_result": [
+                        {"prompt_order": o, "status": "success", "winner_candidate_id": winner} for o in ("AB", "BA")]}))
+                (work / "eval/pairwise" / rid / "results.jsonl").write_text("\n".join(lines) + "\n")
+            select_sft.configure(work)
+            with patch.object(select_sft, "BASE_DEV", work / "base.jsonl"), patch("builtins.print"):
+                select_sft.main()
+            summary = json.loads((work / "eval/selection.json").read_text())
+        self.assertEqual(summary["best"], select_sft.run(lrs[1]))
+        self.assertTrue(summary["best_vs_runner_up_ci_contains_half"])
+        self.assertEqual(summary["chosen"], select_sft.run(lrs[0]))
+        self.assertTrue(summary["at_grid_edge"])
+
+    def test_unreachable_colab_is_not_a_reclaim(self):
+        with patch.object(watchdog_sft, "colab", return_value=(1, "network error")):
+            self.assertIsNone(watchdog_sft.alive())
+        with patch.object(watchdog_sft, "colab", return_value=(0, "[colab] No active sessions found on server.")):
+            self.assertFalse(watchdog_sft.alive())
 
 
 if __name__ == "__main__":

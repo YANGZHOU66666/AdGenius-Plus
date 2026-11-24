@@ -1,0 +1,84 @@
+{
+ "rules": ", fixed before any judgment was read (docs/sft_opd_experiment_plan.md §5; same as the OPD sweep):\n- Runs whose training loss is not finite (diverged) are excluded before judging.\n- Denominator is always the 200 dev products. A product's score for run A in a matchup is the mean over its\n  successful orders of 1 (A wins) or 0 (B wins). Products settled without a judge call: identical texts -> 0.5;\n  one side empty -> the non-empty side wins (both empty -> 0.5). If both orders failed after retries -> 0.5.\n- Truncated outputs keep their text and are judged as written; truncation is reported, not penalised separately.\n- A learning rate's score is the mean of its win rates in its matchups. The best one wins unless the\n  product-bootstrap 95% CI of its win rate against the runner-up contains 0.5; then the smaller of the two\n  learning rates is chosen. A winner at the edge of the grid is reported, not extended.\n- No per-item regeneration of model outputs; only judge calls are retried (repo evaluator behaviour).",
+ "excluded_diverged": [],
+ "matchups": [
+  {
+   "a": "sft_lr5e-06",
+   "b": "sft_lr1e-05",
+   "judge_run_id": "sft_sweep_dev_lr5e6_vs_lr1e5",
+   "products": 200,
+   "a_win_rate": 0.485,
+   "ci95": [
+    0.43,
+    0.54
+   ],
+   "order_inconsistent": 74,
+   "both_orders_failed": 0,
+   "settled_by_rule": 0
+  },
+  {
+   "a": "sft_lr5e-06",
+   "b": "sft_lr2e-05",
+   "judge_run_id": "sft_sweep_dev_lr5e6_vs_lr2e5",
+   "products": 200,
+   "a_win_rate": 0.5275,
+   "ci95": [
+    0.4675,
+    0.585
+   ],
+   "order_inconsistent": 57,
+   "both_orders_failed": 0,
+   "settled_by_rule": 0
+  },
+  {
+   "a": "sft_lr1e-05",
+   "b": "sft_lr2e-05",
+   "judge_run_id": "sft_sweep_dev_lr1e5_vs_lr2e5",
+   "products": 200,
+   "a_win_rate": 0.525,
+   "ci95": [
+    0.4675,
+    0.5825
+   ],
+   "order_inconsistent": 60,
+   "both_orders_failed": 0,
+   "settled_by_rule": 0
+  }
+ ],
+ "mean_score": {
+  "sft_lr5e-06": 0.5062,
+  "sft_lr1e-05": 0.52,
+  "sft_lr2e-05": 0.4738
+ },
+ "best": "sft_lr1e-05",
+ "runner_up": "sft_lr5e-06",
+ "best_vs_runner_up_ci_contains_half": true,
+ "chosen": "sft_lr5e-06",
+ "at_grid_edge": true,
+ "guardrails": {
+  "base": {
+   "mean_words": 51.0,
+   "over_35_words": 154,
+   "truncated": 3,
+   "empty": 0
+  },
+  "sft_lr5e-06": {
+   "mean_words": 26.1,
+   "over_35_words": 5,
+   "truncated": 0,
+   "empty": 0
+  },
+  "sft_lr1e-05": {
+   "mean_words": 25.8,
+   "over_35_words": 3,
+   "truncated": 0,
+   "empty": 0
+  },
+  "sft_lr2e-05": {
+   "mean_words": 26.2,
+   "over_35_words": 3,
+   "truncated": 0,
+   "empty": 0
+  }
+ }
+}

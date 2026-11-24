@@ -76,6 +76,8 @@ dev 上的 SFT loss 和 OPD 反向 KL 只用来监控训练，不参与选择。
 
 **OPD 选择结果（2026-11-23）**：`beta=0.5`，学习率 2e-6。两个 beta 各扫了三个学习率，组内都是 2e-6 胜出，组间对决 `beta=0.5` 胜率 0.62（95% 区间 0.56–0.68）。实际每步用了 40 个 prompt × 4 次采样；选定 run 的 1k checkpoint 没有保留，正式训练从头训练。详见[选择报告](../results/training/opd_lr_sweep_v1/report.md)。
 
+**SFT 选择结果（2026-11-24）**：学习率 5e-6。三个候选在 dev 上分不出高下：平均胜率最高的是 1e-5（0.52），但它对第二名 5e-6 的区间含 50%，按规则取较小的 5e-6；三场比较的区间全部含 50%。每步同样用 40 条；各 run 的 checkpoint 没有保留，正式训练从头训练。详见[选择报告](../results/training/sft_lr_sweep_v1/report.md)。
+
 **checkpoint 方案**：从 1k 续训到 8k 的过程中，在 1k、2k、4k、8k 四处保存权重。这四个 checkpoint 就是数据规模曲线上的四个点，全部在 test 上评测，不需要另外挑选 checkpoint。数据只过一遍，warmup 之后学习率恒定，因此每个 checkpoint 与"只用前 N 个商品训练"得到的结果相同。
 
 ## 6. 评测设计

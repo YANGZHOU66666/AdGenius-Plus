@@ -137,3 +137,13 @@ artifacts/train/、artifacts/checkpoints/  运行日志与权重（被忽略）
   - Tinker 每个 run 约 326 万 token，按实测单价约 $2.4。
 - **整轮选择的用量**：Colab 20.8 单元（另有 5.2 单元耗在两次被回收的会话上）；Tinker 约 2150 万 token；DeepSeek 2792 次调用，约 $0.41。
 
+## 8. SFT 学习率选择的工程经验（2026-11-24）
+
+结果见[选择报告](../results/training/sft_lr_sweep_v1/report.md)；本节只记工程经验。
+
+- **SFTTrainer 默认打乱数据**：TRL 的 `shuffle_dataset=False` 只是不在训练前打乱数据集，transformers 的 Trainer 仍默认用 `RandomSampler` 取样，设计好的块内顺序会被打乱。要设 `train_sampling_strategy="sequential"`，并在训练前检查 sampler。这是在本地用 TRL 的预处理检查时发现的，没有花 GPU 时间。OPD 的 `ServerDistillationTrainer` 用 TRL 自己的 `RepeatSampler`，`shuffle_dataset=False` 会生效，不受影响。
+- **先在本地 CPU 上核对 loss 范围**：用 TRL 自己的预处理生成 `labels`，确认 loss 只覆盖老师广告和 `<|im_end|>\n`，prompt 部分与推理时的输入逐字相同（包括空的思考块）。这个版本的 TRL 不输出 `completion_mask`，直接用 `labels == -100` 表示不算 loss 的位置。
+- **L4 实测**（每步 40 条，micro batch 4 × 累积 10）：第一步约 130 秒（编译 kernel），之后每步约 13 秒；显存峰值 14.8 GB；25 步训练约 5.5 分钟，加上 vLLM 生成 200 条 dev 输出，每个 run 约 9 分钟。整轮（安装、小测试、3 个 run）共 1.44 单元。
+- **先做小测试**：在同一个 VM 上训练 2 步并生成 dev 输出，用约 8 分钟确认整条流程跑通，再启动 watchdog 正式跑。
+- **同步时日志可能缺失**：watchdog 只在 dev 输出完整时才算同步完成，vLLM 的 `dev.log` 没有一起拉回来，VM 停掉后就丢了。正式训练时，停 VM 前要确认所有要保留的日志都在本地。
+

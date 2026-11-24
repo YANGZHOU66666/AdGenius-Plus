@@ -1,0 +1,324 @@
+{
+ "run": "sft_lr1e-05",
+ "experiment": "sft_lr_sweep_v1",
+ "status": "completed",
+ "method": "supervised fine-tuning on frozen Qwen3.5-397B teacher ads: TRL 1.18 SFTTrainer, completion-only loss",
+ "student": {
+  "model": "Qwen/Qwen3.5-0.8B",
+  "loaded_as": "text-only Qwen3_5ForCausalLM export of the hub model",
+  "master_weights": "fp32",
+  "mixed_precision": "bf16"
+ },
+ "targets": {
+  "path": "data/train/v1/teacher_qwen397b_train.jsonl",
+  "run_id": "gen_teacher_qwen397b_train_v1"
+ },
+ "hyperparameters": {
+  "learning_rate": 1e-05,
+  "seed": 20261123,
+  "examples": 1000,
+  "per_step": 40,
+  "micro_batch": 4,
+  "gradient_accumulation": 10,
+  "max_steps": 25,
+  "warmup_steps": 3,
+  "lr_scheduler": "constant_with_warmup",
+  "optimizer": "adamw_torch_fused",
+  "completion_only_loss": true,
+  "max_length": 2048,
+  "gradient_checkpointing": true,
+  "train_sampling_strategy": "sequential",
+  "sampler_used": "SequentialSampler",
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  }
+ },
+ "data": {
+  "sft_examples_sha256": "595f1c37b2d82b53aa670032595aeda600cecfdedc1393b28918774878bc9bae",
+  "order": "rank order; shuffled only within blocks [0,1k),[1k,2k),[2k,4k),[4k,8k) with the seed (same function and order as OPD); first 1k used",
+  "first_product_ids": [
+   "train_product_138699",
+   "train_product_182938",
+   "train_product_448201",
+   "train_product_135287",
+   "train_product_442819"
+  ]
+ },
+ "timeline_utc": {
+  "train_start": "2026-11-24T10:43:12Z",
+  "train_done": "2026-11-24T10:49:19Z",
+  "dev_done": "2026-11-24T10:52:23Z"
+ },
+ "training": {
+  "train_seconds": 330.5,
+  "mean_step_seconds": 13.1,
+  "step_seconds": [
+   15.34,
+   13.45,
+   12.12,
+   13.47,
+   14.22,
+   12.85,
+   12.09,
+   12.44,
+   11.38,
+   11.58,
+   12.78,
+   14.11,
+   12.87,
+   13.87,
+   13.31,
+   14.82,
+   13.4,
+   13.13,
+   13.68,
+   14.3,
+   13.47,
+   12.94,
+   11.54,
+   13.09,
+   12.57
+  ],
+  "peak_gpu_allocated_gb": 14.79,
+  "diverged": false,
+  "log": [
+   {
+    "step": 1,
+    "loss": 1.7413883209228516,
+    "grad_norm": 44.998958587646484,
+    "learning_rate": 0.0,
+    "num_tokens": 33042.0,
+    "mean_token_accuracy": 0.5848862290382385
+   },
+   {
+    "step": 2,
+    "loss": 1.5829098224639893,
+    "grad_norm": 44.62071228027344,
+    "learning_rate": 3.3333333333333333e-06,
+    "num_tokens": 67531.0,
+    "mean_token_accuracy": 0.6048070907592773
+   },
+   {
+    "step": 3,
+    "loss": 1.5635679960250854,
+    "grad_norm": 31.782442092895508,
+    "learning_rate": 6.666666666666667e-06,
+    "num_tokens": 98993.0,
+    "mean_token_accuracy": 0.6054878532886505
+   },
+   {
+    "step": 4,
+    "loss": 1.7878392934799194,
+    "grad_norm": 56.05118942260742,
+    "learning_rate": 1e-05,
+    "num_tokens": 131199.0,
+    "mean_token_accuracy": 0.6123456299304962
+   },
+   {
+    "step": 5,
+    "loss": 1.5123409032821655,
+    "grad_norm": 29.46811294555664,
+    "learning_rate": 1e-05,
+    "num_tokens": 165727.0,
+    "mean_token_accuracy": 0.6422253429889679
+   },
+   {
+    "step": 6,
+    "loss": 1.2666815519332886,
+    "grad_norm": 21.652799606323242,
+    "learning_rate": 1e-05,
+    "num_tokens": 198460.0,
+    "mean_token_accuracy": 0.6807142615318298
+   },
+   {
+    "step": 7,
+    "loss": 1.4693466424942017,
+    "grad_norm": 25.147829055786133,
+    "learning_rate": 1e-05,
+    "num_tokens": 229035.0,
+    "mean_token_accuracy": 0.6386319756507873
+   },
+   {
+    "step": 8,
+    "loss": 1.3692436218261719,
+    "grad_norm": 19.777482986450195,
+    "learning_rate": 1e-05,
+    "num_tokens": 260945.0,
+    "mean_token_accuracy": 0.6521005451679229
+   },
+   {
+    "step": 9,
+    "loss": 1.3971396684646606,
+    "grad_norm": 19.168766021728516,
+    "learning_rate": 1e-05,
+    "num_tokens": 291795.0,
+    "mean_token_accuracy": 0.6419134259223938
+   },
+   {
+    "step": 10,
+    "loss": 1.251039743423462,
+    "grad_norm": 15.545761108398438,
+    "learning_rate": 1e-05,
+    "num_tokens": 322276.0,
+    "mean_token_accuracy": 0.6811852276325225
+   },
+   {
+    "step": 11,
+    "loss": 1.3346222639083862,
+    "grad_norm": 15.33265209197998,
+    "learning_rate": 1e-05,
+    "num_tokens": 354687.0,
+    "mean_token_accuracy": 0.6655195653438568
+   },
+   {
+    "step": 12,
+    "loss": 1.3609793186187744,
+    "grad_norm": 15.589800834655762,
+    "learning_rate": 1e-05,
+    "num_tokens": 388189.0,
+    "mean_token_accuracy": 0.6517640829086304
+   },
+   {
+    "step": 13,
+    "loss": 1.3076255321502686,
+    "grad_norm": 14.477707862854004,
+    "learning_rate": 1e-05,
+    "num_tokens": 421070.0,
+    "mean_token_accuracy": 0.6769162893295289
+   },
+   {
+    "step": 14,
+    "loss": 1.2810015678405762,
+    "grad_norm": 14.847359657287598,
+    "learning_rate": 1e-05,
+    "num_tokens": 453829.0,
+    "mean_token_accuracy": 0.6723446667194366
+   },
+   {
+    "step": 15,
+    "loss": 1.2432230710983276,
+    "grad_norm": 15.130582809448242,
+    "learning_rate": 1e-05,
+    "num_tokens": 485863.0,
+    "mean_token_accuracy": 0.670781409740448
+   },
+   {
+    "step": 16,
+    "loss": 1.1542868614196777,
+    "grad_norm": 13.803558349609375,
+    "learning_rate": 1e-05,
+    "num_tokens": 521214.0,
+    "mean_token_accuracy": 0.6948413789272309
+   },
+   {
+    "step": 17,
+    "loss": 1.2238761186599731,
+    "grad_norm": 14.162047386169434,
+    "learning_rate": 1e-05,
+    "num_tokens": 553702.0,
+    "mean_token_accuracy": 0.687087994813919
+   },
+   {
+    "step": 18,
+    "loss": 1.2585985660552979,
+    "grad_norm": 15.177166938781738,
+    "learning_rate": 1e-05,
+    "num_tokens": 586790.0,
+    "mean_token_accuracy": 0.6621767520904541
+   },
+   {
+    "step": 19,
+    "loss": 1.1982189416885376,
+    "grad_norm": 14.824334144592285,
+    "learning_rate": 1e-05,
+    "num_tokens": 620645.0,
+    "mean_token_accuracy": 0.6771288633346557
+   },
+   {
+    "step": 20,
+    "loss": 1.1936954259872437,
+    "grad_norm": 13.842394828796387,
+    "learning_rate": 1e-05,
+    "num_tokens": 656094.0,
+    "mean_token_accuracy": 0.6889502882957459
+   },
+   {
+    "step": 21,
+    "loss": 1.2047094106674194,
+    "grad_norm": 14.078290939331055,
+    "learning_rate": 1e-05,
+    "num_tokens": 688948.0,
+    "mean_token_accuracy": 0.6774752497673034
+   },
+   {
+    "step": 22,
+    "loss": 1.2733685970306396,
+    "grad_norm": 14.029474258422852,
+    "learning_rate": 1e-05,
+    "num_tokens": 720932.0,
+    "mean_token_accuracy": 0.6594800114631653
+   },
+   {
+    "step": 23,
+    "loss": 1.260107398033142,
+    "grad_norm": 14.967138290405273,
+    "learning_rate": 1e-05,
+    "num_tokens": 751816.0,
+    "mean_token_accuracy": 0.6676977813243866
+   },
+   {
+    "step": 24,
+    "loss": 1.2172294855117798,
+    "grad_norm": 13.883063316345215,
+    "learning_rate": 1e-05,
+    "num_tokens": 785467.0,
+    "mean_token_accuracy": 0.6739347517490387
+   },
+   {
+    "step": 25,
+    "loss": 1.1868209838867188,
+    "grad_norm": 13.098392486572266,
+    "learning_rate": 1e-05,
+    "num_tokens": 816856.0,
+    "mean_token_accuracy": 0.6981006503105164
+   }
+  ]
+ },
+ "dev_generation": {
+  "run_id": "gen_sft_lr_sweep_dev_sft_lr1em05",
+  "file": "../../generations/sft_lr1e-05.jsonl",
+  "sha256": "8b8c264d6af45655c7022a1af0e158344b56fb4c2c5987117af9b5f5b70352a0",
+  "records": 200,
+  "status_counts": {
+   "success": 200,
+   "truncated": 0,
+   "failed": 0
+  },
+  "source_sha256": "21632d2f0eacb5aebff626051409a85cf08d9800268d6e881610b37313fd3b2d",
+  "guardrails": {
+   "mean_words": 25.8,
+   "over_35_words": 3,
+   "truncated": 0,
+   "empty": 0
+  }
+ },
+ "hardware": "NVIDIA L4, 23034 MiB, 580.82.07",
+ "packages": {
+  "torch": "2.13.0",
+  "vllm": "0.30.0",
+  "trl": "1.18.0",
+  "transformers": "5.23.0",
+  "accelerate": "1.15.0",
+  "datasets": "4.8.5",
+  "flash-linear-attention": "0.6.0"
+ },
+ "code_sha256_at_start": {
+  "sft_train.py": "3f0ec0ade92edbd84fd3e196bf1f5c5e46873a6a90cb1b96ff9b1f43f160fe15",
+  "sft_train_v1.jsonl": "595f1c37b2d82b53aa670032595aeda600cecfdedc1393b28918774878bc9bae"
+ },
+ "checkpoint": {
+  "retained": false,
+  "reason": "VM disk is ephemeral; the formal run retrains with the selected setting"
+ },
+ "local_logs": "artifacts/train/sft_lr_sweep_v1/runs/sft_lr1e-05/ (train.log; the vLLM dev.log was not synced before the VM stopped)"
+}
