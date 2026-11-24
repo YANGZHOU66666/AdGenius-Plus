@@ -35,7 +35,8 @@
     "rows": 200,
     "sha256": "2e35dec3ffb79b3c9931cc519c13f4098f58a53ba325ba527c5da792923d739d",
     "local_copy": "artifacts/train/opd_lr_sweep_v1/prompts/prompts_dev_v1.jsonl"
-   }
+   },
+   "rebuild": "PYTHONPATH=src .venv/bin/python scripts/build_training_prompts.py"
   }
  },
  "runs": [
@@ -398,7 +399,7 @@
   "Per-beta Tinker token cap raised from 12.5M to 15M before the rerun."
  ],
  "code": {
-  "location": "artifacts/train/opd_lr_sweep_v1/code/ (local only; to be ported into src/adgenius/training)",
+  "location": "artifacts/train/opd_lr_sweep_v1/code/ (local only): the exact versions that ran",
   "sha256": {
    "check_completion_logits.py": "dcb12d4dba779a7fed66514ca00d4959c926be905e0a63cf13aa3bf9adf36acd",
    "completion_logits_trainer.py": "2c89a8633a838b8b8c0ad5c8263eb46e5a225a85858c331322027efc70a5bf52",
@@ -413,6 +414,16 @@
    "teacher_proxy.py": "6e1c0b1bacdcb0ca65ac38625063435a74cbca4dff989715a57f1ce429c16e74",
    "vm_runner.py": "2838d88bf411c10124591c6d9e75afaffdfc8b2ca9621df673b3d8ef1393835c",
    "watchdog.py": "386d586cea39eb0b43396bf235199aab09a4f41aa129ba0ff5abe145f21883d2"
+  },
+  "repository": {
+   "training_code": "scripts/opd/",
+   "sweep_orchestration": "scripts/opd/lr_sweep/",
+   "shared": [
+    "scripts/build_training_prompts.py",
+    "scripts/dev_generate.py"
+   ],
+   "note": "Repository versions of the same scripts. They differ from the run versions only in paths, command-line options, code hashing at training start and the watchdog's offline check; see scripts/opd/lr_sweep/README.md. Re-running prepare_eval.py and select_from_pairwise.py from there reproduces pairs/ and selection.json byte for byte.",
+   "prompt_builder": "scripts/build_training_prompts.py reproduces both frozen prompt files with the recorded sha256."
   }
  },
  "not_retained": [

@@ -129,7 +129,8 @@ artifacts/train/、artifacts/checkpoints/  运行日志与权重（被忽略）
 - **Colab 空闲回收**：Colab 只按 notebook 单元是否在执行来判断会话是否在用，不看 GPU。把训练放进脱离单元的后台进程后，内核显得空闲，约 22 分钟后会话被回收。改为让单元一直执行到训练结束，并在 Mac 上用每 10 分钟检查一次的 watchdog：拉回已完成的 run，会话丢失时只重跑缺的 run，内核意外空闲时立即重启单元。之后没有再被回收。
 - **VM 磁盘不保留**：会话一结束，checkpoint 和日志都会丢失。每个 run 结束后立刻把 dev 输出和日志拉回本地；正式训练需要定期把完整状态（约 9 GB）存到 Drive。
 - **代理定位回答起点的 bug**：代理只把回答部分发给 Tinker 打分。原来用最后一次出现的 assistant 开头定位起点，学生采样里如果再出现对话开头，前面的位置就不会打分，TRL 报 “missing actual-token logprobs”。改为第一次出现的位置，并在发现缺口时整条序列重新打分、记录日志。修复后所有 run 都没有触发兜底。
-- **代码哈希要在训练开始时取**：这次的 `run_report.json` 在训练结束时才计算代码哈希，中途替换文件后会记录错版本。正式训练应在启动时记录。
+- **代码哈希要在训练开始时取**：这次的 `run_report.json` 在训练结束时才计算代码哈希，中途替换文件后会记录错版本。`scripts/opd/opd_train.py` 已改为在训练开始前记录。
+- **脚本位置**：OPD 训练代码在 [scripts/opd/](../scripts/opd/)，选学习率的编排脚本在 [scripts/opd/lr_sweep/](../scripts/opd/lr_sweep/)（与实际运行版本的差异见其 README）；SFT 放在 [scripts/sft/](../scripts/sft/)，两者都分为 `lr_sweep/` 和 `formal/`。
 - **A100 实测**（每步 160 条序列，micro batch 16）：
   - beta=1 和 beta=0.5（top1 模式）每步都约 46 秒，25 步约 20 分钟；加上加载、保存和 dev 生成，每个 run 约 32 分钟；
   - 显存峰值约 27.5 GB；

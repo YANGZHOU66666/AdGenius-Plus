@@ -125,7 +125,8 @@
 | 选择结果 | [selection.json](selection.json) |
 | 实验 manifest（输入、规则、评审 run、环境、费用、搬迁说明） | [manifest.json](manifest.json) |
 | DeepSeek 评审结果 | [results/pairwise/opd_sweep_dev_*](../../pairwise/) |
-| 本地（不进 Git）：训练和生成日志、VM 存档、冻结 prompt、代码 | `artifacts/train/opd_lr_sweep_v1/` |
+| 脚本（仓库版本，与运行版本的差异见其 README） | [scripts/opd/lr_sweep/](../../../scripts/opd/lr_sweep/)，训练代码在 [scripts/opd/](../../../scripts/opd/) |
+| 本地（不进 Git）：训练和生成日志、VM 存档、冻结 prompt、实际运行的代码 | `artifacts/train/opd_lr_sweep_v1/` |
 | 本地（不进 Git）：评审调用日志 | `artifacts/pairwise/opd_sweep_dev_*/calls.jsonl` |
 
 **代理版本**：beta=1 的 lr=5e-7 和 lr=2e-6 由修复前的代理服务，其余 4 个 run 由修复后的代理服务。没有发生对话开头泄漏时两者输出完全相同；修复前的代理一旦遇到泄漏会让训练报错，而这两个 run 都正常跑完，说明它们没有遇到泄漏。`run_report.json` 里的代码哈希是在训练结束写报告时取的，不能用来判断代理版本，以各 run manifest 的 `teacher.proxy_version` 为准。
@@ -134,4 +135,4 @@
 
 1. **是否加试 lr=4e-6（beta=0.5）：** 2e-6 在网格边上。一个 run 约 32 分钟、4 CU、Tinker 约 $2.4，评审约 $0.1。
 2. **正式训练：** 定期把完整状态（约 9 GB）存到 Drive 以便续训，并保存最终权重（bf16，约 1.6 GB）。
-3. **训练代码进仓库：** 目前只在 `artifacts/` 里，manifest 记录了每个文件的哈希。正式训练时整理进 `src/adgenius/training/` 并配测试。
+3. **训练代码：** 脚本已放进 [scripts/opd/](../../../scripts/opd/)，冻结 prompt 可由 `scripts/build_training_prompts.py` 按原哈希重建。
