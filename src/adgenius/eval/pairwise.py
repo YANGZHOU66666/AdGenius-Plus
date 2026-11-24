@@ -1,4 +1,10 @@
-"""Compare ad text quality with two independent, blind AB/BA LLM requests."""
+"""Compare ad text quality with two independent, blind AB/BA LLM requests.
+
+Pairs are judged concurrently (``--workers``); the two orders of one pair run one after the other in the
+same worker. Every attempt is appended to the call journal as one fsync'd line, so the journal is the
+recovery source. results.jsonl, decisions.jsonl and metrics.json are derived from it, refreshed every
+few seconds during a run and written in pair order when it ends or is interrupted.
+"""
 
 from __future__ import annotations
 
@@ -12,9 +18,11 @@ import os
 import random
 import re
 import tempfile
+import threading
 import time
 import tomllib
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager, nullcontext
 from dataclasses import replace
 from datetime import datetime, timezone
@@ -34,6 +42,8 @@ SCHEMA_DIR = REPO_ROOT / "metadata" / "schemas"
 DEFAULT_PAIRS = REPO_ROOT / "data/eval/gold/candidate_pairs.jsonl"
 DEFAULT_HUMAN = REPO_ROOT / "data/eval/gold/pairwise_annotations_zhou.jsonl"
 ORDERS = ("AB", "BA")
+DEFAULT_WORKERS = 8
+SAVE_INTERVAL_SECONDS = 15.0
 
 
 def _now() -> str:
@@ -99,6 +109,46 @@ def _write_json(path: Path, value: Any) -> None:
 
 def _write_rows(path: Path, rows: list[dict[str, Any]]) -> None:
     _atomic_write(path, b"".join(_json_bytes(row) + b"\n" for row in rows))
+
+
+class _Journal:
+    """Append-only call journal shared by worker threads: one fsync'd line per attempt."""
+
+    def __init__(self, path: Path, rows: list[dict[str, Any]]):
+        self.path, self.rows, self.lock = path, rows, threading.Lock()
+
+    def append(self, row: dict[str, Any]) -> None:
+        line = _json_bytes(row) + b"\n"
+        with self.lock:
+            with self.path.open("ab") as handle:
+                handle.write(line)
+                handle.flush()
+                os.fsync(handle.fileno())
+            self.rows.append(row)
+
+    def last_trace(self, pair_id: str, order: str) -> str | None:
+        with self.lock:
+            return next((row["trace_id"] for row in reversed(self.rows)
+                         if row["pair_id"] == pair_id and row["prompt_order"] == order), None)
+
+    def snapshot(self) -> list[dict[str, Any]]:
+        with self.lock:
+            return list(self.rows)
+
+
+def _read_journal(path: Path) -> list[dict[str, Any]]:
+    """Read the call journal, dropping a final line cut off by a crash during an append.
+
+    Results are recorded only after their call line is complete, so a cut-off attempt is not
+    referenced anywhere; that order is simply retried.
+    """
+    if not path.exists():
+        return []
+    raw = path.read_bytes()
+    if raw and not raw.endswith(b"\n"):
+        _atomic_write(path, raw[:raw.rfind(b"\n") + 1])
+        print(f"Dropped an incomplete final line from {path}", flush=True)
+    return _read_jsonl(path)
 
 
 @contextmanager
@@ -315,9 +365,8 @@ def _retry_delay(error: LLMError, attempt: int, initial: float) -> float:
 
 def _call_order(client: LLMClient, *, pair: dict[str, Any], order: str, messages,
                 slots: dict[str, str], run_id: str, settings: dict[str, Any],
-                calls: list[dict[str, Any]], calls_path: Path) -> dict[str, Any]:
-    previous = next((row["trace_id"] for row in reversed(calls)
-                     if row["pair_id"] == pair["pair_id"] and row["prompt_order"] == order), None)
+                journal: _Journal) -> dict[str, Any]:
+    previous = journal.last_trace(pair["pair_id"], order)
     for attempt in range(1, settings["max_retries"] + 2):
         trace = f"call_pw_{uuid.uuid4().hex}"
         started = time.perf_counter()
@@ -342,9 +391,7 @@ def _call_order(client: LLMClient, *, pair: dict[str, Any], order: str, messages
                 retry_error = error
         row.update(status=result["status"], normalized_result=result,
                    latency_seconds=time.perf_counter() - started)
-        calls.append(row)
-        # Atomic journal snapshots make even the final line safe to recover.
-        _write_rows(calls_path, calls)
+        journal.append(row)
         print(f"{pair['pair_id']} {order}: {result['status']}"
               + (f" ({result['error']})" if result["error"] else ""), flush=True)
         if retry_error is None or attempt > settings["max_retries"]:
@@ -375,7 +422,7 @@ def _validate_order(result, mapping):
 
 
 def _load_saved(output: Path, calls_path: Path, pairs, run_id, protocol):
-    calls = _read_jsonl(calls_path) if calls_path.exists() else []
+    calls = _read_journal(calls_path)
     results = _read_jsonl(output / "results.jsonl") if (output / "results.jsonl").exists() else []
     pair_map = {pair["pair_id"]: pair for pair in pairs}
     validator = _validator("pairwise_result.schema.json")
@@ -438,59 +485,97 @@ def _fingerprint(settings, config, paths, pairs, human_path):
             "orders": list(ORDERS), "display_labels": ["1", "2"]}
 
 
-def _execute(output, calls_path, manifest, pairs, humans, config, system, template):
+def _execute(output, calls_path, manifest, pairs, humans, config, system, template, workers=DEFAULT_WORKERS):
     run_id, settings = manifest["run_id"], manifest["specification"]["settings"]
     protocol = settings["protocol_version"]
     calls, results, cached = _load_saved(output, calls_path, pairs, run_id, protocol)
+    journal = _Journal(calls_path, calls)
     validator = _validator("pairwise_result.schema.json")
+    state_lock, save_lock = threading.Lock(), threading.Lock()
+    last_save = [time.monotonic()]
 
-    def save_derived():
-        rows = [results[pair["pair_id"]] for pair in pairs if pair["pair_id"] in results]
-        _write_rows(output / "results.jsonl", rows)
-        _write_rows(output / "decisions.jsonl", [decision(row) for row in rows])
-        metrics = summarize(rows, humans, calls, len(pairs))
-        human_protocols = sorted({row["protocol_version"] for row in humans.values()})
-        agreement = metrics["human_agreement"]
-        agreement.update(judge_protocol_version=protocol,
-                         annotation_protocol_versions=human_protocols)
-        if any(version != protocol for version in human_protocols):
-            agreement["comparison_note"] = (
-                "Calibration comparison against existing labels from an earlier protocol. "
-                "Those labels have not been relabeled as ad-text-only judgments."
-            )
-        _write_json(output / "metrics.json", metrics)
-        return metrics
+    def save_derived(force: bool = True):
+        if not save_lock.acquire(blocking=force):
+            return None
+        try:
+            if not force and time.monotonic() - last_save[0] < SAVE_INTERVAL_SECONDS:
+                return None
+            with state_lock:
+                rows = [results[pair["pair_id"]] for pair in pairs if pair["pair_id"] in results]
+            _write_rows(output / "results.jsonl", rows)
+            _write_rows(output / "decisions.jsonl", [decision(row) for row in rows])
+            metrics = summarize(rows, humans, journal.snapshot(), len(pairs))
+            human_protocols = sorted({row["protocol_version"] for row in humans.values()})
+            agreement = metrics["human_agreement"]
+            agreement.update(judge_protocol_version=protocol,
+                             annotation_protocol_versions=human_protocols)
+            if any(version != protocol for version in human_protocols):
+                agreement["comparison_note"] = (
+                    "Calibration comparison against existing labels from an earlier protocol. "
+                    "Those labels have not been relabeled as ad-text-only judgments."
+                )
+            _write_json(output / "metrics.json", metrics)
+            last_save[0] = time.monotonic()
+            return metrics
+        finally:
+            save_lock.release()
+
+    local, clients = threading.local(), []
+
+    def client() -> LLMClient:
+        if not hasattr(local, "client"):
+            local.client = LLMClient(config)
+            with state_lock:
+                clients.append(local.client)
+        return local.client
+
+    todo = []
+    for pair in pairs:
+        by_order = {order: cached.get((pair["pair_id"], order), _failure("not_run")) for order in ORDERS}
+        if all(item["status"] == "success" for item in by_order.values()):
+            # This also restores a result missing after a logged success and a crash.
+            results[pair["pair_id"]] = _result_record(pair, run_id, protocol, by_order)
+        else:
+            todo.append(pair)
+    done = [0]
+
+    def judge_pair(pair: dict[str, Any]) -> None:
+        pair_id, mapping = pair["pair_id"], _mapping(pair)
+        by_order = {order: cached.get((pair_id, order), _failure("not_run")) for order in ORDERS}
+        texts = {item["candidate_id"]: item["text"] for item in pair["candidates"]}
+        for order in ORDERS:
+            if by_order[order]["status"] == "success":
+                continue
+            slots = dict(zip(("1", "2"), (mapping[key] for key in order)))
+            messages = _messages(system, template, texts[slots["1"]], texts[slots["2"]])
+            by_order[order] = _call_order(client(), pair=pair, order=order, messages=messages,
+                                         slots=slots, run_id=run_id, settings=settings, journal=journal)
+        record = _result_record(pair, run_id, protocol, by_order)
+        validator.validate(record)
+        with state_lock:
+            results[pair_id] = record
+            done[0] += 1
+            count = done[0]
+        print(f"[{count}/{len(todo)}] {pair_id}: {decision(record)['decision_status']}", flush=True)
+        save_derived(force=False)
 
     manifest.update(status="running", updated_at=_now())
     _write_json(output / "manifest.json", manifest)
+    executor = ThreadPoolExecutor(max_workers=workers)
     try:
-        with LLMClient(config) as client:
-            for index, pair in enumerate(pairs, 1):
-                pair_id, mapping = pair["pair_id"], _mapping(pair)
-                by_order = {order: cached.get((pair_id, order), _failure("not_run")) for order in ORDERS}
-                for order in ORDERS:
-                    if by_order[order]["status"] == "success":
-                        continue
-                    print(f"[{index}/{len(pairs)}] {config.model}", flush=True)
-                    slots = dict(zip(("1", "2"), (mapping[key] for key in order)))
-                    texts = {item["candidate_id"]: item["text"] for item in pair["candidates"]}
-                    messages = _messages(system, template, texts[slots["1"]], texts[slots["2"]])
-                    by_order[order] = _call_order(client, pair=pair, order=order, messages=messages,
-                                                 slots=slots, run_id=run_id, settings=settings,
-                                                 calls=calls, calls_path=calls_path)
-                    record = _result_record(pair, run_id, protocol, by_order)
-                    validator.validate(record)
-                    results[pair_id] = record
-                    _write_rows(output / "results.jsonl", list(results.values()))
-                # This also restores a result missing after a logged success and a crash.
-                results[pair_id] = _result_record(pair, run_id, protocol, by_order)
-                metrics = save_derived()
-                print(f"[{index}/{len(pairs)}] {pair_id}: {decision(results[pair_id])['decision_status']}", flush=True)
+        for future in as_completed([executor.submit(judge_pair, pair) for pair in todo]):
+            future.result()
     except BaseException:
+        # Pending pairs are cancelled; requests already in flight finish and are journaled.
+        executor.shutdown(wait=True, cancel_futures=True)
         save_derived()
         manifest.update(status="interrupted", updated_at=_now())
         _write_json(output / "manifest.json", manifest)
         raise
+    finally:
+        executor.shutdown(wait=True)
+        for item in clients:
+            item.__exit__(None, None, None)
     metrics = save_derived()
     manifest.update(status="completed" if not metrics["incomplete_pair_count"] else "completed_with_failures",
                     updated_at=_now())
@@ -544,7 +629,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 "protocol_version": settings["protocol_version"], "input_mode": settings["input_mode"],
                 "human_annotation_protocol_version": settings["human_annotation_protocol_version"],
                 "human_label_count": len(humans), "initial_judge_calls": 2 * len(pairs),
-                "maximum_attempts_per_order": settings["max_retries"] + 1,
+                "maximum_attempts_per_order": settings["max_retries"] + 1, "workers": args.workers,
                 "output_dir": str(output), "calls_file": str(calls_path),
                 "config_fingerprint": fingerprint}
     if config.api_key_env and not os.environ.get(config.api_key_env, "").strip():
@@ -568,7 +653,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                         "config_fingerprint": fingerprint, "specification": specification,
                         "calls_file": str(calls_path)}
             _write_json(manifest_path, manifest)
-        return _execute(output, calls_path, manifest, pairs, humans, config, system, template)
+        return _execute(output, calls_path, manifest, pairs, humans, config, system, template, args.workers)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -587,6 +672,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Local HTTP journal directory; default artifacts/pairwise/<run_id>")
     parser.add_argument("--run-id", help="Reuse the same ID to resume failed/missing orders")
     parser.add_argument("--limit", type=int, help="First N pairs for a separate pilot run")
+    parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS,
+                        help=f"Pairs judged concurrently (default {DEFAULT_WORKERS}); not part of the run fingerprint")
     parser.add_argument("--dry-run", action="store_true", help="Validate without network calls, API key, or output writes")
     return parser
 
@@ -596,6 +683,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.limit is not None and args.limit < 1:
         parser.error("--limit must be positive")
+    if args.workers < 1:
+        parser.error("--workers must be positive")
     try:
         outcome = run(args)
     except (OSError, ValueError, KeyError, jsonschema.ValidationError) as error:

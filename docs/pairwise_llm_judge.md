@@ -54,7 +54,13 @@ Use the matching eval config rather than only overriding model_alias: provider-s
 
 There are at most four attempts per order with the default three retries. Retryable transport/provider failures include timeouts, 408/429 and 5xx. Invalid JSON, refusal and truncation are logged failures; rerunning the same unchanged run can retry those failed directions. Successful directions are reused. Only one process can write a run directory at a time.
 
-Resume validates input, prompt, configuration, schema and code fingerprints. Existing archived or pre-organization run IDs retain their captured historical paths and hashes. File organization and revised human labels mean that a new experiment needs a fresh run ID. Do not rewrite old manifests to bypass this check. Current CLI execution is synchronous.
+Resume validates input, prompt, configuration, schema and code fingerprints. Existing archived or pre-organization run IDs retain their captured historical paths and hashes. File organization and revised human labels mean that a new experiment needs a fresh run ID. Do not rewrite old manifests to bypass this check.
+
+## Concurrency
+
+`--workers N` (default 8) judges N pairs at the same time, each worker with its own HTTP client. The AB and BA requests of one pair still run one after the other in the same worker. The worker count is not part of the run fingerprint, so a run can be resumed with a different value. Rate-limit responses (429) are retried with backoff and Retry-After as before; lower `--workers` if a provider keeps returning them.
+
+Every attempt is appended to calls.jsonl as one fsync'd line, so the journal grows linearly with the number of calls instead of being rewritten each time. A line cut off by a crash during an append is dropped on resume and that order is retried. results.jsonl, decisions.jsonl and metrics.json are derived from the journal: they are refreshed at most every 15 seconds during a run and written in pair order when the run ends or is interrupted. On Ctrl+C, pending pairs are cancelled and requests already in flight are allowed to finish and be logged.
 
 ## Results and sharing
 
