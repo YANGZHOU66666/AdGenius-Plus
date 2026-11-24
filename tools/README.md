@@ -29,3 +29,5 @@ PYTHONPATH=src .venv/bin/python tools/rubric_annotation.py
 ```
 
 Open http://127.0.0.1:8766/?annotator_id=zhou. By default it labels only `factual_support`, with protocol `rubric-v0.2`. Add `--criteria factual_support concrete_product_info` to label both. Keys: `1` = no conflict, `2` = conflict, `←`/`→` move, `N` = next unlabeled. A True label advances automatically. A False label focuses the reason box; write the ad sentence and the conflicting information text there. Selecting words in the ad highlights them in the product information.
+
+The full design is [docs/rubric_annotation_workbench.md](../docs/rubric_annotation_workbench.md); the labeling rule is [docs/individual_rubric_v0.2.md](../docs/individual_rubric_v0.2.md).

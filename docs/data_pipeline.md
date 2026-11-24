@@ -26,12 +26,14 @@ flowchart TD
     Q --> J[四种 judge 分别独立运行 AB 和 BA]
     H --> M[人机一致率与四模型对比]
     J --> M
-    C -.-> U[后续 rubric 标注与评估]
+    C --> RS[抽 130 条 rubric 样本]
+    RS --> RH[人工 rubric 标签：130 条 factual_support]
+    RH -.-> U[后续 rubric judge 与评估]
     P -.-> V[后续训练与验证数据]
     T -.-> W[后续最终测试]
 ```
 
-虚线部分尚未落地。**gold 与 test 是两个互不重叠的商品集合；两者都排除在训练池之外。** gold 用于评委校准，最终 test 不参与 prompt 调整或评委选择。当前没有标准化 test ProductItem、测试广告、rubric 实际评分或 SFT 数据。
+虚线部分尚未落地。**gold 与 test 是两个互不重叠的商品集合；两者都排除在训练池之外。** gold 用于评委校准，最终 test 不参与 prompt 调整或评委选择。当前没有标准化 test ProductItem、测试广告、rubric 模型评分或 SFT 数据；rubric 目前只有人工标签（见第 9 节）。
 
 ## 2. 当前文件清单
 
@@ -52,6 +54,9 @@ flowchart TD
 | `data/eval/gold/candidate_pairs.jsonl` | 同商品的两个候选及文本快照 | 100；人工和模型比较相同对象 | 四份候选 → `build_candidate_pairs.py` |
 | `data/eval/gold/candidate_pairs.manifest.json` | 一次 pair 抽样说明 | 输入哈希、seed、组合分布、输出哈希 | pair 构建脚本；当前路径已整理 |
 | `data/eval/gold/pairwise_annotations_zhou.jsonl` | 一位标注者对一个 pair 的偏好 | 100；当前人工参照 | 标注台 + 15 条已确认的复核修改 |
+| `data/eval/gold/rubric_sample.jsonl` | rubric 标注用的一条候选及其生成模型 | 130；冻结样本 | 四份候选 → `build_rubric_sample.py` |
+| `data/eval/gold/rubric_sample.manifest.json` | 一次 rubric 抽样说明 | 输入哈希、seed、模型分布、输出哈希 | 同上 |
+| `data/eval/gold/rubric_annotations_zhou.jsonl` | 一位标注者对一条候选的 rubric 判断 | 130；当前 rubric 人工参照，17 条 False | zhou 定稿，规则见 [rubric v0.2](individual_rubric_v0.2.md) |
 | `data/eval/gold/manifest.json` | 当前 gold 数据集说明 | 文件哈希、数量、schema、生成 prompt/模型/参数和标签版本 | 发布、整理时维护的冻结索引 |
 
 JSONL 文件均为每行一个 JSON 对象。`splits/v1` 和 `processed/v1` 的 `v1` 表示仍在使用的源划分，不表示存在多套并行使用的候选数据。当前正式 gold 只有 `data/eval/gold/` 这一套。
@@ -168,7 +173,7 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 - 先检查每个商品有四个模型各一条成功候选、`sample_index=0`，候选 ID 唯一且覆盖商品全集。
 - 使用 seed **42**，为每个 `product_id` 根据规范 `[seed, product_id]` 的 SHA-256 构造独立 RNG，均匀抽两个不同模型。
 - 每商品一个 pair。候选数组按 `candidate_id` 排序；pair ID 由 seed、商品及候选快照派生。输入重排不改变抽样结果。
-- 一共 100 对、引用 200 个候选；其余 200 个候选仍留在正式数据中供 rubric 使用。
+- 一共 100 对、引用 200 个候选；其余 200 个候选仍留在正式数据中。rubric 样本从全部 400 条中另行抽取，与 pair 是否入选无关（见第 9 节）。
 
 | 模型组合 | pair 数 |
 |---|---:|
@@ -220,7 +225,27 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 
 读取和校验共享结果不需要调用日志；重新统计完整历史 tokens/耗时、排查请求或续跑原运行则需要对应日志。标签若再次修改，当前 comparison 不会自动刷新，需要显式重新统计与更新 manifest。
 
-## 9. 字段与关联规则
+## 9. 候选 → rubric 样本与人工标签
+
+本节状态截至 **2026-11-23**。
+
+**抽样。** 生产入口：[scripts/build_rubric_sample.py](../scripts/build_rubric_sample.py)。输入四份正式候选和 ProductItem，输出 `rubric_sample.jsonl` 及 manifest。
+
+- 取 `qwen_local` 的全部 100 条候选。
+- 使用 seed **20261123**，从排序后的商品 ID 中抽 30 个不同商品，Gemma、GLM、LongCat 各分 10 个，取该模型在该商品上的候选。
+- 130 条打乱后编号为 `rubric_item_001` … `rubric_item_130`。每行记录 `item_id`、`candidate_id`、`product_id` 和 `generator`。
+
+抽样脚本默认写入冻结路径且**不拒绝覆盖**，检查重建时应指定新的 `--output` 再与冻结文件核对。
+
+**标注。** 生产入口：[tools/rubric_annotation.py](../tools/rubric_annotation.py)。[标注台文档](rubric_annotation_workbench.md)说明隐藏生成模型、商品资料渲染、即时 JSONL 同步和并发写入保护；判定规则见 [rubric v0.2](individual_rubric_v0.2.md)。
+
+当前 `rubric_annotations_zhou.jsonl` 是 zhou 定稿的 130 条标签，只含 `factual_support`。人工 schema 使用 [RubricResult v1](../metadata/schemas/rubric_result.schema.json) 的 human 记录，`annotation_set_id="gold_rubric_v1"`、`protocol_version="rubric-v0.2"`。结果为 17 条 False，全部来自 qwen_local（100 条中 17 条）；其他三个模型的 30 条均为 True。每条 False 在理由中引用冲突的文案原文和资料原文。
+
+这是单人标签，不能写作两人独立标注的一致共识。v0.2 中的边界裁定是在这 130 条上定下来的，用这批标签评估 judge 时需注意 prompt 是否直接写入了这些例子。
+
+跨文件比较 rubric 结果时使用 `candidate_id`；`item_id` 只是样本内的展示编号。`scripts/validate_gold_data.py` 和 gold `manifest.json` 目前还不覆盖 rubric 样本与标签。
+
+## 10. 字段与关联规则
 
 五类共享结构定义在 [metadata/schemas/](../metadata/schemas/)，字段示例见 [metadata/README.md](../metadata/README.md)。数据用途由 split / dataset manifest 说明；ProductItem 不额外增加 human/model 字段。
 
@@ -230,7 +255,8 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 | `source_id` | ProductItem 和训练池索引保留的原始 ASIN |
 | `product_id` | 标准 gold 使用 `gold_product_000000` 起的项目 ID；训练池使用 `train_product_000000` 起的项目 ID |
 | split 索引中的 `product_id` | **gold/test 索引仍保存原始 ASIN**，应与标准 ProductItem 的 `source_id` 关联，不能直接按项目 `product_id` join |
-| `candidate_id` | 一条具体生成候选；关联候选文件、pair 中的文本、人工/模型赢家及后续 rubric |
+| `candidate_id` | 一条具体生成候选；关联候选文件、pair 中的文本、人工/模型赢家、rubric 样本与标签 |
+| `item_id` | rubric 样本中的展示编号 `rubric_item_NNN`；只在 `rubric_sample.jsonl` 内使用，rubric 标签按 `candidate_id` 关联 |
 | 生成 `run_id` | 一次生成批次及模型设置；同商品不同模型的候选有不同运行身份 |
 | `pair_id` | 一组固定候选；关联 pair、人工标签、各 judge 结果与 decisions |
 | `trace_id` | 一次 API 尝试；关联本地 calls；补跑可更新 trace 而保持候选 ID |
@@ -239,7 +265,7 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 
 典型回溯路径：judge 记录 → `pair_id` → pair 中 `candidate_id` → 生成结果及 `product_id` → ProductItem 的 `source_id` → 原始商品 / split 的 ASIN 和源行号。排查某次请求再通过 `trace_id` 查本地 calls。
 
-## 10. 可重建程度、校验与维护
+## 11. 可重建程度、校验与维护
 
 | 环节 | 当前能力 | 前提与限制 |
 |---|---|---|
@@ -251,7 +277,9 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 | pair → 模型判断 | 有评测、日志和续跑机制 | 重调用不保证同一选择或理由；冻结结果是此次实验记录 |
 | 结果 → decisions / 常规一致率 | 有派生函数及离线校验 | 需要同一 pair 集与指定标签快照；完整资源统计另需日志 |
 | 四模型 comparison / bootstrap / report | 有冻结结果和计算口径 | 尚无专门批量重建 CLI，不能声称已一键复现 |
-| rubric、训练集、训练、最终 test 生成 | 尚未完成 | rubric 只有 schema；其余需要后续实现与实验记录 |
+| 候选 → rubric 样本 | 有确定性脚本 | 四份冻结候选、商品全集、seed 20261123；脚本默认覆盖冻结文件，重建时指定新 `--output` |
+| rubric 样本 → 人工标签 | 有标注台及当前标签 | 人工决定无法由脚本重建；`validate_gold_data.py` 尚不校验 |
+| rubric judge、训练集、训练、最终 test 生成 | 尚未完成 | rubric 只有人工标签，没有模型评分；其余需要后续实现与实验记录 |
 
 离线校验入口为 [scripts/validate_gold_data.py](../scripts/validate_gold_data.py)：
 
