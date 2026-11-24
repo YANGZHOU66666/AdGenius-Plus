@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import threading
+import time
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -42,7 +44,79 @@ class FakeClient:
                                })
 
 
+class ConcurrentFakeClient:
+    """Thread-safe fake that always prefers the first displayed ad and records peak concurrency."""
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.active = self.peak = self.calls = 0
+        self.config = SimpleNamespace(provider="openai_compatible")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        return None
+
+    def generate(self, **request):
+        with self.lock:
+            self.active += 1
+            self.calls += 1
+            self.peak = max(self.peak, self.active)
+        time.sleep(0.02)
+        with self.lock:
+            self.active -= 1
+        text = '{"choice":"1","reason":"First shown."}'
+        return SimpleNamespace(text=text, finish_reason="stop", raw_response={"choices": []},
+                               to_dict=lambda: {"text": text, "usage": {"input_tokens": 10, "output_tokens": 4,
+                                                                         "total_tokens": 14}})
+
+
 class PairwiseJudgeTests(unittest.TestCase):
+
+    def run_concurrent(self, output, workers=4, limit=6):
+        fake = ConcurrentFakeClient()
+        args = pairwise.build_parser().parse_args([
+            "--limit", str(limit), "--run-id", "judge_test", "--output-dir", str(output),
+            "--calls-dir", str(output), "--no-human-annotations", "--workers", str(workers)])
+        with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "test-key"}), \
+             patch("adgenius.eval.pairwise.LLMClient", return_value=fake):
+            outcome = pairwise.run(args)
+        return outcome, fake
+
+    def test_concurrent_workers_keep_pair_order_and_resume(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "run"
+            outcome, fake = self.run_concurrent(output)
+            self.assertGreater(fake.peak, 1)
+            self.assertEqual(fake.calls, 12)
+            self.assertEqual(outcome["status"], "completed")
+            # Always choosing the first shown ad means AB and BA pick different candidates.
+            self.assertEqual(outcome["metrics"]["order_inconsistent_count"], 6)
+            pairs = pairwise._read_jsonl(pairwise.DEFAULT_PAIRS)[:6]
+            rows = pairwise._read_jsonl(output / "results.jsonl")
+            self.assertEqual([r["pair_id"] for r in rows], [p["pair_id"] for p in pairs])
+            journal = pairwise._read_jsonl(output / "calls.jsonl")
+            self.assertEqual(len(journal), 12)
+            self.assertEqual(len({c["trace_id"] for c in journal}), 12)
+            _, again = self.run_concurrent(output)
+            self.assertEqual(again.calls, 0)
+
+    def test_cut_off_journal_line_is_dropped_and_retried(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "run"
+            self.run_concurrent(output, workers=1, limit=1)
+            calls_path = output / "calls.jsonl"
+            complete = calls_path.read_bytes()
+            calls_path.write_bytes(complete + b'{"trace_id": "call_pw_cut')
+            outcome, fake = self.run_concurrent(output, workers=1, limit=1)
+            self.assertEqual(fake.calls, 0)
+            self.assertEqual(calls_path.read_bytes(), complete)
+            self.assertEqual(outcome["status"], "completed")
+
+    def test_workers_must_be_positive(self):
+        with self.assertRaises(SystemExit):
+            pairwise.main(["--dry-run", "--workers", "0"])
     def test_gpt6_luna_http_ab_ba_mapping_and_resume(self):
         received = []
 
