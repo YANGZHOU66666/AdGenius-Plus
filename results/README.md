@@ -26,7 +26,7 @@ Each result file has 100 PairwiseResult records with independent AB and BA judgm
 | GPT-6 Luna | rubric/gpt6_luna_rubric_v1/results.jsonl | artifacts/rubric/gpt6_luna_rubric_v1/calls.jsonl |
 | Qwen Flash | rubric/qwen37_rubric_v1/results.jsonl | artifacts/rubric/qwen37_rubric_v1/calls.jsonl |
 
-Each result file has 130 RubricResult model records (`factual_support`) on data/eval/gold/rubric_sample.jsonl. rubric/comparison/ holds agreement with the current human labels (metrics.json, manifest.json); it is rebuilt by scripts/compare_rubric.py without API calls. The report is [docs/rubric_judge_agreement.md](../docs/rubric_judge_agreement.md). New rubric runs default to results/rubric/<run_id>/ and artifacts/rubric/<run_id>/.
+Each result file has 130 RubricResult model records (`factual_support`) on data/eval/gold/rubric_sample.jsonl. rubric/comparison/ holds agreement with the current human labels (metrics.json, manifest.json); it is rebuilt by scripts/compare_rubric.py without API calls. The report is [docs/rubric_judge_agreement.md](../docs/rubric_judge_agreement.md). New rubric runs default to results/rubric/<run_id>/ and artifacts/rubric/<run_id>/. With `--candidates`, scripts/evaluate_rubric.py judges every successful ad in the given GenerationResult files and writes metrics.json with the judged conflict rate per generator; see [the rubric judge guide](../docs/rubric_llm_judge.md).
 
 ## Future runs
 

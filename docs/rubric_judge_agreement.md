@@ -82,19 +82,12 @@ DeepSeek、Claude、GPT 三者的 95% 区间大幅重叠，这 130 条不足以�
 - **Prompt 早于规则补充：** `system_v1.txt` 写于第 3 条规则补充之前，没有包含这一条，也没有重跑。
 - **运行来源：** 四次运行是 2026-11-24 用一个探索版脚本跑的。prompt、模型设置、请求构造、解析和重试次数都与 [scripts/evaluate_rubric.py](../scripts/evaluate_rubric.py) 相同，之后用仓库代码的记录格式导入。导入时重新分配了 trace ID，未记录调用时间和延迟；各运行 manifest 的 `provenance` 字段有说明。
 
-## 8. 复现与新运行
+## 8. 复现
 
-重新计算统计（不调用 API）：
+重新计算本报告的统计（不调用 API）：
 
 ```sh
 PYTHONPATH=src .venv/bin/python scripts/compare_rubric.py
 ```
 
-运行一个新的评委（默认写入 `results/rubric/<run_id>/`，调用日志写入 `artifacts/rubric/<run_id>/calls.jsonl`）：
-
-```sh
-PYTHONPATH=src .venv/bin/python scripts/evaluate_rubric.py \
-  --eval-config configs/eval/rubric_deepseek.toml --run-id deepseek41_rubric_v2
-```
-
-修改 prompt、配置、数据或代码后，请使用新的 run ID。已有运行目录中的 manifest 记录了输入和代码哈希，配置不一致时会拒绝续跑。重新调用模型不保证得到相同的判断。
+运行新的评委、续跑，以及用评委评测新的生成模型，见 [rubric 评委使用说明](rubric_llm_judge.md)。重新调用模型不保证得到相同的判断。

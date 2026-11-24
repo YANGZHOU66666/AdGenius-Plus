@@ -60,6 +60,7 @@ flowchart TD
 | `data/eval/gold/rubric_sample.manifest.json` | 一次 rubric 抽样说明 | 输入哈希、seed、模型分布、输出哈希 | 同上 |
 | `data/eval/gold/rubric_annotations_zhou.jsonl` | 一位标注者对一条候选的 rubric 判断 | 130；当前 rubric 人工参照，18 条 False | zhou 定稿，规则见 [rubric v0.2](individual_rubric_v0.2.md) |
 | `results/rubric/<run_id>/results.jsonl` | 一个评委对一条候选的 `factual_support` 判断（RubricResult model 记录） | 四个评委各 130 条 | `evaluate_rubric.py` 的格式，见第 9 节 |
+| `results/rubric/<run_id>/metrics.json` | 一次 rubric 运行按生成模型的冲突率与两两差 | 新运行写出；四次导入的运行没有 | `evaluate_rubric.py` |
 | `results/rubric/comparison/` | 四个评委与人工标签的一致率统计和 manifest | 一份 | `compare_rubric.py` |
 | `data/eval/gold/manifest.json` | 当前 gold 数据集说明 | 文件哈希、数量、schema、生成 prompt/模型/参数和标签版本 | 发布、整理时维护的冻结索引 |
 
@@ -248,7 +249,9 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 
 这是单人标签，不能写作两人独立标注的一致共识。v0.2 中的边界裁定是在这 130 条上定下来的，用这批标签评估 judge 时需注意 prompt 是否直接写入了这些例子。
 
-**评委与一致率。** 生产入口：[scripts/evaluate_rubric.py](../scripts/evaluate_rubric.py)，实现为 [eval/rubric.py](../src/adgenius/eval/rubric.py)；统计入口 [scripts/compare_rubric.py](../scripts/compare_rubric.py)，实现为 [eval/rubric_metrics.py](../src/adgenius/eval/rubric_metrics.py)。四个评委（DeepSeek、Claude Haiku、GPT-6 Luna、Qwen Flash）使用 [system_v1.txt](../prompts/eval/rubric/system_v1.txt) 各判 130 条，结果在 `results/rubric/<run_id>/`，调用日志在 `artifacts/rubric/<run_id>/calls.jsonl`。DeepSeek 一致率最高（0.938，kappa 0.716），被选为默认 rubric 评委。实验设置、结果和限制见[人机一致率报告](rubric_judge_agreement.md)。
+**评委与一致率。** 生产入口：[scripts/evaluate_rubric.py](../scripts/evaluate_rubric.py)，实现为 [eval/rubric.py](../src/adgenius/eval/rubric.py)；统计入口 [scripts/compare_rubric.py](../scripts/compare_rubric.py)，实现为 [eval/rubric_metrics.py](../src/adgenius/eval/rubric_metrics.py)。四个评委（DeepSeek、Claude Haiku、GPT-6 Luna、Qwen Flash）使用 [system_v1.txt](../prompts/eval/rubric/system_v1.txt) 各判 130 条，结果在 `results/rubric/<run_id>/`，调用日志在 `artifacts/rubric/<run_id>/calls.jsonl`。DeepSeek 一致率最高（0.938，kappa 0.716），被选为默认 rubric 评委。实验设置、结果和限制见[人机一致率报告](rubric_judge_agreement.md)；参数、续跑和输出格式见 [rubric 评委使用说明](rubric_llm_judge.md)。
+
+**评测生成模型。** 同一脚本加 `--candidates <results_*.jsonl …>` 时，不再读 rubric 样本，而是判给定生成结果中每条成功的广告（商品资料来自 `--products`，默认 gold ProductItem），并在运行目录写出按生成模型的冲突率 `metrics.json`。用法和解读限制见 [rubric 评委使用说明](rubric_llm_judge.md)。目前还没有用它跑过正式运行。
 
 跨文件比较 rubric 结果时使用 `candidate_id`；`item_id` 只是样本内的展示编号。`scripts/validate_gold_data.py` 和 gold `manifest.json` 目前还不覆盖 rubric 样本与标签。
 

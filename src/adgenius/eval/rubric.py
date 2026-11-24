@@ -3,7 +3,11 @@
 The judge sees the same rendered product information as the generator and the human annotator, plus
 one ad, and answers factual_support (does the ad conflict with the information?). One request per
 item; transport and parse failures are retried up to ``max_attempts``. Results are RubricResult v1
-model records in sample order.
+model records in input order.
+
+Two inputs: the frozen human-labelled rubric sample (default), or ``--candidates`` GenerationResult
+files from any generator, judged in full against ``--products``. Each run writes metrics.json with the
+judged conflict rate per generator; the generator name is never sent to the judge.
 """
 
 from __future__ import annotations
@@ -27,6 +31,7 @@ from typing import Any
 import jsonschema
 from dotenv import load_dotenv
 
+from adgenius.eval.rubric_metrics import generator_rates
 from adgenius.shared.llm import LLMClient, ModelConfig
 from adgenius.shared.product import render_product_information
 
@@ -107,9 +112,47 @@ def load_items(gold_dir: Path = GOLD, limit: int | None = None) -> list[dict[str
         if product_id != row["product_id"] or not isinstance(ad, str) or not ad.strip():
             raise ValueError(f"Rubric sample row does not match the gold data: {row['item_id']}")
         items.append({"item_id": row["item_id"], "candidate_id": row["candidate_id"],
-                      "product_id": product_id, "ad": ad,
+                      "product_id": product_id, "generator": row["generator"], "ad": ad,
                       "information": render_product_information(products[product_id])})
     return items
+
+
+def generator_name(run_id: str) -> str:
+    """gen_<alias>_<UTC stamp> -> alias; other run IDs are kept whole."""
+    match = re.fullmatch(r"gen_(.+)_\d{8}T\d{6}Z", run_id)
+    return match.group(1) if match else run_id
+
+
+def load_candidates(candidate_paths: list[Path], products_path: Path,
+                    limit: int | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Every successful GenerationResult in the given files, in file order.
+
+    Failed generations have no ad to judge; they are counted per generator and skipped.
+    """
+    products = {p["product_id"]: p for p in _read_jsonl(products_path)}
+    validator = _validator("generation_result.schema.json")
+    items, seen = [], set()
+    skipped: dict[str, int] = {}
+    for path in candidate_paths:
+        for row in _read_jsonl(path):
+            validator.validate(row)
+            candidate_id, product_id = row["candidate_id"], row["product_id"]
+            if candidate_id in seen:
+                raise ValueError(f"Duplicate candidate_id across candidate files: {candidate_id}")
+            seen.add(candidate_id)
+            if product_id not in products:
+                raise ValueError(f"Candidate {candidate_id} refers to a product missing from {products_path}")
+            generator = generator_name(row["run_id"])
+            result = row["generation_result"]
+            if result["status"] != "success" or not (result["text"] or "").strip():
+                skipped[generator] = skipped.get(generator, 0) + 1
+                continue
+            items.append({"item_id": candidate_id, "candidate_id": candidate_id, "product_id": product_id,
+                          "generator": generator, "ad": result["text"],
+                          "information": render_product_information(products[product_id])})
+    if not items:
+        raise ValueError("No successful candidates to judge")
+    return items[:limit], {"skipped_failed_generations": skipped}
 
 
 def messages(system: str, template: str, item: dict[str, Any]) -> list[dict[str, str]]:
@@ -163,8 +206,8 @@ def result_record(item: dict[str, Any], run_id: str, protocol: str, verdict: dic
             "judge_run_id": run_id, "protocol_version": protocol, "rubric_result": rubric, "trace_id": trace_id}
 
 
-def _validator() -> jsonschema.Draft202012Validator:
-    schema = json.loads((SCHEMA_DIR / "rubric_result.schema.json").read_text(encoding="utf-8"))
+def _validator(name: str = "rubric_result.schema.json") -> jsonschema.Draft202012Validator:
+    schema = json.loads((SCHEMA_DIR / name).read_text(encoding="utf-8"))
     return jsonschema.Draft202012Validator(schema)
 
 
@@ -175,7 +218,8 @@ def _relative(path: Path) -> str:
 
 def specification(settings, config, paths, items) -> dict[str, Any]:
     code = [Path(__file__), Path(__file__).with_name("rubric_metrics.py"), REPO_ROOT / "src/adgenius/shared/llm.py",
-            REPO_ROOT / "src/adgenius/shared/product.py", SCHEMA_DIR / "rubric_result.schema.json"]
+            REPO_ROOT / "src/adgenius/shared/product.py", SCHEMA_DIR / "rubric_result.schema.json",
+            SCHEMA_DIR / "generation_result.schema.json"]
     return {"settings": settings, "model_config": config.snapshot(),
             "input_files": {name: {"path": _relative(path), "sha256": _hash(path.read_bytes())}
                             for name, path in paths.items()},
@@ -188,20 +232,33 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     config_path = Path(args.eval_config).resolve()
     settings = load_settings(config_path)
     config = ModelConfig.from_toml(REPO_ROOT / "configs" / "models.toml", settings["model_alias"])
-    gold = Path(args.gold_dir).resolve()
-    paths = {"rubric_sample": gold / "rubric_sample.jsonl", "product_items": gold / "product_items.jsonl",
-             "system_prompt": REPO_ROOT / settings["system_prompt"], "user_prompt": REPO_ROOT / settings["user_prompt"],
+    paths = {"system_prompt": REPO_ROOT / settings["system_prompt"], "user_prompt": REPO_ROOT / settings["user_prompt"],
              "eval_config": config_path}
+    extra: dict[str, Any] = {}
+    if args.candidates:
+        candidate_paths = [Path(path).resolve() for path in args.candidates]
+        products_path = Path(args.products).resolve() if args.products else GOLD / "product_items.jsonl"
+        paths["product_items"] = products_path
+        paths.update({f"candidates_{i}": path for i, path in enumerate(candidate_paths)})
+        items, extra = load_candidates(candidate_paths, products_path, args.limit)
+        mode = "candidates"
+    else:
+        if args.products:
+            raise ValueError("--products is used with --candidates; the rubric sample uses --gold-dir")
+        gold = Path(args.gold_dir).resolve()
+        paths.update(rubric_sample=gold / "rubric_sample.jsonl", product_items=gold / "product_items.jsonl")
+        items = load_items(gold, args.limit)
+        mode = "rubric_sample"
     system, template = (paths[k].read_text(encoding="utf-8") for k in ("system_prompt", "user_prompt"))
     if "{product}" not in template or "{ad}" not in template:
         raise ValueError("The user prompt must contain {product} and {ad}")
-    items = load_items(gold, args.limit)
     run_id = args.run_id
     if re.fullmatch(r"[A-Za-z0-9_-]+", run_id) is None:
         raise ValueError("run_id may contain only letters, digits, underscores and hyphens")
     output = Path(args.output_dir).resolve() if args.output_dir else REPO_ROOT / "results/rubric" / run_id
     calls_path = (Path(args.calls_dir).resolve() if args.calls_dir else REPO_ROOT / "artifacts/rubric" / run_id) / "calls.jsonl"
     spec = specification(settings, config, paths, items)
+    spec.update(input_mode=mode, **extra)
     fingerprint = _hash(_json_bytes(spec))
     manifest_path = output / "manifest.json"
     if manifest_path.exists():
@@ -211,16 +268,20 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     else:
         manifest = {"run_id": run_id, "created_at": _now(), "status": "running",
                     "config_fingerprint": fingerprint, "specification": spec}
+    counts: dict[str, int] = {}
+    for item in items:
+        counts[item["generator"]] = counts.get(item["generator"], 0) + 1
     if args.dry_run:
-        return {"dry_run": True, "run_id": run_id, "model": config.model, "items": len(items),
+        return {"dry_run": True, "run_id": run_id, "model": config.model, "input_mode": mode,
+                "items": len(items), "items_by_generator": counts, **extra,
                 "output_dir": str(output), "calls_file": str(calls_path)}
-    if config.api_key_env and not os.environ.get(config.api_key_env, "").strip():
-        raise ValueError(f"Set {config.api_key_env} in .env or the environment")
 
     results_path = output / "results.jsonl"
     saved = {r["candidate_id"]: r for r in _read_jsonl(results_path)} if results_path.exists() else {}
     calls = _read_jsonl(calls_path) if calls_path.exists() else []
     todo = [it for it in items if saved.get(it["candidate_id"], {}).get("rubric_result", {}).get("status") != "success"]
+    if todo and config.api_key_env and not os.environ.get(config.api_key_env, "").strip():
+        raise ValueError(f"Set {config.api_key_env} in .env or the environment")
     validator, lock, local = _validator(), threading.Lock(), threading.local()
 
     def save() -> None:
@@ -270,9 +331,13 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         list(pool.map(work, todo))
     save()
     failed = sum(saved[it["candidate_id"]]["rubric_result"]["status"] != "success" for it in items)
+    metrics = generator_rates([saved[it["candidate_id"]] for it in items], items, calls)
+    metrics.update(run_id=run_id, input_mode=mode, **extra)
+    (output / "metrics.json").write_bytes(_json_bytes(metrics))
     manifest.update(status="completed" if not failed else "completed_with_failures", updated_at=_now())
     manifest_path.write_bytes(_json_bytes(manifest))
     return {"run_id": run_id, "status": manifest["status"], "items": len(items), "failed": failed,
+            "false_rate_by_generator": {g: m["false_rate"] for g, m in metrics["by_generator"].items()},
             "output_dir": str(output), "calls_file": str(calls_path)}
 
 
@@ -280,7 +345,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--eval-config", default=str(REPO_ROOT / "configs/eval/rubric_deepseek.toml"))
     parser.add_argument("--run-id", required=True)
-    parser.add_argument("--gold-dir", default=str(GOLD))
+    parser.add_argument("--candidates", nargs="+", metavar="RESULTS_JSONL",
+                        help="GenerationResult files to judge in full instead of the human-labelled rubric sample")
+    parser.add_argument("--products", help="ProductItem file for --candidates; default data/eval/gold/product_items.jsonl")
+    parser.add_argument("--gold-dir", default=str(GOLD), help="rubric sample mode only")
     parser.add_argument("--output-dir", help="default: results/rubric/<run_id>")
     parser.add_argument("--calls-dir", help="default: artifacts/rubric/<run_id>")
     parser.add_argument("--env-file")

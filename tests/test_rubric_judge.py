@@ -31,6 +31,23 @@ def make_gold(directory: Path) -> None:
         {"item_id": "rubric_item_002", "candidate_id": "cand_0", "product_id": "p0", "generator": "qwen_local"}])
 
 
+def make_candidates(path: Path, alias: str, texts) -> None:
+    write_rows(path, [
+        {"candidate_id": f"cand_{alias}_{i}", "product_id": f"p{i}", "run_id": f"gen_{alias}_20261201T000000Z",
+         "sample_index": 0, "trace_id": f"t{i}",
+         "generation_result": ({"status": "success", "text": text, "error": None} if text else
+                               {"status": "failed", "text": None, "error": "timeout"})}
+        for i, text in enumerate(texts)])
+
+
+def run_args(temp: str, **overrides):
+    values = dict(env_file=None, eval_config=str(ROOT / "configs/eval/rubric_deepseek.toml"),
+                  gold_dir=str(Path(temp) / "gold"), candidates=None, products=None, limit=None, run_id="test_run",
+                  output_dir=str(Path(temp) / "out"), calls_dir=str(Path(temp) / "calls"), dry_run=False, workers=1)
+    values.update(overrides)
+    return SimpleNamespace(**values)
+
+
 class FakeClient:
     def __init__(self, texts):
         self.texts = texts
@@ -89,10 +106,7 @@ class RubricJudgeTest(unittest.TestCase):
             make_gold(gold)
             texts = ["not json", '{"value": true, "conflicts": [], "reason": "ok"}',
                      '{"value": true, "conflicts": [], "reason": "ok"}']
-            args = SimpleNamespace(env_file=None, eval_config=str(ROOT / "configs/eval/rubric_deepseek.toml"),
-                                   gold_dir=str(gold), limit=None, run_id="test_run",
-                                   output_dir=str(Path(temp) / "out"), calls_dir=str(Path(temp) / "calls"),
-                                   dry_run=False, workers=1)
+            args = run_args(temp)
             with patch.object(rubric, "LLMClient", lambda config: FakeClient(texts)), \
                     patch.object(rubric.time, "sleep"), patch.dict("os.environ", {"DEEPSEEK_API_KEY": "test"}):
                 summary = rubric.run(args)
@@ -103,6 +117,55 @@ class RubricJudgeTest(unittest.TestCase):
             self.assertEqual([c["status"] for c in calls], ["failed", "success", "success"])
             manifest = json.loads((Path(temp) / "out/manifest.json").read_text())
             self.assertEqual(manifest["specification"]["candidate_ids"], ["cand_1", "cand_0"])
+            metrics = json.loads((Path(temp) / "out/metrics.json").read_text())
+            self.assertEqual(metrics["by_generator"]["qwen_local"]["false"], 0)
+
+    def test_candidates_mode_judges_every_success_and_reruns_offline(self):
+        with tempfile.TemporaryDirectory() as temp:
+            gold = Path(temp) / "gold"
+            gold.mkdir()
+            make_gold(gold)
+            new = Path(temp) / "results_new.jsonl"
+            make_candidates(new, "new_model", ["Ad zero", None])
+            old = Path(temp) / "results_old.jsonl"
+            make_candidates(old, "old_model", ["Ad zero old", "Ad one old"])
+            args = run_args(temp, candidates=[str(new), str(old)], products=str(gold / "product_items.jsonl"))
+            preview = rubric.run(SimpleNamespace(**{**vars(args), "dry_run": True}))
+            self.assertEqual(preview["items_by_generator"], {"new_model": 1, "old_model": 2})
+            self.assertEqual(preview["skipped_failed_generations"], {"new_model": 1})
+            conflict = '{"value": false, "conflicts": [{"ad": "a", "information": "b"}], "reason": "x"}'
+            texts = [conflict, '{"value": true, "conflicts": [], "reason": "ok"}', conflict]
+            with patch.object(rubric, "LLMClient", lambda config: FakeClient(texts)), \
+                    patch.object(rubric.time, "sleep"), patch.dict("os.environ", {"DEEPSEEK_API_KEY": "test"}):
+                summary = rubric.run(args)
+            self.assertEqual(summary["false_rate_by_generator"], {"new_model": 1.0, "old_model": 0.5})
+            rows = [json.loads(line) for line in (Path(temp) / "out/results.jsonl").read_text().splitlines()]
+            self.assertEqual([r["candidate_id"] for r in rows], ["cand_new_model_0", "cand_old_model_0",
+                                                                 "cand_old_model_1"])
+            for row in rows:
+                rubric._validator().validate(row)
+            metrics = json.loads((Path(temp) / "out/metrics.json").read_text())
+            self.assertEqual(metrics["paired_differences"][0]["shared_products"], 1)
+            with patch.object(rubric, "LLMClient", side_effect=AssertionError("no calls expected")), \
+                    patch.dict("os.environ", {"DEEPSEEK_API_KEY": ""}):
+                self.assertEqual(rubric.run(args)["status"], "completed")
+            with self.assertRaises(ValueError):
+                rubric.run(run_args(temp, products=str(gold / "product_items.jsonl")))
+
+    def test_candidates_reject_duplicates_and_unknown_products(self):
+        with tempfile.TemporaryDirectory() as temp:
+            gold = Path(temp) / "gold"
+            gold.mkdir()
+            make_gold(gold)
+            path = Path(temp) / "results.jsonl"
+            make_candidates(path, "m", ["a", "b"])
+            with self.assertRaises(ValueError):
+                rubric.load_candidates([path, path], gold / "product_items.jsonl")
+            make_candidates(path, "m", ["a", "b", "c"])
+            with self.assertRaises(ValueError):
+                rubric.load_candidates([path], gold / "product_items.jsonl")
+            self.assertEqual(rubric.generator_name("gen_qwen_local_20261111T150521Z"), "qwen_local")
+            self.assertEqual(rubric.generator_name("my_run"), "my_run")
 
 
 class RubricMetricsTest(unittest.TestCase):
@@ -124,6 +187,22 @@ class RubricMetricsTest(unittest.TestCase):
         self.assertEqual(summary["false_without_quoted_conflict"], 1)
         self.assertEqual(summary["by_generator"]["other_generators"]["extra_false"], 1)
         self.assertEqual(summary["caught"], 1)
+
+    def test_generator_rates(self):
+        def record(cid, value):
+            return {"candidate_id": cid, "rubric_result": {"status": "success", "error": None, "criteria": [
+                {"criterion_id": "factual_support", "value": value, "reason": None}]}}
+        items = [{"candidate_id": f"{g}{i}", "product_id": f"p{i}", "generator": g} for g in "ab" for i in range(4)]
+        results = [record("a0", False), record("a1", False), record("a2", True), record("a3", True),
+                   record("b0", False), record("b1", True), record("b2", True),
+                   {"candidate_id": "b3", "rubric_result": {"status": "failed", "criteria": [], "error": "judge_failed"}}]
+        rates = rubric_metrics.generator_rates(results, items, iterations=200)
+        self.assertEqual(rates["by_generator"]["a"]["false_rate"], 0.5)
+        self.assertEqual(rates["by_generator"]["b"]["judge_failed"], 1)
+        self.assertAlmostEqual(rates["by_generator"]["b"]["false_rate"], 0.3333)
+        pair = rates["paired_differences"][0]
+        self.assertEqual((pair["generators"], pair["shared_products"]), (["a", "b"], 3))
+        self.assertAlmostEqual(pair["false_rate_difference"], 0.3333)
 
 
 if __name__ == "__main__":

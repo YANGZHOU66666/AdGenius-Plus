@@ -12,7 +12,7 @@ The evaluator compares ad communication quality against current human labels usi
 - Prompts: `prompts/eval/pairwise/system_v2.txt` and `user_v2.txt`.
 - Protocol: `pairwise-v0.2`, ad text only. No product metadata, source model names, IDs or human labels are sent to the judge.
 
-The prompt asks which ad communicates more effectively to a reader scrolling a social media feed, considering clarity, useful specificity, appeal, naturalness and focus. Factual accuracy is a separate rubric task. More attributes, more words or complete sentences do not automatically imply better advertising.
+The prompt asks which ad communicates more effectively to a reader scrolling a social media feed, considering clarity, useful specificity, appeal, naturalness and focus. Factual accuracy is a separate rubric task; see [the rubric judge guide](rubric_llm_judge.md). More attributes, more words or complete sentences do not automatically imply better advertising.
 
 Each pair is requested as AB and BA independently. Display labels are Ad 1 and Ad 2; the strict JSON choice is the string "1" or "2" with a nonempty reason. The evaluator maps this to the fixed candidate identity, so stored A/B choices always refer to candidate_mapping, even for reversed presentation. Neither request sees the other order's result.
 
