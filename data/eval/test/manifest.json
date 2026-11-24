@@ -1,0 +1,61 @@
+{
+  "dataset_id": "test_v1",
+  "status": "frozen",
+  "purpose": "final evaluation only; never used for training, prompt tuning, judge selection or model selection",
+  "schemas": {
+    "products": {
+      "path": "metadata/schemas/product_item.schema.json",
+      "version": "ProductItem v1",
+      "sha256": "4ef0bc45c37763455543fa90d1303d8561e262d6f90a85a52f1ace94b52b45ce"
+    }
+  },
+  "source": {
+    "products": {
+      "path": "data/processed/v1/test_products.jsonl",
+      "sha256": "cde2e0e815470aca52b761f8d62d33fc4abf3648ca36f8d891920d43269da16c"
+    },
+    "split_index": {
+      "path": "data/splits/v1/test.jsonl",
+      "sha256": "dbb17e11f9871fba88695b71a16e58928111d2666fd80a5d40374f3c85ac065b"
+    },
+    "split_manifest": "data/splits/v1/manifest.json"
+  },
+  "source_id_field": "parent_asin",
+  "id_mapping": "product_id = 'test_product_' + six-digit zero-padded line index of the source file (same rule as gold_product_NNNNNN); it never changes across rebuilds",
+  "conversion": "source_id = parent_asin; product_info = the source record without parent_asin, values unchanged",
+  "code": {
+    "script": "scripts/build_test_products.py",
+    "git_commit": "ec47c91c17e5f6ee2fc9240adec243203a7b6539",
+    "code_paths_dirty": false
+  },
+  "counts": {
+    "products": 1000
+  },
+  "descriptive": {
+    "missing_title": 0,
+    "missing_features_and_description": 182,
+    "not_renderable": 0,
+    "rendered_over_6000_chars": 0
+  },
+  "notes": [
+    "No product is filtered: the test set is fixed. Descriptive counts show how many products the train/dev filters would have rejected; generation still runs on all 1,000."
+  ],
+  "checks": {
+    "schema_valid": true,
+    "unique_ids": true,
+    "unchanged_values": true,
+    "overlaps": {
+      "gold_asins": 0,
+      "gold_groups": 0,
+      "dev_train_asins": 0,
+      "dev_train_groups": 0
+    }
+  },
+  "files": {
+    "product_items.jsonl": {
+      "path": "data/eval/test/product_items.jsonl",
+      "sha256": "ab7341161c179414ca6d160e80ad572045891e283e20cde66130b78961b4831d",
+      "records": 1000
+    }
+  }
+}

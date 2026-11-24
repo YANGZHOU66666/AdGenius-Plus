@@ -31,7 +31,7 @@ flowchart TD
     T -.-> W[后续最终测试]
 ```
 
-虚线部分尚未落地。**gold 与 test 是两个互不重叠的商品集合；两者都排除在训练池之外。** gold 用于评委校准，最终 test 不参与 prompt 调整或评委选择。当前没有标准化 test ProductItem、测试广告、rubric 实际评分或 SFT 数据。
+虚线部分尚未落地。**gold 与 test 是两个互不重叠的商品集合；两者都排除在训练池之外。** gold 用于评委校准，最终 test 不参与 prompt 调整或评委选择。test 已转换为标准 ProductItem（`data/eval/test/`，见第 4 节）；当前还没有测试广告和 rubric 实际评分。
 
 ## 2. 当前文件清单
 
@@ -45,6 +45,8 @@ flowchart TD
 | `data/processed/v1/gold_products.jsonl` | 原始格式商品对象 | 100；保留原始 gold 资料 | 划分时按源文件顺序提取 |
 | `data/processed/v1/test_products.jsonl` | 原始格式商品对象 | 1,000；保留原始 test 资料 | 同上 |
 | `data/eval/gold/product_items.jsonl` | 标准 `ProductItem` | 100；生成和商品信息展示共用 | 原始 gold 商品包装，见第 4 节 |
+| `data/eval/test/product_items.jsonl` | 标准 `ProductItem` | 1,000；只用于最终评测 | 原始 test 商品 → `build_test_products.py`，见第 4 节 |
+| `data/eval/test/manifest.json` | test 数据集说明 | 输入哈希、ID 映射、schema、代码提交、重叠检查和描述性计数 | 同上 |
 | `data/eval/gold/results_qwen_local.jsonl` | 一次候选生成的最终标准结果 | 100；本地 Qwen 候选 | 生成、失败补跑后发布 |
 | `data/eval/gold/results_gemma_31b.jsonl` | 同上 | 100；Gemma 候选 | 同上 |
 | `data/eval/gold/results_glm53_flash.jsonl` | 同上 | 100；GLM 候选 | 同上 |
@@ -143,7 +145,23 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 
 例如首条项目 ID 为 `gold_product_000000`。存储保留 `title`、`features`、`description`、`details`、`categories`、`main_category`、`store`、`price`、`average_rating`、`rating_number`、`images`、`videos`、`bought_together` 等原始属性；空值不在此步骤补造。
 
-结构定义见 [product_item.schema.json](../metadata/schemas/product_item.schema.json)。**目前没有独立的 ProductItem 转换 CLI**，`build_data_split.py` 只输出原始格式商品，不能把它描述为已完成此转换。后续应补可复现的转换入口；在此之前直接消费已冻结的文件，不重新编号。test 的同类转换尚未执行。
+结构定义见 [product_item.schema.json](../metadata/schemas/product_item.schema.json)。**目前没有独立的 ProductItem 转换 CLI**，`build_data_split.py` 只输出原始格式商品，不能把它描述为已完成此转换。后续应补可复现的转换入口；在此之前直接消费已冻结的文件，不重新编号。
+
+**test 用同一规则转换**，生产入口为 [scripts/build_test_products.py](../scripts/build_test_products.py)：
+
+```text
+按 data/processed/v1/test_products.jsonl 的行顺序，从 i = 0 编号：
+product_id   = "test_product_" + 六位补零的 i
+source_id    = 原始 parent_asin
+product_info = 原始商品对象去掉 parent_asin 后的全部字段
+```
+
+输出 `data/eval/test/product_items.jsonl`（1,000 条）和 `manifest.json`。脚本会校验输入文件与 `data/splits/v1/manifest.json` 中的哈希一致、行序与 `data/splits/v1/test.jsonl` 一致，并重新读取输出，检查 ProductItem schema、ID 唯一、取值未被改动，以及与 gold、dev、train 没有共同的 ASIN 或内容组。test 是固定集合，**不做任何过滤**；manifest 记录训练过滤会剔除的商品数量作参考（182 件既没有卖点也没有描述）。
+
+```sh
+PYTHONPATH=src .venv/bin/python scripts/build_test_products.py           # 已存在时拒绝覆盖
+PYTHONPATH=src .venv/bin/python scripts/build_test_products.py --force   # 重建，结果逐字节相同
+```
 
 ## 5. ProductItem → 四模型候选
 
@@ -235,7 +253,7 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 |---|---|
 | 原始 `parent_asin` | 原始商品 ID；当前源文件中唯一 |
 | `source_id` | ProductItem 和训练池索引保留的原始 ASIN |
-| `product_id` | 标准 gold 使用 `gold_product_000000` 起的项目 ID；训练池使用 `train_product_000000` 起的项目 ID |
+| `product_id` | 标准 gold 使用 `gold_product_000000` 起的项目 ID；test 使用 `test_product_000000` 起的项目 ID；训练池使用 `train_product_000000` 起的项目 ID |
 | split 索引中的 `product_id` | **gold/test 索引仍保存原始 ASIN**，应与标准 ProductItem 的 `source_id` 关联，不能直接按项目 `product_id` join |
 | `candidate_id` | 一条具体生成候选；关联候选文件、pair 中的文本、人工/模型赢家及后续 rubric |
 | 生成 `run_id` | 一次生成批次及模型设置；同商品不同模型的候选有不同运行身份 |
