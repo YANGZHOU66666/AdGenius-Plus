@@ -1,4 +1,4 @@
-"""Freeze the student prompts for training and dev generation from data/train/v1.
+"""Freeze the student prompts for training, dev and test generation (data/train/v1 and data/eval/test).
 
 Each output line is {"product_id", "rank", "prompt"} where prompt is the same two messages that produced the gold
 candidates and the teacher ads: the frozen SYSTEM_PROMPT of scripts/generate_candidates.py and
@@ -26,6 +26,7 @@ _candidates = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(_candidates)
 SYSTEM_PROMPT: str = _candidates.SYSTEM_PROMPT
 SPLITS = {"prompts_train_v1.jsonl": "train_products.jsonl", "prompts_dev_v1.jsonl": "dev_products.jsonl"}
+TEST_PRODUCTS = REPO_ROOT / "data" / "eval" / "test" / "product_items.jsonl"
 
 
 def sha256(path: Path) -> str:
@@ -43,14 +44,18 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--data-dir", type=Path, default=REPO_ROOT / "data" / "train" / "v1")
     parser.add_argument("--out", type=Path, default=REPO_ROOT / "artifacts" / "train" / "prompts" / "v1")
+    parser.add_argument("--test-products", type=Path, default=TEST_PRODUCTS,
+                        help="also writes prompts_test_v1.jsonl when this file exists")
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=True)
     commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True).stdout.strip()
     manifest = {"source_commit": commit or None,
                 "system_prompt_sha256": hashlib.sha256(SYSTEM_PROMPT.encode("utf-8")).hexdigest(),
                 "renderer": "adgenius.shared.product.render_product_information", "files": {}}
-    for name, source in SPLITS.items():
-        src = args.data_dir / source
+    sources = {name: args.data_dir / source for name, source in SPLITS.items()}
+    if args.test_products.exists():
+        sources["prompts_test_v1.jsonl"] = args.test_products
+    for name, src in sources.items():
         products = [json.loads(line) for line in src.open(encoding="utf-8") if line.strip()]
         out = args.out / name
         with out.open("w", encoding="utf-8") as handle:

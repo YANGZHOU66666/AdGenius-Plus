@@ -105,4 +105,4 @@ vLLM 的 dev 生成日志在 VM 停掉前没有同步下来，没有保留；dev
 
 ## 待办
 
-1. **正式训练**：学习率 5e-6，3 个种子，各从头训练到 8k（200 步），在 1k、2k、4k、8k 保存权重。保留 `train_sampling_strategy="sequential"` 和训练前的 sampler 检查。
+1. **正式训练**：学习率 5e-6，1 个种子（20261123，与 OPD 相同），从头训练到 8k（200 步），在 1k、2k、4k、8k 保存权重。保留 `train_sampling_strategy="sequential"` 和训练前的 sampler 检查。
