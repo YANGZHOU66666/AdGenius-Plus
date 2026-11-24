@@ -52,7 +52,7 @@ dev 和 train 都从训练池抽取，按 `group_id` 去重。四个数据集互
 | 训练信号 | 教师写的广告（离线模仿） | 教师对学生自己采样的逐 token 打分（反向 KL） |
 | 实现 | TRL `SFTTrainer`，只对广告部分计算 loss | TRL `ServerDistillationTrainer`，教师通过兼容 vLLM 接口的代理访问 |
 | 每个 prompt | 1 条教师广告 | 学生采样 4 次 |
-| 损失 | 交叉熵 | `beta=1`（只用采样 token 的分数），或 `beta=0.5`（另外引入教师首选的 token），**待定** |
+| 损失 | 交叉熵 | `beta=1`（只用采样 token 的分数），或 `beta=0.5`（另外引入教师首选的 token）；**选定 `beta=0.5`**，见 §5 |
 
 ## 5. 训练配方
 
@@ -73,6 +73,8 @@ dev 和 train 都从训练池抽取，按 `group_id` 去重。四个数据集互
 5. 选定之后，这次 1k 的运行直接续训到 8k；所有规模和种子都沿用同一个学习率，不再重新选择。
 
 dev 上的 SFT loss 和 OPD 反向 KL 只用来监控训练，不参与选择。
+
+**OPD 选择结果（2026-11-23）**：`beta=0.5`，学习率 2e-6。两个 beta 各扫了三个学习率，组内都是 2e-6 胜出，组间对决 `beta=0.5` 胜率 0.62（95% 区间 0.56–0.68）。实际每步用了 40 个 prompt × 4 次采样；选定 run 的 1k checkpoint 没有保留，正式训练从头训练。详见[选择报告](../results/training/opd_lr_sweep_v1/report.md)。
 
 **checkpoint 方案**：从 1k 续训到 8k 的过程中，在 1k、2k、4k、8k 四处保存权重。这四个 checkpoint 就是数据规模曲线上的四个点，全部在 test 上评测，不需要另外挑选 checkpoint。数据只过一遍，warmup 之后学习率恒定，因此每个 checkpoint 与"只用前 N 个商品训练"得到的结果相同。
 
@@ -119,6 +121,6 @@ dev 上的学习率选择见第 5 节。
 
 ## 8. 待定项
 
-- [ ] OPD 的损失设置：`beta=1`，还是 `beta=0.5`。
+- [x] OPD 的损失设置：选定 `beta=0.5`、学习率 2e-6（[选择报告](../results/training/opd_lr_sweep_v1/report.md)）。
 - [ ] 单条 rubric 能否承担事实核查。
 - [ ] 人工盲评的标注人和规模。

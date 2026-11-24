@@ -1,0 +1,426 @@
+{
+ "experiment": "opd_lr_sweep_v1",
+ "description": "OPD learning-rate and beta selection on 200 dev products (docs/sft_opd_experiment_plan.md §5).",
+ "landed_at": "2026-11-24T07:32:30Z",
+ "status": "completed",
+ "decision": {
+  "chosen_run": "beta0.5_lr2e-06",
+  "beta": 0.5,
+  "learning_rate": 2e-06,
+  "selection": "selection.json",
+  "report": "report.md"
+ },
+ "inputs": {
+  "data_commit": "f98a45ffd05300f9206ddff8f777fc85a461f7fa",
+  "train_products": {
+   "path": "data/train/v1/train_products.jsonl",
+   "sha256": "d5bb1758a5443e60a86d2c42016323243529ed2cd4eb70389e82e08205e68bba"
+  },
+  "dev_products": {
+   "path": "data/train/v1/dev_products.jsonl",
+   "sha256": "c8b60f2a71ba6c6649862cb2e0399bd2bdacb2b138764e5591777186bb06a8bb"
+  },
+  "messages": {
+   "system": "scripts/generate_candidates.py SYSTEM_PROMPT (same as gold and teacher data)",
+   "system_prompt_sha256": "b4fe55a76e3b32682603210ca890a8507ae47378c4b03235f371fd8e507bc8f2",
+   "user": "adgenius.shared.product.render_product_information(ProductItem)"
+  },
+  "frozen_prompts": {
+   "prompts_train_v1.jsonl": {
+    "rows": 8000,
+    "sha256": "13144069d641ded0c61ce17ff0ef6f118db7336a7509eb22c89626407f2a899f",
+    "local_copy": "artifacts/train/opd_lr_sweep_v1/prompts/prompts_train_v1.jsonl"
+   },
+   "prompts_dev_v1.jsonl": {
+    "rows": 200,
+    "sha256": "2e35dec3ffb79b3c9931cc519c13f4098f58a53ba325ba527c5da792923d739d",
+    "local_copy": "artifacts/train/opd_lr_sweep_v1/prompts/prompts_dev_v1.jsonl"
+   }
+  }
+ },
+ "runs": [
+  {
+   "name": "beta1_lr5e-07",
+   "beta": 1.0,
+   "learning_rate": 5e-07,
+   "manifest": "runs/beta1_lr5e-07/manifest.json",
+   "generations": "generations/beta1_lr5e-07.jsonl"
+  },
+  {
+   "name": "beta1_lr1e-06",
+   "beta": 1.0,
+   "learning_rate": 1e-06,
+   "manifest": "runs/beta1_lr1e-06/manifest.json",
+   "generations": "generations/beta1_lr1e-06.jsonl"
+  },
+  {
+   "name": "beta1_lr2e-06",
+   "beta": 1.0,
+   "learning_rate": 2e-06,
+   "manifest": "runs/beta1_lr2e-06/manifest.json",
+   "generations": "generations/beta1_lr2e-06.jsonl"
+  },
+  {
+   "name": "beta0.5_lr5e-07",
+   "beta": 0.5,
+   "learning_rate": 5e-07,
+   "manifest": "runs/beta0.5_lr5e-07/manifest.json",
+   "generations": "generations/beta0.5_lr5e-07.jsonl"
+  },
+  {
+   "name": "beta0.5_lr1e-06",
+   "beta": 0.5,
+   "learning_rate": 1e-06,
+   "manifest": "runs/beta0.5_lr1e-06/manifest.json",
+   "generations": "generations/beta0.5_lr1e-06.jsonl"
+  },
+  {
+   "name": "beta0.5_lr2e-06",
+   "beta": 0.5,
+   "learning_rate": 2e-06,
+   "manifest": "runs/beta0.5_lr2e-06/manifest.json",
+   "generations": "generations/beta0.5_lr2e-06.jsonl"
+  }
+ ],
+ "generations": {
+  "base": {
+   "run_id": "gen_opd_lr_sweep_dev_base",
+   "file": "generations/base.jsonl",
+   "sha256": "d5ecdad9f3ee45ddddf63d5921fc2886f4484445c7625f5269e1aee2a7cd8380",
+   "records": 200,
+   "status_counts": {
+    "success": 197,
+    "truncated": 3,
+    "failed": 0
+   },
+   "source_sha256": "52eb80d5457b64f2b79b93659b7fa4da855ba2fed7c018ee0b9fb0b51db4d8e9"
+  },
+  "beta1_lr5e-07": {
+   "run_id": "gen_opd_lr_sweep_dev_beta1_lr5em07",
+   "file": "generations/beta1_lr5e-07.jsonl",
+   "sha256": "132e563ee5322952023b4105b323dd3fa48448335d2351de129490ec6355c3f3",
+   "records": 200,
+   "status_counts": {
+    "success": 195,
+    "truncated": 5,
+    "failed": 0
+   },
+   "source_sha256": "813b7b4918c2cd6c028ca8d01806b769c30860f7bd7ecc7896bffd2ce630d6ab"
+  },
+  "beta1_lr1e-06": {
+   "run_id": "gen_opd_lr_sweep_dev_beta1_lr1em06",
+   "file": "generations/beta1_lr1e-06.jsonl",
+   "sha256": "f37152b722adeb71213d16b7b69b39c0ddd5f6c27cee5f3e0304318596483437",
+   "records": 200,
+   "status_counts": {
+    "success": 195,
+    "truncated": 5,
+    "failed": 0
+   },
+   "source_sha256": "9f3fcfed142cf28568fb7371e721c382824a7944400e9a9aeaeff0d6fba82d88"
+  },
+  "beta1_lr2e-06": {
+   "run_id": "gen_opd_lr_sweep_dev_beta1_lr2em06",
+   "file": "generations/beta1_lr2e-06.jsonl",
+   "sha256": "0389262b421a91b548bbf962dbab0812ab08b00c48f4c83d112fd25b575a000f",
+   "records": 200,
+   "status_counts": {
+    "success": 200,
+    "truncated": 0,
+    "failed": 0
+   },
+   "source_sha256": "bbb20abe0878ac008dde003a39a6ea809c1ef2a0509ec0405aa9a003dc1ceff8"
+  },
+  "beta0.5_lr5e-07": {
+   "run_id": "gen_opd_lr_sweep_dev_beta0p5_lr5em07",
+   "file": "generations/beta0.5_lr5e-07.jsonl",
+   "sha256": "da3bbafa6065c325e830cce35aba067034697b13769c2d82dc2079ae1aaa590c",
+   "records": 200,
+   "status_counts": {
+    "success": 198,
+    "truncated": 2,
+    "failed": 0
+   },
+   "source_sha256": "2c788259ea7e733beab65854a71e76cfc0183d4a0fecd56a8dda37a94a458d27"
+  },
+  "beta0.5_lr1e-06": {
+   "run_id": "gen_opd_lr_sweep_dev_beta0p5_lr1em06",
+   "file": "generations/beta0.5_lr1e-06.jsonl",
+   "sha256": "489a0fc457d41835e2375e1612efba8f6eac9fe2acc3931d64e53e163598586a",
+   "records": 200,
+   "status_counts": {
+    "success": 200,
+    "truncated": 0,
+    "failed": 0
+   },
+   "source_sha256": "4b7f7715a2f6fdfa9e6671418abf8f1119865b6a47369fc3c412cdca9d5e3e6a"
+  },
+  "beta0.5_lr2e-06": {
+   "run_id": "gen_opd_lr_sweep_dev_beta0p5_lr2em06",
+   "file": "generations/beta0.5_lr2e-06.jsonl",
+   "sha256": "3bf7de98e0bf031b6dc9e77b918d745f7a88e0506d7e59c9f212654dfdc486a6",
+   "records": 200,
+   "status_counts": {
+    "success": 200,
+    "truncated": 0,
+    "failed": 0
+   },
+   "source_sha256": "8bf773dbf9e3deeb719a0100f64f7b8c631caed8f79622a50f315bc8572dad9d"
+  }
+ },
+ "dev_generation": {
+  "products": 200,
+  "engine": "vLLM 0.30.0",
+  "dtype": "bfloat16",
+  "temperature": 0.0,
+  "max_tokens": 200,
+  "seed": 0,
+  "max_model_len": 2048,
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "schema": {
+   "path": "metadata/schemas/generation_result.schema.json",
+   "version": "GenerationResult v1.1",
+   "sha256": "86203f03c391eb96a90de6d229cc042fe621a6f61a48ac2ee6becb10c836f8b1"
+  },
+  "trace_id": "null: local generation, no API call log",
+  "rules": [
+   "Each system generates once per product; outputs are never regenerated based on their content.",
+   "A length stop with written text is recorded as truncated and judged as written.",
+   "The denominator is always all 200 dev products."
+  ]
+ },
+ "evaluation": {
+  "evaluator": "scripts/evaluate_pairwise.py",
+  "eval_config": "configs/eval/pairwise_deepseek.toml",
+  "model": "deepseek-flash",
+  "protocol_version": "pairwise-v0.2",
+  "input_mode": "ad_text_only",
+  "human_annotations": null,
+  "rules": ", fixed before any judgment was read (docs/sft_opd_experiment_plan.md §5 and the sweep notes):\n- Denominator is always the 200 dev products. A product's score for run A in a matchup is the mean over its\n  successful orders of 1 (A wins) or 0 (B wins). Products settled without a judge call: identical texts -> 0.5;\n  one side empty -> the non-empty side wins (both empty -> 0.5). If both orders failed after retries -> 0.5.\n- Truncated outputs keep their text and are judged as written; truncation is reported, not penalised separately.\n- Within each beta, a learning rate's score is the mean of its win rates in its two matchups. The best one wins\n  unless the product-bootstrap 95% CI of its win rate against the runner-up contains 0.5; then the smaller of\n  the two learning rates is chosen.\n- The two beta winners are compared head to head. If that CI contains 0.5, beta=1 is chosen (simpler and\n  cheaper: no teacher top-1 retrieval).\n- No per-item regeneration of model outputs; only judge calls are retried (repo evaluator behaviour).",
+  "bootstrap": {
+   "unit": "product",
+   "resamples": 10000,
+   "seed": 20261123,
+   "interval": "2.5th-97.5th percentile"
+  },
+  "judge_runs": {
+   "opd_sweep_dev_b1_lr5e7_vs_lr1e6": {
+    "matchup": "beta1_lr5e-07__vs__beta1_lr1e-06",
+    "a": "beta1_lr5e-07",
+    "b": "beta1_lr1e-06",
+    "pairs": "pairs/beta1_lr5e-07__vs__beta1_lr1e-06.jsonl",
+    "pairs_sha256": "90bb87a86a72f2c5fe443a0d8c0cd3f2b11a62ea7d9c8fb42beb9fd777774ffd",
+    "settled": "pairs/beta1_lr5e-07__vs__beta1_lr1e-06.settled.json",
+    "pairs_judged": 198,
+    "settled_by_rule": 2,
+    "captured_pairs_path": "analysis/opd_lr_sweep_20261123/eval/pairs/beta1_lr5e-07__vs__beta1_lr1e-06.jsonl",
+    "results": "results/pairwise/opd_sweep_dev_b1_lr5e7_vs_lr1e6/",
+    "calls": "artifacts/pairwise/opd_sweep_dev_b1_lr5e7_vs_lr1e6/calls.jsonl",
+    "results_sha256": "5fd3089789a54843d686482fb3c3eb441c400b54ba45225cf8f9ce2c9ddddf75",
+    "config_fingerprint": "42c413674a99de90748eafa16cad7921b6af17bda03d266d31baab86ddf2dbc5",
+    "a_win_rate": 0.555,
+    "ci95": [
+     0.495,
+     0.6175
+    ]
+   },
+   "opd_sweep_dev_b1_lr5e7_vs_lr2e6": {
+    "matchup": "beta1_lr5e-07__vs__beta1_lr2e-06",
+    "a": "beta1_lr5e-07",
+    "b": "beta1_lr2e-06",
+    "pairs": "pairs/beta1_lr5e-07__vs__beta1_lr2e-06.jsonl",
+    "pairs_sha256": "5961fb449ea977ad297087616eb2275ecb674587b1a8a160ba55067e9a34bbba",
+    "settled": "pairs/beta1_lr5e-07__vs__beta1_lr2e-06.settled.json",
+    "pairs_judged": 200,
+    "settled_by_rule": 0,
+    "captured_pairs_path": "analysis/opd_lr_sweep_20261123/eval/pairs/beta1_lr5e-07__vs__beta1_lr2e-06.jsonl",
+    "results": "results/pairwise/opd_sweep_dev_b1_lr5e7_vs_lr2e6/",
+    "calls": "artifacts/pairwise/opd_sweep_dev_b1_lr5e7_vs_lr2e6/calls.jsonl",
+    "results_sha256": "2104ce8540992fc612ad318efedab98d9ed5e0760c88d30ff19b73dd1290d02c",
+    "config_fingerprint": "99b67b651da7df3fa0465a9cbb43c8784250dc56a310c455f999f2fc0f316ea7",
+    "a_win_rate": 0.305,
+    "ci95": [
+     0.25,
+     0.36
+    ]
+   },
+   "opd_sweep_dev_b1_lr1e6_vs_lr2e6": {
+    "matchup": "beta1_lr1e-06__vs__beta1_lr2e-06",
+    "a": "beta1_lr1e-06",
+    "b": "beta1_lr2e-06",
+    "pairs": "pairs/beta1_lr1e-06__vs__beta1_lr2e-06.jsonl",
+    "pairs_sha256": "836c3793d8ba4c715ccf3530d7a8b32473cc4c5a2c5345f516e02c053e97065d",
+    "settled": "pairs/beta1_lr1e-06__vs__beta1_lr2e-06.settled.json",
+    "pairs_judged": 200,
+    "settled_by_rule": 0,
+    "captured_pairs_path": "analysis/opd_lr_sweep_20261123/eval/pairs/beta1_lr1e-06__vs__beta1_lr2e-06.jsonl",
+    "results": "results/pairwise/opd_sweep_dev_b1_lr1e6_vs_lr2e6/",
+    "calls": "artifacts/pairwise/opd_sweep_dev_b1_lr1e6_vs_lr2e6/calls.jsonl",
+    "results_sha256": "b947e58a4f3ab1520549f7b6d47362df390ea6ce9402c8a43a31d7266d714e73",
+    "config_fingerprint": "3a24984fee04472e69e872e3c53d58fd08219655cb8909a331cc605d23d6168e",
+    "a_win_rate": 0.2325,
+    "ci95": [
+     0.185,
+     0.2825
+    ]
+   },
+   "opd_sweep_dev_b05_lr5e7_vs_lr1e6": {
+    "matchup": "beta0.5_lr5e-07__vs__beta0.5_lr1e-06",
+    "a": "beta0.5_lr5e-07",
+    "b": "beta0.5_lr1e-06",
+    "pairs": "pairs/beta0.5_lr5e-07__vs__beta0.5_lr1e-06.jsonl",
+    "pairs_sha256": "22f703830d6a2c61f986691670bf3e1551ae85660297acc5d8cb5b806a03dd14",
+    "settled": "pairs/beta0.5_lr5e-07__vs__beta0.5_lr1e-06.settled.json",
+    "pairs_judged": 199,
+    "settled_by_rule": 1,
+    "captured_pairs_path": "analysis/opd_lr_sweep_20261123/eval/pairs/beta0.5_lr5e-07__vs__beta0.5_lr1e-06.jsonl",
+    "results": "results/pairwise/opd_sweep_dev_b05_lr5e7_vs_lr1e6/",
+    "calls": "artifacts/pairwise/opd_sweep_dev_b05_lr5e7_vs_lr1e6/calls.jsonl",
+    "results_sha256": "24a84701dda4bc26e9185588927839c22c0ad483d2acaf0d84a13d78e7a1a4dc",
+    "config_fingerprint": "3977d5499e3a17fabfe3433540f4ba7f5270a3884f3a287f2e2382865596b59d",
+    "a_win_rate": 0.295,
+    "ci95": [
+     0.24,
+     0.35
+    ]
+   },
+   "opd_sweep_dev_b05_lr5e7_vs_lr2e6": {
+    "matchup": "beta0.5_lr5e-07__vs__beta0.5_lr2e-06",
+    "a": "beta0.5_lr5e-07",
+    "b": "beta0.5_lr2e-06",
+    "pairs": "pairs/beta0.5_lr5e-07__vs__beta0.5_lr2e-06.jsonl",
+    "pairs_sha256": "ef0b5a18a352cde4787651c2718e582a8b72bf09d3425ca2cdfa44cf6b34949e",
+    "settled": "pairs/beta0.5_lr5e-07__vs__beta0.5_lr2e-06.settled.json",
+    "pairs_judged": 200,
+    "settled_by_rule": 0,
+    "captured_pairs_path": "analysis/opd_lr_sweep_20261123/eval/pairs/beta0.5_lr5e-07__vs__beta0.5_lr2e-06.jsonl",
+    "results": "results/pairwise/opd_sweep_dev_b05_lr5e7_vs_lr2e6/",
+    "calls": "artifacts/pairwise/opd_sweep_dev_b05_lr5e7_vs_lr2e6/calls.jsonl",
+    "results_sha256": "4a6d8535ccb1a96b70cc41c1e5d97c69a957af7e98ded2dabd630a4d41b38b0a",
+    "config_fingerprint": "da0967d9a3446a12b2a12e1f8a00a9fc4d5e84b980fcbb1d745471e59bd54147",
+    "a_win_rate": 0.235,
+    "ci95": [
+     0.185,
+     0.2875
+    ]
+   },
+   "opd_sweep_dev_b05_lr1e6_vs_lr2e6": {
+    "matchup": "beta0.5_lr1e-06__vs__beta0.5_lr2e-06",
+    "a": "beta0.5_lr1e-06",
+    "b": "beta0.5_lr2e-06",
+    "pairs": "pairs/beta0.5_lr1e-06__vs__beta0.5_lr2e-06.jsonl",
+    "pairs_sha256": "2541f7ce9133985bcc252f4f37f7001cb9ea1ac3e3f2210b83c2c418b8875264",
+    "settled": "pairs/beta0.5_lr1e-06__vs__beta0.5_lr2e-06.settled.json",
+    "pairs_judged": 199,
+    "settled_by_rule": 1,
+    "captured_pairs_path": "analysis/opd_lr_sweep_20261123/eval/pairs/beta0.5_lr1e-06__vs__beta0.5_lr2e-06.jsonl",
+    "results": "results/pairwise/opd_sweep_dev_b05_lr1e6_vs_lr2e6/",
+    "calls": "artifacts/pairwise/opd_sweep_dev_b05_lr1e6_vs_lr2e6/calls.jsonl",
+    "results_sha256": "38eb4f71afa640ef730cc1dd77c725ce3e8c9730a9df0bb7dff56059d001ce0f",
+    "config_fingerprint": "2002654a0f7ed7bdc3065ed308ee22ae7edb27de13d317a5bc63410688744d38",
+    "a_win_rate": 0.4075,
+    "ci95": [
+     0.35,
+     0.4675
+    ]
+   },
+   "opd_sweep_dev_final_b1_lr2e6_vs_b05_lr2e6": {
+    "matchup": "beta1_lr2e-06__vs__beta0.5_lr2e-06",
+    "a": "beta1_lr2e-06",
+    "b": "beta0.5_lr2e-06",
+    "pairs": "pairs/beta1_lr2e-06__vs__beta0.5_lr2e-06.jsonl",
+    "pairs_sha256": "31e7009b8d7188ae486141f8d043b6a9a4719431cb262c5a086f9b932a1dce9b",
+    "settled": "pairs/beta1_lr2e-06__vs__beta0.5_lr2e-06.settled.json",
+    "pairs_judged": 200,
+    "settled_by_rule": 0,
+    "captured_pairs_path": "analysis/opd_lr_sweep_20261123/eval/pairs/beta1_lr2e-06__vs__beta0.5_lr2e-06.jsonl",
+    "results": "results/pairwise/opd_sweep_dev_final_b1_lr2e6_vs_b05_lr2e6/",
+    "calls": "artifacts/pairwise/opd_sweep_dev_final_b1_lr2e6_vs_b05_lr2e6/calls.jsonl",
+    "results_sha256": "c27781b3f189d9c7dbb8018996c0aac831a1d64f876ca713f4afe192bd47c4f2",
+    "config_fingerprint": "95146c9532905f9446e463cead8329b64e590f8dac29177dac634f2e18cdf5e7",
+    "a_win_rate": 0.38,
+    "ci95": [
+     0.3225,
+     0.4375
+    ]
+   }
+  }
+ },
+ "relocation": "Judge runs were executed outside the repository and their manifests are kept exactly as captured (including absolute input paths). Each judge_runs entry maps captured_pairs_path to the repository copy; pairs_sha256 equals the hash recorded in the captured manifest. Win rates were recomputed from the repository copies and match selection.json.",
+ "environment": {
+  "started_utc": "2026-11-24T06:19:26Z",
+  "gpu": "NVIDIA A100-SXM4-40GB, 40960 MiB, 580.82.07",
+  "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+  "packages": {
+   "torch": "2.13.0",
+   "vllm": "0.30.0",
+   "trl": "1.18.0",
+   "transformers": "5.23.0",
+   "accelerate": "1.15.0",
+   "datasets": "4.8.5",
+   "tinker": "0.40.0",
+   "flash-linear-attention": "0.6.0"
+  }
+ },
+ "costs": {
+  "colab": {
+   "accelerator": "A100",
+   "session_utc": [
+    "2026-11-24T03:43Z",
+    "2026-11-24T06:49Z"
+   ],
+   "compute_units": 20.76,
+   "lost_to_reclaimed_sessions": 5.22
+  },
+  "tinker": {
+   "tokens_sent": 21486446,
+   "tokens_sent_failed_attempt": 1917826,
+   "note": "about $15.5 at the measured $0.72 per 1M tokens; the Tinker bill is authoritative"
+  },
+  "deepseek": {
+   "calls": 2792,
+   "input_tokens": 1229442,
+   "cache_hit_tokens": 547328,
+   "output_tokens": 166254
+  }
+ },
+ "deviations_from_plan": [
+  "40 prompts x 4 samples per step instead of 32 x 4, so 1k/2k/4k/8k fall on whole steps (25 steps per 1k).",
+  "Within-beta score is the mean win rate over the two matchups (plan: most wins); same ordering for 3 candidates.",
+  "The selected 1k checkpoint was not retained, so the formal run cannot continue from it (plan §5 step 5); it is retrained from scratch with the same setting.",
+  "Both betas were swept; the beta winners met head to head, beta=1 preferred on a tie."
+ ],
+ "incidents": [
+  "Two Colab sessions were reclaimed after ~22 minutes because training ran in a detached process and the kernel looked idle; the sweep was relaunched with a cell that blocks until training ends.",
+  "beta1_lr1e-06 failed at step 14 (teacher proxy completion-start bug); the proxy was fixed and the run repeated from scratch.",
+  "Per-beta Tinker token cap raised from 12.5M to 15M before the rerun."
+ ],
+ "code": {
+  "location": "artifacts/train/opd_lr_sweep_v1/code/ (local only; to be ported into src/adgenius/training)",
+  "sha256": {
+   "check_completion_logits.py": "dcb12d4dba779a7fed66514ca00d4959c926be905e0a63cf13aa3bf9adf36acd",
+   "completion_logits_trainer.py": "2c89a8633a838b8b8c0ad5c8263eb46e5a225a85858c331322027efc70a5bf52",
+   "dev_generate.py": "752fbd2a0e1d0f7066c1b8d919796d15d35e3d9f5a2877a352aab45463b7d241",
+   "land_in_repo.py": "b158c97b04b56f249673e533078e978b8ed91f0bb5b88e5a285390dfef5fa301",
+   "opd_train.py": "0415c8f9e57cd048dd1f9a4f2b559920f7d34d736c78ebe9d4ffdd9866e398b9",
+   "prepare_eval.py": "59fea81730e5277e9d1cc9af8de2f5f48fa8b1955354a1b422a15664b4d6d8dc",
+   "run_judge.sh": "f5912e0354fda4d4ec9272832ad5e120e01bdbe9919f812c541f2a8349abfc4e",
+   "select_from_pairwise.py": "1f67508f50ef355bb6a84a200f8af090ad0b668da11a4037e600f090423176f0",
+   "sweep_cell.py": "532723dd0be33f9aa65248df836545705a7400aea29d72b8931226898877d1c0",
+   "teacher_proxy.before_fix.py": "edd49ae68f20d8d0f15c959bc2d8caeb39db8b341de480289803ee9b306cfda5",
+   "teacher_proxy.py": "6e1c0b1bacdcb0ca65ac38625063435a74cbca4dff989715a57f1ce429c16e74",
+   "vm_runner.py": "2838d88bf411c10124591c6d9e75afaffdfc8b2ca9621df673b3d8ef1393835c",
+   "watchdog.py": "386d586cea39eb0b43396bf235199aab09a4f41aa129ba0ff5abe145f21883d2"
+  }
+ },
+ "not_retained": [
+  "model checkpoints"
+ ],
+ "local_artifacts": {
+  "training_logs": "artifacts/train/opd_lr_sweep_v1/runs/",
+  "vm_archives": "artifacts/train/opd_lr_sweep_v1/vm/",
+  "judge_calls": "artifacts/pairwise/<judge_run_id>/calls.jsonl"
+ }
+}

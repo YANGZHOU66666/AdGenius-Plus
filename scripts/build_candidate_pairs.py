@@ -92,7 +92,9 @@ def build_pairs(records: list[dict[str, Any]], models: list[str], seed: int,
             raise ValueError(f"Expected sample_index=0 for {candidate_id}")
         result = record.get("generation_result")
         if not isinstance(result, dict) or result.get("status") != "success":
-            raise ValueError(f"Candidate is not successful: {candidate_id}")
+            # Gold calibration pairs use only complete outputs; truncated and failed ones are excluded.
+            raise ValueError(f"Candidate is not successful ({result.get('status') if isinstance(result, dict) else None}): "
+                             f"{candidate_id}")
         text = result.get("text")
         if not isinstance(text, str) or not text.strip() or result.get("error") is not None:
             raise ValueError(f"Invalid successful candidate: {candidate_id}")

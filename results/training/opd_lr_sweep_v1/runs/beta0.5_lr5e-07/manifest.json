@@ -1,0 +1,340 @@
+{
+ "run": "beta0.5_lr5e-07",
+ "experiment": "opd_lr_sweep_v1",
+ "status": "completed",
+ "method": "on-policy distillation: TRL 1.18 ServerDistillationTrainer with completion-only student logits",
+ "student": {
+  "model": "Qwen/Qwen3.5-0.8B",
+  "loaded_as": "text-only Qwen3_5ForCausalLM export of the hub model",
+  "master_weights": "fp32",
+  "mixed_precision": "bf16"
+ },
+ "teacher": {
+  "model": "Qwen/Qwen3.5-397B-A17B",
+  "provider": "Tinker",
+  "signal": "actual-token logprobs + teacher top-1 token",
+  "proxy_mode": "top1",
+  "proxy_version": "fixed",
+  "proxy_sha256": "6e1c0b1bacdcb0ca65ac38625063435a74cbca4dff989715a57f1ce429c16e74",
+  "full_rescore_fallbacks": 0
+ },
+ "hyperparameters": {
+  "beta": 0.5,
+  "learning_rate": 5e-07,
+  "seed": 20261123,
+  "prompts": 1000,
+  "prompts_per_step": 40,
+  "samples_per_prompt": 4,
+  "sequences_per_step": 160,
+  "micro_batch": 16,
+  "gradient_accumulation": 10,
+  "max_steps": 25,
+  "warmup_steps": 3,
+  "lr_scheduler": "constant_with_warmup",
+  "optimizer": "adamw_torch_fused",
+  "loss_top_k": 1,
+  "sampling_temperature": 1.0,
+  "max_completion_length": 128,
+  "gradient_checkpointing": true,
+  "rollouts": "vLLM colocate, gpu_memory_utilization 0.15, max_model_len 2048",
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  }
+ },
+ "data": {
+  "train_products": "data/train/v1/train_products.jsonl",
+  "frozen_prompts_sha256": "13144069d641ded0c61ce17ff0ef6f118db7336a7509eb22c89626407f2a899f",
+  "order": "rank order; shuffled only within blocks [0,1k),[1k,2k),[2k,4k),[4k,8k) with the seed; first 1k used",
+  "first_product_ids": [
+   "train_product_138699",
+   "train_product_182938",
+   "train_product_448201",
+   "train_product_135287",
+   "train_product_442819"
+  ]
+ },
+ "timeline_utc": {
+  "train_start": "2026-11-24T05:03:08Z",
+  "train_done": "2026-11-24T05:23:39Z",
+  "dev_done": "2026-11-24T05:26:56Z"
+ },
+ "training": {
+  "train_seconds": 1173.3,
+  "mean_step_seconds": 45.9,
+  "step_seconds": [
+   47.31,
+   49.41,
+   48.43,
+   48.57,
+   48.79,
+   46.88,
+   42.55,
+   44.05,
+   42.07,
+   41.33,
+   45.43,
+   45.49,
+   44.81,
+   45.79,
+   47.47,
+   48.96,
+   49.02,
+   45.26,
+   47.45,
+   48.75,
+   45.58,
+   41.27,
+   41.89,
+   45.55,
+   44.48
+  ],
+  "peak_gpu_allocated_gb": 27.45,
+  "log": [
+   {
+    "step": 1,
+    "loss": 0.07365943491458893,
+    "grad_norm": 3.266087770462036,
+    "learning_rate": 0.0,
+    "completions/mean_length": 84.20625305175781,
+    "completions/clipped_ratio": 0.16250000894069672
+   },
+   {
+    "step": 2,
+    "loss": 0.07304348051548004,
+    "grad_norm": 3.3599159717559814,
+    "learning_rate": 1.6666666666666665e-07,
+    "completions/mean_length": 83.2562484741211,
+    "completions/clipped_ratio": 0.13125000894069672
+   },
+   {
+    "step": 3,
+    "loss": 0.07442186027765274,
+    "grad_norm": 3.540891408920288,
+    "learning_rate": 3.333333333333333e-07,
+    "completions/mean_length": 79.65625,
+    "completions/clipped_ratio": 0.06875000149011612
+   },
+   {
+    "step": 4,
+    "loss": 0.075267493724823,
+    "grad_norm": 3.6974823474884033,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 81.26875305175781,
+    "completions/clipped_ratio": 0.08749999850988388
+   },
+   {
+    "step": 5,
+    "loss": 0.07287036627531052,
+    "grad_norm": 3.602086305618286,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 77.8499984741211,
+    "completions/clipped_ratio": 0.07500000298023224
+   },
+   {
+    "step": 6,
+    "loss": 0.07251273840665817,
+    "grad_norm": 3.7042548656463623,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 75.4124984741211,
+    "completions/clipped_ratio": 0.06875000149011612
+   },
+   {
+    "step": 7,
+    "loss": 0.07496786117553711,
+    "grad_norm": 4.503321647644043,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 53.625,
+    "completions/clipped_ratio": 0.01875000074505806
+   },
+   {
+    "step": 8,
+    "loss": 0.07418134808540344,
+    "grad_norm": 4.136586666107178,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 54.10625076293945,
+    "completions/clipped_ratio": 0.012500000186264515
+   },
+   {
+    "step": 9,
+    "loss": 0.0756305605173111,
+    "grad_norm": 4.2348432540893555,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 46.65625,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 10,
+    "loss": 0.07362484931945801,
+    "grad_norm": 4.166763782501221,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 45.36249923706055,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 11,
+    "loss": 0.08550887554883957,
+    "grad_norm": 1.8890668153762817,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 22.78125,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 12,
+    "loss": 0.08357060700654984,
+    "grad_norm": 2.0796778202056885,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 21.606250762939453,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 13,
+    "loss": 0.08917539566755295,
+    "grad_norm": 1.9945651292800903,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 19.681249618530273,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 14,
+    "loss": 0.09043969213962555,
+    "grad_norm": 1.8521519899368286,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 21.037500381469727,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 15,
+    "loss": 0.08964773267507553,
+    "grad_norm": 1.9725356101989746,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 22.274999618530273,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 16,
+    "loss": 0.08879707008600235,
+    "grad_norm": 1.8333088159561157,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 22.64375114440918,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 17,
+    "loss": 0.08227948844432831,
+    "grad_norm": 1.5223013162612915,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 23.556249618530273,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 18,
+    "loss": 0.08233422040939331,
+    "grad_norm": 1.4928836822509766,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 24.181249618530273,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 19,
+    "loss": 0.0773339718580246,
+    "grad_norm": 1.5224876403808594,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 27.524999618530273,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 20,
+    "loss": 0.07988623529672623,
+    "grad_norm": 1.548046350479126,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 26.212499618530273,
+    "completions/clipped_ratio": 0.0062500000931322575
+   },
+   {
+    "step": 21,
+    "loss": 0.07658860087394714,
+    "grad_norm": 1.2876744270324707,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 27.506250381469727,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 22,
+    "loss": 0.07234279811382294,
+    "grad_norm": 1.3463646173477173,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 29.587499618530273,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 23,
+    "loss": 0.07335307449102402,
+    "grad_norm": 1.1608505249023438,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 28.256250381469727,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 24,
+    "loss": 0.07452651858329773,
+    "grad_norm": 1.0853642225265503,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 28.84375,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 25,
+    "loss": 0.07304894924163818,
+    "grad_norm": 1.134952187538147,
+    "learning_rate": 5e-07,
+    "completions/mean_length": 27.4375,
+    "completions/clipped_ratio": 0.0
+   }
+  ]
+ },
+ "teacher_usage": {
+  "requests": 250,
+  "tokens_sent": 3272925
+ },
+ "dev_generation": {
+  "run_id": "gen_opd_lr_sweep_dev_beta0p5_lr5em07",
+  "file": "../../generations/beta0.5_lr5e-07.jsonl",
+  "sha256": "da3bbafa6065c325e830cce35aba067034697b13769c2d82dc2079ae1aaa590c",
+  "records": 200,
+  "status_counts": {
+   "success": 198,
+   "truncated": 2,
+   "failed": 0
+  },
+  "source_sha256": "2c788259ea7e733beab65854a71e76cfc0183d4a0fecd56a8dda37a94a458d27",
+  "guardrails": {
+   "mean_words": 18.0,
+   "over_35_words": 4,
+   "truncated": 2,
+   "empty": 0
+  }
+ },
+ "hardware": "NVIDIA A100-SXM4-40GB, 40960 MiB, 580.82.07",
+ "packages": {
+  "torch": "2.13.0",
+  "vllm": "0.30.0",
+  "trl": "1.18.0",
+  "transformers": "5.23.0",
+  "accelerate": "1.15.0",
+  "datasets": "4.8.5",
+  "tinker": "0.40.0",
+  "flash-linear-attention": "0.6.0"
+ },
+ "code_sha256_at_report_time": {
+  "opd_train.py": "0415c8f9e57cd048dd1f9a4f2b559920f7d34d736c78ebe9d4ffdd9866e398b9",
+  "completion_logits_trainer.py": "2c89a8633a838b8b8c0ad5c8263eb46e5a225a85858c331322027efc70a5bf52",
+  "teacher_proxy.py": "6e1c0b1bacdcb0ca65ac38625063435a74cbca4dff989715a57f1ce429c16e74",
+  "prompts_train_v1.jsonl": "13144069d641ded0c61ce17ff0ef6f118db7336a7509eb22c89626407f2a899f"
+ },
+ "code_note": "run_report hashes were taken when the report was written, after training; teacher.proxy_version records the proxy that actually served this run.",
+ "checkpoint": {
+  "retained": false,
+  "reason": "VM disk is ephemeral; the formal run retrains with the selected setting"
+ },
+ "local_logs": "artifacts/train/opd_lr_sweep_v1/runs/beta0.5_lr5e-07/"
+}

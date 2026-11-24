@@ -1,0 +1,361 @@
+{
+ "run": "beta1_lr1e-06",
+ "experiment": "opd_lr_sweep_v1",
+ "status": "completed",
+ "method": "on-policy distillation: TRL 1.18 ServerDistillationTrainer with completion-only student logits",
+ "student": {
+  "model": "Qwen/Qwen3.5-0.8B",
+  "loaded_as": "text-only Qwen3_5ForCausalLM export of the hub model",
+  "master_weights": "fp32",
+  "mixed_precision": "bf16"
+ },
+ "teacher": {
+  "model": "Qwen/Qwen3.5-397B-A17B",
+  "provider": "Tinker",
+  "signal": "actual-token logprobs",
+  "proxy_mode": "actual",
+  "proxy_version": "fixed",
+  "proxy_sha256": "6e1c0b1bacdcb0ca65ac38625063435a74cbca4dff989715a57f1ce429c16e74",
+  "full_rescore_fallbacks": 0
+ },
+ "hyperparameters": {
+  "beta": 1.0,
+  "learning_rate": 1e-06,
+  "seed": 20261123,
+  "prompts": 1000,
+  "prompts_per_step": 40,
+  "samples_per_prompt": 4,
+  "sequences_per_step": 160,
+  "micro_batch": 16,
+  "gradient_accumulation": 10,
+  "max_steps": 25,
+  "warmup_steps": 3,
+  "lr_scheduler": "constant_with_warmup",
+  "optimizer": "adamw_torch_fused",
+  "loss_top_k": 1,
+  "sampling_temperature": 1.0,
+  "max_completion_length": 128,
+  "gradient_checkpointing": true,
+  "rollouts": "vLLM colocate, gpu_memory_utilization 0.15, max_model_len 2048",
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  }
+ },
+ "data": {
+  "train_products": "data/train/v1/train_products.jsonl",
+  "frozen_prompts_sha256": "13144069d641ded0c61ce17ff0ef6f118db7336a7509eb22c89626407f2a899f",
+  "order": "rank order; shuffled only within blocks [0,1k),[1k,2k),[2k,4k),[4k,8k) with the seed; first 1k used",
+  "first_product_ids": [
+   "train_product_138699",
+   "train_product_182938",
+   "train_product_448201",
+   "train_product_135287",
+   "train_product_442819"
+  ]
+ },
+ "timeline_utc": {
+  "train_start": "2026-11-24T06:19:32Z",
+  "train_done": "2026-11-24T06:40:21Z",
+  "dev_done": "2026-11-24T06:43:41Z"
+ },
+ "training": {
+  "train_seconds": 1193.9,
+  "mean_step_seconds": 46.7,
+  "step_seconds": [
+   53.06,
+   50.44,
+   49.07,
+   49.51,
+   49.25,
+   47.92,
+   43.21,
+   42.31,
+   41.01,
+   41.08,
+   43.91,
+   47.49,
+   47.11,
+   46.37,
+   48.8,
+   47.6,
+   50.03,
+   48.75,
+   47.85,
+   48.99,
+   45.19,
+   42.85,
+   41.94,
+   47.36,
+   46.03
+  ],
+  "peak_gpu_allocated_gb": 27.45,
+  "log": [
+   {
+    "step": 1,
+    "loss": 0.1843593418598175,
+    "grad_norm": 8.481062889099121,
+    "learning_rate": 0.0,
+    "completions/mean_length": 84.20625305175781,
+    "completions/clipped_ratio": 0.16250000894069672
+   },
+   {
+    "step": 2,
+    "loss": 0.18319711089134216,
+    "grad_norm": 9.042194366455078,
+    "learning_rate": 3.333333333333333e-07,
+    "completions/mean_length": 83.2562484741211,
+    "completions/clipped_ratio": 0.13125000894069672
+   },
+   {
+    "step": 3,
+    "loss": 0.19331678748130798,
+    "grad_norm": 10.049389839172363,
+    "learning_rate": 6.666666666666666e-07,
+    "completions/mean_length": 77.2437515258789,
+    "completions/clipped_ratio": 0.06875000149011612
+   },
+   {
+    "step": 4,
+    "loss": 0.17871993780136108,
+    "grad_norm": 9.463260650634766,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 77.48750305175781,
+    "completions/clipped_ratio": 0.08749999850988388
+   },
+   {
+    "step": 5,
+    "loss": 0.17915987968444824,
+    "grad_norm": 9.549731254577637,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 70.92500305175781,
+    "completions/clipped_ratio": 0.04374999925494194
+   },
+   {
+    "step": 6,
+    "loss": 0.1755337417125702,
+    "grad_norm": 10.479795455932617,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 60.95000076293945,
+    "completions/clipped_ratio": 0.02500000037252903
+   },
+   {
+    "step": 7,
+    "loss": 0.17651568353176117,
+    "grad_norm": 7.666234016418457,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 30.625,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 8,
+    "loss": 0.1901158094406128,
+    "grad_norm": 6.528425216674805,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 23.993749618530273,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 9,
+    "loss": 0.20600761473178864,
+    "grad_norm": 8.001782417297363,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 25.01875114440918,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 10,
+    "loss": 0.18926039338111877,
+    "grad_norm": 8.751150131225586,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 23.09375,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 11,
+    "loss": 0.1600792557001114,
+    "grad_norm": 5.582168102264404,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 24.46875,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 12,
+    "loss": 0.13141129910945892,
+    "grad_norm": 5.153130531311035,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 25.4375,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 13,
+    "loss": 0.1311877965927124,
+    "grad_norm": 4.891517639160156,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 25.043750762939453,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 14,
+    "loss": 0.12366048991680145,
+    "grad_norm": 3.6729044914245605,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 28.756250381469727,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 15,
+    "loss": 0.11392079293727875,
+    "grad_norm": 4.024757385253906,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 25.981250762939453,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 16,
+    "loss": 0.10247306525707245,
+    "grad_norm": 3.154639959335327,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 29.918750762939453,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 17,
+    "loss": 0.09342896938323975,
+    "grad_norm": 2.884622812271118,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 30.043750762939453,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 18,
+    "loss": 0.09308820217847824,
+    "grad_norm": 2.701963424682617,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 30.256250381469727,
+    "completions/clipped_ratio": 0.0062500000931322575
+   },
+   {
+    "step": 19,
+    "loss": 0.0969204232096672,
+    "grad_norm": 3.558751106262207,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 28.475000381469727,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 20,
+    "loss": 0.09205102920532227,
+    "grad_norm": 3.4222280979156494,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 27.181249618530273,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 21,
+    "loss": 0.08756265044212341,
+    "grad_norm": 3.3855130672454834,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 27.412500381469727,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 22,
+    "loss": 0.09042486548423767,
+    "grad_norm": 3.0937743186950684,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 27.575000762939453,
+    "completions/clipped_ratio": 0.0062500000931322575
+   },
+   {
+    "step": 23,
+    "loss": 0.08327200263738632,
+    "grad_norm": 2.5836172103881836,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 23.9375,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 24,
+    "loss": 0.08899220824241638,
+    "grad_norm": 3.687070846557617,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 22.40625,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 25,
+    "loss": 0.08537493646144867,
+    "grad_norm": 3.471484422683716,
+    "learning_rate": 1e-06,
+    "completions/mean_length": 23.543750762939453,
+    "completions/clipped_ratio": 0.0
+   }
+  ]
+ },
+ "teacher_usage": {
+  "requests": 250,
+  "tokens_sent": 3257358
+ },
+ "dev_generation": {
+  "run_id": "gen_opd_lr_sweep_dev_beta1_lr1em06",
+  "file": "../../generations/beta1_lr1e-06.jsonl",
+  "sha256": "f37152b722adeb71213d16b7b69b39c0ddd5f6c27cee5f3e0304318596483437",
+  "records": 200,
+  "status_counts": {
+   "success": 195,
+   "truncated": 5,
+   "failed": 0
+  },
+  "source_sha256": "9f3fcfed142cf28568fb7371e721c382824a7944400e9a9aeaeff0d6fba82d88",
+  "guardrails": {
+   "mean_words": 16.7,
+   "over_35_words": 4,
+   "truncated": 5,
+   "empty": 0
+  }
+ },
+ "hardware": "NVIDIA A100-SXM4-40GB, 40960 MiB, 580.82.07",
+ "packages": {
+  "torch": "2.13.0",
+  "vllm": "0.30.0",
+  "trl": "1.18.0",
+  "transformers": "5.23.0",
+  "accelerate": "1.15.0",
+  "datasets": "4.8.5",
+  "tinker": "0.40.0",
+  "flash-linear-attention": "0.6.0"
+ },
+ "code_sha256_at_report_time": {
+  "opd_train.py": "0415c8f9e57cd048dd1f9a4f2b559920f7d34d736c78ebe9d4ffdd9866e398b9",
+  "completion_logits_trainer.py": "2c89a8633a838b8b8c0ad5c8263eb46e5a225a85858c331322027efc70a5bf52",
+  "teacher_proxy.py": "6e1c0b1bacdcb0ca65ac38625063435a74cbca4dff989715a57f1ce429c16e74",
+  "prompts_train_v1.jsonl": "13144069d641ded0c61ce17ff0ef6f118db7336a7509eb22c89626407f2a899f"
+ },
+ "code_note": "run_report hashes were taken when the report was written, after training; teacher.proxy_version records the proxy that actually served this run.",
+ "checkpoint": {
+  "retained": false,
+  "reason": "VM disk is ephemeral; the formal run retrains with the selected setting"
+ },
+ "local_logs": "artifacts/train/opd_lr_sweep_v1/runs/beta1_lr1e-06/",
+ "attempts": [
+  {
+   "attempt": 1,
+   "status": "failed",
+   "failed_at_step": 14,
+   "proxy_version": "before_fix",
+   "error": "Teacher server is missing actual-token logprobs for required reverse-KL positions: 44/462",
+   "cause": "proxy located the completion at the LAST assistant header; a header inside a sampled completion left earlier completion positions unscored",
+   "teacher_usage": {
+    "requests": 147,
+    "tokens_sent": 1917826
+   },
+   "log": "artifacts/train/opd_lr_sweep_v1/runs/beta1_lr1e-06/train_failed_attempt.log"
+  },
+  {
+   "attempt": 2,
+   "status": "completed",
+   "proxy_version": "fixed",
+   "note": "rerun from scratch; reported above"
+  }
+ ]
+}

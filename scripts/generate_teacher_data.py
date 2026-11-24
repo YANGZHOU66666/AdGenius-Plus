@@ -8,7 +8,7 @@ artifacts/generation/train_v1/<split>/, and products that already have a
 successful result are skipped on the next run.
 
 Once every product of a split has a successful result, the split is frozen
-into data/train/v1/teacher_<alias>_<split>.jsonl (GenerationResult v1, in the
+into data/train/v1/teacher_<alias>_<split>.jsonl (GenerationResult, in the
 split's line order) and teacher_<alias>.manifest.json records the model,
 prompt hash, sampling settings, counts, token usage and output hashes.
 """
@@ -241,7 +241,8 @@ def main(argv: list[str] | None = None) -> int:
             "frozen_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
         schema_path = REPO_ROOT / "metadata" / "schemas" / "generation_result.schema.json"
-        manifest["schemas"] = {"generations": {"path": rel(schema_path), "version": "GenerationResult v1",
+        schema_title = json.loads(schema_path.read_text(encoding="utf-8"))["title"]
+        manifest["schemas"] = {"generations": {"path": rel(schema_path), "version": schema_title,
                                                "sha256": sha256_file(schema_path)}}
         manifest["code"] = {"script": "scripts/generate_teacher_data.py", **code_version()}
         manifest["generation"] = {

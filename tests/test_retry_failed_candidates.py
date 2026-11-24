@@ -147,6 +147,27 @@ class RetryFailedCandidateTests(unittest.TestCase):
         helper.assert_not_called()
         self.assert_originals_untouched()
 
+    def test_truncated_results_are_kept_and_never_retried(self):
+        path = self.source / "results_longcat.jsonl"
+        rows = read_rows(path)
+        rows[0]["generation_result"] = {"status": "truncated", "text": "Original ad longcat 0, cut",
+                                        "error": "output_too_long"}
+        path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+        self.original_bytes = {item.name: item.read_bytes() for item in self.source.iterdir()}
+        status, _, _, helper = self.repair()
+        self.assertEqual(status, 0)
+        helper.assert_called_once()
+        self.assertEqual(helper.call_args.kwargs["candidate_id"], "cand_gemma_31b_1")
+        self.assertEqual(read_rows(self.output / "results_longcat.jsonl")[0], rows[0])
+
+    def test_invalid_truncated_result_is_rejected(self):
+        for result in ({"status": "truncated", "text": None, "error": "output_too_long"},
+                       {"status": "truncated", "text": "  ", "error": "output_too_long"},
+                       {"status": "truncated", "text": "Cut copy", "error": "timeout"}):
+            with self.subTest(result=result), self.assertRaises(ValueError):
+                retry._validate_results([{"candidate_id": "cand_x", "generation_result": result}],
+                                        Path("results_x.jsonl"))
+
     def test_repairs_only_failures_preserves_ids_and_replays_logged_settings(self):
         status, _, clients, helper = self.repair()
         self.assertEqual(status, 0)

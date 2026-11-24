@@ -138,8 +138,34 @@ class GenerateCandidateTests(unittest.TestCase):
                         log_call=records.append,
                     )
                 self.assertEqual(outcome["error"], expected)
+                self.assertEqual(outcome["status"],
+                                 "truncated" if expected == "output_too_long" else "failed")
                 self.assertEqual(records[0]["generation_result"], outcome)
                 client.generate.assert_called_once()
+                sleep.assert_not_called()
+
+    def test_length_stop_keeps_written_text_as_truncated_but_empty_text_fails(self):
+        for text, expected in [("Partial copy that ran", {"status": "truncated", "text": "Partial copy that ran",
+                                                          "error": "output_too_long"}),
+                               ("   ", {"status": "failed", "text": None, "error": "output_too_long"})]:
+            with self.subTest(text=text):
+                client = self._client()
+                client.generate = Mock(return_value=SimpleNamespace(
+                    text=text, provider="openai_compatible", finish_reason="length",
+                    to_dict=lambda: {"text": text},
+                ))
+                records = []
+                with patch.object(generator.time, "sleep") as sleep:
+                    outcome, _ = generator.generate_with_retries(
+                        client, model_alias="test", candidate_id="cand_5",
+                        messages=[{"role": "user", "content": "Write copy."}],
+                        max_output_tokens=32, temperature=0, max_retries=3,
+                        log_call=records.append,
+                    )
+                self.assertEqual(outcome, expected)
+                self.assertEqual(records[0]["status"], expected["status"])
+                self.assertEqual(records[0]["error_code"], "output_too_long")
+                client.generate.assert_called_once()  # neither case is retried
                 sleep.assert_not_called()
 
     def test_generation_main_keeps_one_result_and_all_retry_call_records(self):

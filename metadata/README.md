@@ -88,7 +88,7 @@ JSON Schema：[schemas/product_item.schema.json](schemas/product_item.schema.jso
 
 本次仅定义数据格式，不转换或覆盖现有 `data/processed/v1/`、`data/splits/v1/` 或原始数据文件。
 
-## GenerationResult v1
+## GenerationResult v1.1
 
 JSON Schema：[schemas/generation_result.schema.json](schemas/generation_result.schema.json)。数据采用 JSONL 格式，一行代表一个商品候选文案的一次标准化生成结果。
 
@@ -115,9 +115,9 @@ JSON Schema：[schemas/generation_result.schema.json](schemas/generation_result.
 | `product_id` | 关联 `ProductItem` 的项目内商品 ID。 |
 | `run_id` | 本次生成运行的 ID；模型、prompt、参数、数据版本和代码版本等放在对应运行 manifest 中。 |
 | `sample_index` | 同一商品、同一运行中的采样序号，从 `0` 开始。 |
-| `generation_result.status` | `success` 或 `failed`。 |
-| `generation_result.text` | 成功时为非空广告文案；失败时为 `null`。 |
-| `generation_result.error` | 成功时为 `null`；失败时为固定错误代码字符串。 |
+| `generation_result.status` | `success`、`truncated` 或 `failed`，含义见下方状态表。 |
+| `generation_result.text` | `success` 时为完整文案；`truncated` 时为截断后的原文；`failed` 时为 `null`。 |
+| `generation_result.error` | `success` 时为 `null`；`truncated` 时固定为 `output_too_long`；`failed` 时为固定错误代码字符串。 |
 | `trace_id` | 关联调用日志中一次具体 API 调用的 ID；没有调用日志时为 `null`。 |
 
 失败示例：
@@ -138,6 +138,37 @@ JSON Schema：[schemas/generation_result.schema.json](schemas/generation_result.
 ```
 
 允许的错误代码为：`timeout`、`network_error`、`rate_limit`、`auth_error`、`provider_error`、`empty_output`、`invalid_output` 和 `output_too_long`。所有 API 重试和原始响应记录在运行产物的调用日志中；`GenerationResult` 只保留最终标准化结果。
+
+### 生成状态
+
+| `status` | `text` | `error` | 何时使用 |
+| --- | --- | --- | --- |
+| `success` | 非空完整文案 | `null` | 模型正常结束。 |
+| `truncated` | 非空的截断原文 | `output_too_long` | 模型因输出长度上限停止，但已写出文案。 |
+| `failed` | `null` | 错误代码 | 没有得到可用文案：请求失败、内容被拒、空输出，或长度上限耗尽时正文为空（例如思考用完了预算）。 |
+
+截断示例：
+
+```json
+{
+  "candidate_id": "cand_000003",
+  "product_id": "B000123",
+  "run_id": "gen_student_v1_20261123",
+  "sample_index": 0,
+  "generation_result": {
+    "status": "truncated",
+    "text": "A reliable metal stapler for everyday office work, with a sturdy base, a smooth",
+    "error": "output_too_long"
+  },
+  "trace_id": null
+}
+```
+
+`truncated` 只是如实记录模型在既定长度上限下的输出，不代表文案可用或不可用。各用途按自己的规则处理：
+
+- **给模型排名的评测**（如 test 集上比较 base、SFT、OPD）：分母固定为全部商品，`success` 和 `truncated` 都照常评审，截断率单独报告；`failed` 也不剔除，按事先写定的评测规则计分（例如判负）。每个系统对每个商品只生成一次，不按输出内容重新生成；只有基础设施故障导致整批输出缺失时才整批重跑。评委调用的失败可以重试。
+- **评委校准用的 gold 比较对**和**用作训练目标的老师数据**：只使用 `success`。`truncated` 不进入这些数据集。
+- `scripts/retry_failed_candidates.py` 只修复 `failed`，不重试 `truncated`。
 
 ## CandidatePair v1
 

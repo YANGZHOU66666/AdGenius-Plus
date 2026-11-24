@@ -162,9 +162,9 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 
 生成 system prompt 位于脚本的 `SYSTEM_PROMPT`，本批次全文及哈希也冻结在 gold manifest。要求英文短广告、选择重要且适合短广告的信息，无需覆盖全部属性；一至两句，prefer <25 words、最多 35 words，并保持事实有依据。该长度是 prompt 约束，脚本没有按词数截断或进行广告质量筛选。
 
-本批次 temperature=0.2、max_output_tokens=2048；各模型 thinking 等差异见 gold manifest。一个候选使用 `run_id + product_id + sample_index` 派生稳定 `candidate_id`。每次 API 尝试单独记录 `trace_id`，标准 [GenerationResult](../metadata/schemas/generation_result.schema.json) 只保存最终 `success/failed`、文本和字符串错误码。
+本批次 temperature=0.2、max_output_tokens=2048；各模型 thinking 等差异见 gold manifest。一个候选使用 `run_id + product_id + sample_index` 派生稳定 `candidate_id`。每次 API 尝试单独记录 `trace_id`，标准 [GenerationResult](../metadata/schemas/generation_result.schema.json) 只保存最终状态（`success`、`truncated` 或 `failed`，定义见 [metadata/README.md](../metadata/README.md)）、文本和字符串错误码。
 
-失败修复入口是 [scripts/retry_failed_candidates.py](../scripts/retry_failed_candidates.py)：从调用日志恢复实际请求设置，只补失败候选，保持候选 ID 及成功样本不变。有限自动重试不保证每次都尝试四次；例如截断或无效返回可以直接记为失败，后续再显式补跑。**日志里存在 failed 不代表当前最终结果仍失败**；当前正式四份结果均为 100 条 success，success 仅表示生成过程成功，不表示广告通过质量评审。
+失败修复入口是 [scripts/retry_failed_candidates.py](../scripts/retry_failed_candidates.py)：从调用日志恢复实际请求设置，只补失败候选，保持候选 ID 及成功样本不变。有限自动重试不保证每次都尝试四次；例如无效返回或正文为空的截断可以直接记为失败，后续再显式补跑。本批次的截断都发生在思考用完输出预算、正文为空的情况，因此记为 `failed` 并已补跑；按现行定义，写出了正文的截断记为 `truncated`，此脚本不会重试。**日志里存在 failed 不代表当前最终结果仍失败**；当前正式四份结果均为 100 条 success，success 仅表示生成过程成功，不表示广告通过质量评审。
 
 新实验示例见[生成与补跑指南](gold_candidate_generation.md)。生成默认写入 `artifacts/generation/gold/`，并拒绝已有结果/日志文件；新批次指定新的输出目录。成功运行、补跑与将结果发布到 `data/` 是分开的步骤。
 

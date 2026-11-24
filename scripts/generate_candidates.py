@@ -136,21 +136,27 @@ def generate_with_retries(
                 temperature=temperature,
             )
             text = response.text.strip()
-            if response.finish_reason in {"length", "max_tokens", "model_length", "MAX_TOKENS"}:
-                error_code = "output_too_long"
-            elif (response.provider == "google_generative"
-                  and response.finish_reason != "STOP"):
-                error_code = "invalid_output"
-            elif not text:
-                error_code = "empty_output"
-                retryable = True
+            truncated = response.finish_reason in {"length", "max_tokens", "model_length", "MAX_TOKENS"}
+            if truncated and text:
+                # Stopped by the length cap after writing copy: keep the text as the model wrote it.
+                outcome = {"status": "truncated", "text": text, "error": "output_too_long"}
             else:
-                error_code = None
-            outcome = {
-                "status": "failed" if error_code else "success",
-                "text": None if error_code else text,
-                "error": error_code,
-            }
+                if truncated:  # e.g. reasoning used the whole budget and no copy was written
+                    error_code = "output_too_long"
+                elif (response.provider == "google_generative"
+                      and response.finish_reason != "STOP"):
+                    error_code = "invalid_output"
+                elif not text:
+                    error_code = "empty_output"
+                    retryable = True
+                else:
+                    error_code = None
+                outcome = {
+                    "status": "failed" if error_code else "success",
+                    "text": None if error_code else text,
+                    "error": error_code,
+                }
+            error_code = outcome["error"]
             call_record.update(status=outcome["status"], error_code=error_code,
                                response=response.to_dict())
         except (LLMError, ValueError, TimeoutError) as error:

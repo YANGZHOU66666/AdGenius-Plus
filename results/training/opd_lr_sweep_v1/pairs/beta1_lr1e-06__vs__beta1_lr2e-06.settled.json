@@ -1,0 +1,11 @@
+{
+ "a": "beta1_lr1e-06",
+ "b": "beta1_lr2e-06",
+ "a_run_id": "gen_opd_lr_sweep_dev_beta1_lr1em06",
+ "b_run_id": "gen_opd_lr_sweep_dev_beta1_lr2em06",
+ "rules": {
+  "identical_text": "score_a = 0.5, no judge call",
+  "empty_output": "non-empty side wins; both empty = 0.5"
+ },
+ "settled": []
+}
