@@ -37,7 +37,7 @@ From the repository root, after installing dependencies:
 PYTHONPATH=src .venv/bin/python scripts/validate_gold_data.py
 ```
 
-This validates schemas, hashes, all 400 candidate identities, product coverage, pair sampling and human winner mapping. It also recomputes the four published judges' agreement against the current labels. It requires no API key, HTTP call log or original large raw download.
+This validates schemas, hashes, all 400 candidate identities, product coverage, pair sampling and human winner mapping. It also recomputes the four published judges' agreement against the current labels. For rubric it re-draws the 130-item sample from its seed, checks the human factual_support labels against the sample, and checks that results/rubric/comparison/ matches the current labels and the four judge runs. It requires no API key, HTTP call log or original large raw download.
 
 ## Formal results, local runtime and archive
 

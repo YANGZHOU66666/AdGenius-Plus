@@ -35,7 +35,7 @@ flowchart TD
     T -.-> W[后续最终测试]
 ```
 
-虚线部分尚未落地。**gold 与 test 是两个互不重叠的商品集合；两者都排除在训练池之外。** gold 用于评委校准，最终 test 不参与 prompt 调整或评委选择。当前没有标准化 test ProductItem、测试广告或 SFT 数据；rubric 目前只有 `factual_support` 的人工标签和评委结果（见第 9 节）。
+虚线部分尚未落地。**gold 与 test 是两个互不重叠的商品集合；两者都排除在训练池之外。** gold 用于评委校准，最终 test 不参与 prompt 调整或评委选择。当前没有标准化 test ProductItem、测试广告或 SFT 数据；rubric 只评 `factual_support` 一项，v0.1 的 `concrete_product_info` 已决定不做（见 [rubric v0.2](individual_rubric_v0.2.md)）。
 
 ## 2. 当前文件清单
 
@@ -253,7 +253,7 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 
 **评测生成模型。** 同一脚本加 `--candidates <results_*.jsonl …>` 时，不再读 rubric 样本，而是判给定生成结果中每条成功的广告（商品资料来自 `--products`，默认 gold ProductItem），并在运行目录写出按生成模型的冲突率 `metrics.json`。用法和解读限制见 [rubric 评委使用说明](rubric_llm_judge.md)。目前还没有用它跑过正式运行。
 
-跨文件比较 rubric 结果时使用 `candidate_id`；`item_id` 只是样本内的展示编号。`scripts/validate_gold_data.py` 和 gold `manifest.json` 目前还不覆盖 rubric 样本与标签。
+跨文件比较 rubric 结果时使用 `candidate_id`；`item_id` 只是样本内的展示编号。`scripts/validate_gold_data.py` 会校验 rubric 样本、人工标签和四个评委运行（见第 11 节）；它们的哈希记在 `rubric_sample.manifest.json` 和 `results/rubric/comparison/manifest.json` 中，不在 gold `manifest.json` 里。
 
 ## 10. 字段与关联规则
 
@@ -288,7 +288,7 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 | 结果 → decisions / 常规一致率 | 有派生函数及离线校验 | 需要同一 pair 集与指定标签快照；完整资源统计另需日志 |
 | 四模型 comparison / bootstrap / report | 有冻结结果和计算口径 | 尚无专门批量重建 CLI，不能声称已一键复现 |
 | 候选 → rubric 样本 | 有确定性脚本 | 四份冻结候选、商品全集、seed 20261123；脚本默认覆盖冻结文件，重建时指定新 `--output` |
-| rubric 样本 → 人工标签 | 有标注台及当前标签 | 人工决定无法由脚本重建；`validate_gold_data.py` 尚不校验 |
+| rubric 样本 → 人工标签 | 有标注台、当前标签及离线校验 | 人工决定无法由脚本重建 |
 | rubric 样本 → 评委判断 / 一致率 | 有评委脚本、冻结结果和统计脚本 | 重调用不保证同一判断；四次运行由探索脚本跑出后导入，见各 manifest 的 `provenance` |
 | 训练集、训练、最终 test 生成 | 尚未完成 | 需要后续实现与实验记录 |
 
@@ -298,7 +298,7 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 PYTHONPATH=src .venv/bin/python scripts/validate_gold_data.py
 ```
 
-它只读取共享数据：校验 gold 文件哈希与 JSON Schema、400 条候选的身份与覆盖、pair 抽样及来源文本、人工映射、四份 judge 结果与当前一致率。它不调用 API，不写入新实验结果，也不替代全量原始资料/训练池审计、日志资源统计或 bootstrap 重建。
+它只读取共享数据：校验 gold 文件哈希与 JSON Schema、400 条候选的身份与覆盖、pair 抽样及来源文本、人工映射、四份 judge 结果与当前一致率。rubric 部分校验：样本按 seed 重抽后与冻结文件一致；130 条人工标签格式正确、与样本一一对应、每条 False 都有理由；比较 manifest 记录的标签、样本和结果哈希与当前文件一致；四个评委的结果覆盖完整，一致率等点统计可由结果重算。标签改动后若没有重跑 `compare_rubric.py`，校验会失败。它不调用 API，不写入新实验结果，也不替代全量原始资料/训练池审计、日志资源统计或 bootstrap 重建。
 
 维护新实验或数据快照时：
 
