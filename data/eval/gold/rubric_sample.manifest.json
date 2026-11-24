@@ -1,0 +1,38 @@
+{
+  "purpose": "human factual_support labels for rubric judge agreement",
+  "inputs": [
+    {
+      "path": "data/eval/gold/results_qwen_local.jsonl",
+      "sha256": "01597691ca634e65d95b2cf7043892e57f890a1234d950053cf9d1a86f675d89",
+      "record_count": 100
+    },
+    {
+      "path": "data/eval/gold/results_gemma_31b.jsonl",
+      "sha256": "ad2903b996f48367198b97849435d8544aeddab9793230e215efbedaeebe9ef0",
+      "record_count": 100
+    },
+    {
+      "path": "data/eval/gold/results_glm53_flash.jsonl",
+      "sha256": "d45f76793e30eb94a6cdef05e707ded1316a4e42d0cd0b9d1a56008461890b6a",
+      "record_count": 100
+    },
+    {
+      "path": "data/eval/gold/results_longcat.jsonl",
+      "sha256": "723dea261d1ee17069a5b8592191ce2f811e35cdb18b42e16142449dd6b593ab",
+      "record_count": 100
+    }
+  ],
+  "products": "data/eval/gold/product_items.jsonl",
+  "products_sha256": "7e3a623e12bb6c8a9499e7d467ebc17662225ad52258095c3fe76dad3e429567",
+  "seed": 20261123,
+  "item_count": 130,
+  "generator_counts": {
+    "qwen_local": 100,
+    "gemma_31b": 10,
+    "glm53_flash": 10,
+    "longcat": 10
+  },
+  "sampling": "all qwen_local candidates; 10 per other model from 30 distinct products; items shuffled",
+  "rng": "random.Random(seed): sample non-census products, then shuffle all items",
+  "output_sha256": "9d99f20204f4d332417fdb55f917599b5e14c68b52265eef33aef33ac2dd3ac8"
+}

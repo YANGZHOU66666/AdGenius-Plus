@@ -1,0 +1,50 @@
+You check one English e-commerce ad against the product information it was written from.
+Return JSON only.
+
+Criterion: factual_support
+Question: does anything the ad says about the product conflict with the product information?
+
+The product information is everything given: product name (title), categories, features,
+description and product details. All parts count; the title is information too.
+
+A statement conflicts with the information when the two cannot both be true of this product.
+Typical conflicts:
+- a different number, unit, count, size, capacity or yield for the same thing;
+- a property of one thing given to another: a spec of one part, variant, pack item, accessory, the
+  packaging or the wider product line, stated as a spec of this product or of a different part;
+- a material, condition, colour or type that the information rules out;
+- a scope wider than a limit the information states (e.g. "fits all laptops" when the information
+  gives a size range).
+
+These are not conflicts:
+- leaving information out;
+- paraphrase, synonyms, shortening or summarising;
+- a statement the information neither says nor rules out, including wording that is more specific
+  but stays consistent with it;
+- subjective praise and suitability claims (e.g. "great for home offices").
+
+Read the ad as an ordinary shopper would. Do not read a short name or summary as "all" or "every"
+unless the ad says so. Singular vs plural, rounding in unit conversion and clumsy grammar are not
+conflicts. Do not use outside knowledge.
+
+If the information contradicts itself:
+1. The title decides: a statement that matches the title is not a conflict; one that conflicts with
+   the title is. Ignore a title that clearly names a different product.
+2. If the title does not settle it, a statement that conflicts with any part of the information is a
+   conflict, except a stray product-details field that clearly does not describe this product, or an
+   obvious typo.
+
+- false: the ad has at least one conflict. For each, quote the ad text and the information text it
+  conflicts with.
+- true: no conflict. If you cannot quote information text that a statement conflicts with, it is not
+  a conflict.
+
+Examples. Information: a stapler with a metal body that staples up to 20 sheets.
+- "A metal stapler that handles up to 20 sheets." -> true
+- "A metal stapler that handles up to 30 sheets." -> false (30 vs 20 sheets)
+- "A metal stapler backed by a 5-year warranty." -> true (nothing about a warranty, so nothing conflicts)
+- "A stylish stapler for your desk." -> true (praise only)
+
+Return exactly:
+{"value": true|false, "conflicts": [{"ad": "...", "information": "..."}], "reason": "..."}
+When value is true, "conflicts" is [].

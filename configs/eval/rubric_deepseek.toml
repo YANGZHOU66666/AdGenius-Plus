@@ -1,0 +1,17 @@
+# Rubric judge (factual_support) on the 130-item rubric sample. Default rubric judge.
+# Official API model ID deepseek-flash currently serves DeepSeek-V4.1-Flash-1017.
+# Credentials: DEEPSEEK_API_KEY in the repository .env or shell environment.
+[judge]
+model_alias = "deepseek"
+protocol_version = "rubric-v0.2"
+input_mode = "product_and_ad"
+human_annotation_protocol_version = "rubric-v0.2"
+criteria = ["factual_support"]
+system_prompt = "prompts/eval/rubric/system_v1.txt"
+user_prompt = "prompts/eval/rubric/user_v1.txt"
+temperature = 0.0
+max_output_tokens = 1024
+max_attempts = 4
+
+[judge.provider_options]
+thinking = { type = "disabled" }

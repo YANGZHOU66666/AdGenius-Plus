@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rubric Annotation · AdGenius+</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">ADGENIUS+ · HUMAN EVALUATION</div>
+      <h1>Rubric Annotation</h1>
+    </div>
+    <div class="top-right">
+      <div class="progress"><strong id="done-count">0</strong> / <span id="total-count">—</span> labeled
+        <span class="split">· <span id="false-count">0</span> conflict</span>
+        <div class="track"><div id="progress-bar" class="fill"></div></div></div>
+      <span id="sync" class="sync" role="status" aria-live="polite">Connecting…</span>
+    </div>
+  </header>
+
+  <div id="error" class="error" hidden role="alert"><span id="error-text"></span> <button id="reload" class="button" type="button">Reload</button></div>
+  <div id="loading" class="loading">Loading the sample…</div>
+
+  <main id="workspace" class="workspace" hidden>
+    <section class="info-panel" aria-label="Product information">
+      <div class="panel-head"><span class="kicker">PRODUCT INFORMATION</span><span class="hint">Select words in the ad to highlight them here</span></div>
+      <h2 id="product-title" class="product-title"></h2>
+      <pre id="product-information" lang="en"></pre>
+    </section>
+
+    <section class="label-panel">
+      <div class="item-head"><span id="item-number" class="item-number">ITEM 001</span><span id="item-status" class="status">Unlabeled</span></div>
+      <div class="kicker">AD</div>
+      <p id="ad" class="ad" lang="en"></p>
+
+      <div id="criteria"></div>
+
+      <div class="nav">
+        <button id="prev" class="button" type="button">← Prev</button>
+        <span id="page">1 / 130</span>
+        <button id="next-unlabeled" class="button" type="button">Next unlabeled</button>
+        <button id="next" class="button primary" type="button">Next →</button>
+      </div>
+      <div class="row-actions"><button id="clear" class="text-button" type="button" disabled>Clear this label</button><span class="keys">Keys: 1 = no conflict · 2 = conflict · ←/→ · N = next unlabeled</span></div>
+
+      <details class="rule" open>
+        <summary>Rule: factual_support (v0.2)</summary>
+        <ul>
+          <li>Judge only whether the ad <b>conflicts</b> with the product information, including the title. If the two cannot both be true, it is a conflict: False.</li>
+          <li>Typical conflicts: a different number, unit or count; a property of one part, model, package or the wider product line given to this product; a material, condition, colour or type the information rules out; a scope wider than a stated limit.</li>
+          <li>Not conflicts: leaving information out; paraphrase, summary or shorthand; anything the information neither states nor rules out, including more specific but consistent wording; subjective praise and suitable uses.</li>
+          <li>If the information contradicts itself, the title decides: matching the title is not a conflict; conflicting with it is. Ignore a title that clearly names a different product.</li>
+          <li>If the title does not settle it, conflicting with any part counts, except a stray product-details field or an obvious typo.</li>
+          <li>For False, write the ad sentence and the conflicting information text in the reason.</li>
+        </ul>
+      </details>
+
+      <div class="directory">
+        <div class="kicker">DIRECTORY <span class="legend"><i class="dot ok"></i>no conflict <i class="dot bad"></i>conflict <i class="dot"></i>unlabeled</span></div>
+        <div id="grid" class="grid" aria-label="Jump to an item"></div>
+      </div>
+      <p id="file-path" class="file-path"></p>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
