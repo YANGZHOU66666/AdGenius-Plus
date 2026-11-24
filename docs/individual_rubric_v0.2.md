@@ -1,8 +1,8 @@
-# 单条广告文案人工标注 Rubric v0.2（草案）
+# 单条广告文案人工标注 Rubric v0.2
 
 本版只保留 **事实有依据（`factual_support`）** 一项。v0.1 的 **含具体商品信息（`concrete_product_info`）** 不再标注：生成的广告基本都会写到具体商品信息，这一项区分不出好坏。[v0.1](individual_rubric_v0.1.md) 保留原样，作为历史版本。
 
-本版用于 `gold_rubric_v1` 的 130 条单条文案标注，记录中的 `protocol_version` 为 `rubric-v0.2`。状态截至 **2026-11-23**；本版仍是草案，需与 v0.1 作者核对后再定稿。
+本版用于 `gold_rubric_v1` 的 130 条单条文案标注，记录中的 `protocol_version` 为 `rubric-v0.2`。本版于 **2026-11-24** 定稿。
 
 ## 与 v0.1 的区别
 
