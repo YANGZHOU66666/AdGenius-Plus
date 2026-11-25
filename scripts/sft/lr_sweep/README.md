@@ -43,9 +43,12 @@ python3 scripts/sft/lr_sweep/select_sft.py --work-dir artifacts/train/sft_lr_swe
 
 | 脚本 | 改动 |
 |---|---|
-| `sft_train.py`、`vm_runner_sft.py`、`sweep_cell_sft.py`、`prepare_eval_sft.py` | 无改动 |
+| `vm_runner_sft.py`、`sweep_cell_sft.py`、`prepare_eval_sft.py` | 无改动 |
+| `sft_train.py` | 选学习率时与这里无差异；之后已更新，见表下说明 |
 | `build_sft_data.py` | prompt 目录和输出目录改为命令行参数，默认在 `artifacts/train/` 下 |
 | `check_sft_local.py` | 数据路径改为参数；OPD 的前几个商品改从仓库的 OPD run manifest 读取 |
 | `watchdog_sft.py` | 工作目录、数据目录、会话名、GPU 和学习率改为命令行参数；从三个目录收集要上传的文件 |
 | `select_sft.py` | 未训练学生的 dev 输出路径改为参数。用这里的版本重新处理实验数据，得到的比较对和 `selection.json` 与 `results/` 中的完全相同 |
 | `run_judge.sh` | 仓库根目录改为相对本目录定位 |
+
+**正式训练之后的改动**：`sft_train.py` 已更新为正式训练实际运行的版本（见 [../../formal/](../../formal/README.md)）：每 25 步存完整 checkpoint（原来不存）、长度上限 4096（原来 2048）、支持续训（用 `from_pretrained` 加载权重）、通过 `drive_sync.py` 上传到 Drive、检查预处理没有丢样本。`watchdog_sft.py` 因此也会上传 `../../formal/drive_sync.py`。前 1k 个样本都短于 2048 token，这些改动不改变 loss 和输出，但每 25 步会多存一份约 9 GB 的 checkpoint；要逐字节复现选学习率时的代码，用提交 `7b9ccde` 中的版本（与实际运行版本的差异见上表）或 `artifacts/train/sft_lr_sweep_v1/code/`。

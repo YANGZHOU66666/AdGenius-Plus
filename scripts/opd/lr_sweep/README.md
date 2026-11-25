@@ -47,3 +47,5 @@ python3 scripts/opd/lr_sweep/select_from_pairwise.py --work-dir artifacts/train/
 | `build_training_prompts.py` | 新增：实验当时的 prompt 是临时生成的，这个脚本可以按原哈希重建 |
 
 实验期间用过、现已不再需要的启动脚本（逐个会话的启动器、旧监控脚本、旧评审脚本）没有放进来。
+
+**正式训练之后的改动**：`opd_train.py` 已更新为正式训练实际运行的版本（见 [../../formal/](../../formal/README.md)）：每 25 步存完整 checkpoint（原来只在最后一步存）、vLLM 长度上限 4096（原来 2048）、续训时用 `from_pretrained` 加载权重、通过 `drive_sync.py` 上传到 Drive。`watchdog.py` 因此也会上传 `../../formal/drive_sync.py`。在 dev 的 1k 训练里这些改动不改变 loss 和输出（dev prompt 都短于 2048 token），但每 25 步会多存一份约 9 GB 的 checkpoint；要逐字节复现选学习率时的代码，用提交 `7b9ccde` 中的版本（与实际运行版本的差异见上表）或 `artifacts/train/opd_lr_sweep_v1/code/`。

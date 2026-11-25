@@ -25,6 +25,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, TrainerCallback
 from trl.experimental.server_distillation import ServerDistillationConfig
 
 from completion_logits_trainer import CompletionLogitsServerDistillationTrainer
+from drive_sync import DriveSync
 
 HERE = Path(__file__).resolve().parent
 BLOCKS = ((0, 1000), (1000, 2000), (2000, 4000), (4000, 8000))
@@ -70,6 +71,10 @@ def main():
     p.add_argument("--teacher-url", default="http://127.0.0.1:18001")
     p.add_argument("--student", default="/content/qwen35_08b_text")
     p.add_argument("--resume-from", default=None)
+    p.add_argument("--save-steps", type=int, default=25, help="full resumable checkpoint every N steps")
+    p.add_argument("--drive-root", default=None, help="rclone destination for checkpoints, e.g. gdrive:adgenius_checkpoints/x")
+    p.add_argument("--stop-after", type=int, default=None, help="smoke tests only: exit after this step")
+    p.add_argument("--vllm-max-len", type=int, default=4096, help="headroom for the longest prompts (2307 tokens)")
     args = p.parse_args()
 
     prompts_file = HERE / "prompts_train_v1.jsonl"
@@ -83,9 +88,13 @@ def main():
 
     # Hash the code and data before training, so the report names what actually ran.
     hashes = {name: sha256(HERE / name) for name in
-              ("opd_train.py", "completion_logits_trainer.py", "teacher_proxy.py", "prompts_train_v1.jsonl")}
+              ("opd_train.py", "completion_logits_trainer.py", "teacher_proxy.py", "drive_sync.py",
+               "prompts_train_v1.jsonl")}
     tokenizer = AutoTokenizer.from_pretrained(args.student, padding_side="left")
-    model = AutoModelForCausalLM.from_pretrained(args.student, dtype=torch.float32).to("cuda")
+    # On resume, load the weights with from_pretrained: checkpoints store them under the hub names
+    # (model.language_model.*), which Trainer's own resume loading does not map, so it would silently keep
+    # the untrained weights. Trainer still restores optimizer, scheduler, RNG and step from the checkpoint.
+    model = AutoModelForCausalLM.from_pretrained(args.resume_from or args.student, dtype=torch.float32).to("cuda")
     config = ServerDistillationConfig(
         output_dir=str(args.out), teacher_model_server_url=args.teacher_url,
         beta=args.beta, loss_top_k=1, temperature=1.0, max_completion_length=128,
@@ -93,12 +102,13 @@ def main():
         per_device_train_batch_size=args.micro_batch, gradient_accumulation_steps=seqs_per_step // args.micro_batch,
         max_steps=max_steps, learning_rate=args.lr, lr_scheduler_type="constant_with_warmup",
         warmup_steps=args.warmup_steps, optim="adamw_torch_fused", bf16=True, gradient_checkpointing=True,
-        use_vllm=True, vllm_mode="colocate", vllm_gpu_memory_utilization=args.vllm_mem, vllm_max_model_length=2048,
-        shuffle_dataset=False, logging_steps=1, save_strategy="steps", save_steps=max_steps, save_only_model=False,
+        use_vllm=True, vllm_mode="colocate", vllm_gpu_memory_utilization=args.vllm_mem, vllm_max_model_length=args.vllm_max_len,
+        shuffle_dataset=False, logging_steps=1, save_strategy="steps", save_steps=args.save_steps, save_only_model=False,
         report_to="none", seed=args.seed, data_seed=args.seed)
     log = StepLog()
+    sync = DriveSync(args.drive_root, args.out / "progress.json", args.out / "uploads.log", args.stop_after)
     trainer = CompletionLogitsServerDistillationTrainer(model=model, args=config, train_dataset=dataset,
-                                                        processing_class=tokenizer, callbacks=[log])
+                                                        processing_class=tokenizer, callbacks=[log, sync])
     torch.cuda.reset_peak_memory_stats()
     start = time.time()
     trainer.train(resume_from_checkpoint=args.resume_from)
@@ -108,7 +118,8 @@ def main():
         "beta": args.beta, "lr": args.lr, "seed": args.seed, "prompts_end": args.prompts_end,
         "prompts_per_step": args.prompts_per_step, "samples": args.samples, "sequences_per_step": seqs_per_step,
         "micro_batch": args.micro_batch, "warmup_steps": args.warmup_steps, "max_steps": max_steps,
-        "checkpoint": str(args.out / f"checkpoint-{max_steps}"),
+        "checkpoint": str(args.out / f"checkpoint-{max_steps}"), "resumed_from": args.resume_from,
+        "save_steps": args.save_steps, "vllm_max_model_length": args.vllm_max_len,
         "train_seconds": round(time.time() - start, 1), "step_seconds": log.times,
         "peak_gpu_allocated_gb": round(torch.cuda.max_memory_allocated() / 1e9, 2),
         "log": [{k: h.get(k) for k in ("step", "loss", "grad_norm", "learning_rate", "completions/mean_length",
@@ -117,6 +128,9 @@ def main():
         "hashes": hashes,
     }
     (args.out / "run_report.json").write_text(json.dumps(report, indent=1))
+    with (args.out / "attempts.jsonl").open("a") as f:  # one line per (re)started training process
+        f.write(json.dumps({k: report[k] for k in ("resumed_from", "train_seconds", "step_seconds",
+                                                   "peak_gpu_allocated_gb")}) + "\n")
     print("RUN_REPORT " + json.dumps({k: report[k] for k in ("beta", "lr", "train_seconds", "peak_gpu_allocated_gb")}))
 
 

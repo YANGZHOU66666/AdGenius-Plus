@@ -1,8 +1,10 @@
-"""Offline tests for the training helpers in scripts/, scripts/opd and scripts/sft (no GPU, Colab or API calls)."""
+"""Offline tests for the training helpers in scripts/, scripts/opd, scripts/sft and scripts/formal (no GPU, Colab or API calls)."""
 
 import importlib.util
 import json
+import sys
 import tempfile
+import types
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -27,6 +29,11 @@ candidates = load("generate_candidates", ROOT / "scripts" / "generate_candidates
 SFT = SCRIPTS / "sft"
 select_sft = load("select_sft", SFT / "lr_sweep" / "select_sft.py")
 watchdog_sft = load("watchdog_sft", SFT / "lr_sweep" / "watchdog_sft.py")
+FORMAL = SCRIPTS / "formal"
+watchdog_formal = load("watchdog_formal", FORMAL / "watchdog_formal.py")
+# drive_sync only needs transformers for the TrainerCallback base class, which is not installed for local tests.
+with patch.dict(sys.modules, {"transformers": types.SimpleNamespace(TrainerCallback=object)}):
+    drive_sync = load("drive_sync", FORMAL / "drive_sync.py")
 
 
 class PromptTests(unittest.TestCase):
@@ -154,6 +161,64 @@ class SftTests(unittest.TestCase):
             self.assertIsNone(watchdog_sft.alive())
         with patch.object(watchdog_sft, "colab", return_value=(0, "[colab] No active sessions found on server.")):
             self.assertFalse(watchdog_sft.alive())
+
+
+class FormalRunTests(unittest.TestCase):
+    def test_local_checkpoint_needs_state_and_optimizer(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for step, files in ((25, ["trainer_state.json", "optimizer.pt"]), (50, ["trainer_state.json", "optimizer.pt"]),
+                                (75, ["trainer_state.json"])):  # step 75 was interrupted while saving
+                (root / f"checkpoint-{step}").mkdir()
+                for f in files:
+                    (root / f"checkpoint-{step}" / f).write_text("x")
+            self.assertEqual(drive_sync.local_complete_steps(root), [25, 50])
+            self.assertEqual(drive_sync.latest_checkpoint(root, None), root / "checkpoint-50")
+            self.assertIsNone(drive_sync.latest_checkpoint(root / "missing", None))
+
+    def test_drive_step_counts_only_with_upload_marker(self):
+        listings = {"r/full/": "step_0025/\nstep_0050/\nnotes/\n", "r/full/step_0025/": "UPLOAD_OK\nmodel.safetensors\n",
+                    "r/full/step_0050/": "model.safetensors\n"}
+        fake = lambda *a, **k: types.SimpleNamespace(stdout=listings.get(a[1], ""), returncode=0)  # noqa: E731
+        with patch.object(drive_sync, "rclone", side_effect=fake):
+            self.assertEqual(drive_sync.drive_complete_steps("r"), [25])
+
+    def test_unreachable_colab_is_not_a_reclaim(self):
+        watchdog_formal.M = dict(watchdog_formal.METHODS["opd"], key="opd")
+        with patch.object(watchdog_formal, "colab", return_value=(1, "network error")):
+            self.assertIsNone(watchdog_formal.alive())
+        with patch.object(watchdog_formal, "colab", return_value=(0, "[colab] No active sessions found on server.")):
+            self.assertFalse(watchdog_formal.alive())
+        with patch.object(watchdog_formal, "colab", return_value=(0, "[opd] gpu-a100 | Hardware: A100")):
+            self.assertTrue(watchdog_formal.alive())
+
+    def test_every_uploaded_file_exists_in_the_repo(self):
+        watchdog_formal.PROMPTS, watchdog_formal.SFT_DATA = Path("/prompts"), Path("/sft")
+        for method, cfg in watchdog_formal.METHODS.items():
+            for f in cfg["files"]:
+                path = watchdog_formal.source(f)
+                if f.endswith(".jsonl"):
+                    self.assertIn(path.parent, (Path("/prompts"), Path("/sft")), f)
+                else:
+                    self.assertTrue(path.exists(), f"{method}: {path}")
+        self.assertTrue((FORMAL / "formal_cell.py").exists() and (FORMAL / "wait_uploads_cell.py").exists())
+
+    def test_trainers_resume_from_checkpoint_weights(self):
+        # Trainer's own resume does not map the saved model.language_model.* names (it silently keeps the untrained
+        # weights), so the checkpoint must be loaded with from_pretrained.
+        for path in (OPD / "opd_train.py", SFT / "sft_train.py"):
+            src = path.read_text()
+            self.assertIn("from_pretrained(args.resume_from or args.student", src, path.name)
+            self.assertIn("trainer.train(resume_from_checkpoint=args.resume_from)", src, path.name)
+            self.assertIn('"drive_sync.py"', src, path.name)  # hashed with the code that ran
+        self.assertIn('train_sampling_strategy="sequential"', (SFT / "sft_train.py").read_text())
+
+    def test_sweep_watchdogs_upload_drive_sync(self):
+        # opd_train.py and sft_train.py import drive_sync, so the sweep VMs need it too.
+        self.assertIn("drive_sync.py", watchdog.CODE_FILES)
+        self.assertEqual(watchdog.source("drive_sync.py"), FORMAL / "drive_sync.py")
+        self.assertIn("drive_sync.py", watchdog_sft.FILES)
+        self.assertEqual(watchdog_sft.source("drive_sync.py"), FORMAL / "drive_sync.py")
 
 
 if __name__ == "__main__":

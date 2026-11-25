@@ -29,14 +29,14 @@ REPO_ROOT = HERE.parents[2]
 SESSION, GPU = "sft", "L4"
 LRS = ("5e-6", "1e-5", "2e-5")
 FILES = ["sft_train.py", "vm_runner_sft.py", "sweep_cell_sft.py", "dev_generate.py", "sft_train_v1.jsonl",
-         "prompts_dev_v1.jsonl"]
+         "prompts_dev_v1.jsonl", "drive_sync.py"]
 # Set from the command line in main().
 WORK = RESULTS = LOG = PROMPTS = SFT_DATA = None
 
 
 def source(name):
     return {"sft_train.py": SFT_DIR, "dev_generate.py": SCRIPTS, "sft_train_v1.jsonl": SFT_DATA,
-            "prompts_dev_v1.jsonl": PROMPTS}.get(name, HERE) / name
+            "prompts_dev_v1.jsonl": PROMPTS, "drive_sync.py": SCRIPTS / "formal"}.get(name, HERE) / name
 INSTALL = ("%%bash\nmkdir -p /content/sweep/runs && cd /content\n"
            "python -m pip install -q \"trl[vllm]==1.18.0\" \"transformers==5.23.0\" datasets accelerate "
            "flash-linear-attention > /content/pip_install.log 2>&1; echo \"pip exit $?\"\n")

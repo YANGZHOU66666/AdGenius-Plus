@@ -28,7 +28,7 @@ SCRIPTS = HERE.parents[1]                       # scripts: dev generation shared
 REPO_ROOT = HERE.parents[2]
 ENV_FILE = REPO_ROOT / ".env"
 CODE_FILES = ["opd_train.py", "dev_generate.py", "vm_runner.py", "teacher_proxy.py", "completion_logits_trainer.py",
-              "sweep_cell.py"]
+              "sweep_cell.py", "drive_sync.py"]
 PROMPT_FILES = ["prompts_train_v1.jsonl", "prompts_dev_v1.jsonl"]
 CHECK_SECONDS = 600
 # Set from the command line in main().
@@ -45,6 +45,8 @@ def source(name):
         return OPD_DIR / name
     if name == "dev_generate.py":
         return SCRIPTS / name
+    if name == "drive_sync.py":  # imported by opd_train.py since the formal runs
+        return SCRIPTS / "formal" / name
     return HERE / name
 
 
