@@ -130,7 +130,7 @@ artifacts/train/、artifacts/checkpoints/  运行日志与权重（被忽略）
 - **VM 磁盘不保留**：会话一结束，checkpoint 和日志都会丢失。每个 run 结束后立刻把 dev 输出和日志拉回本地；正式训练需要定期把完整状态（约 9 GB）存到 Drive。
 - **代理定位回答起点的 bug**：代理只把回答部分发给 Tinker 打分。原来用最后一次出现的 assistant 开头定位起点，学生采样里如果再出现对话开头，前面的位置就不会打分，TRL 报 “missing actual-token logprobs”。改为第一次出现的位置，并在发现缺口时整条序列重新打分、记录日志。修复后所有 run 都没有触发兜底。
 - **代码哈希要在训练开始时取**：这次的 `run_report.json` 在训练结束时才计算代码哈希，中途替换文件后会记录错版本。`scripts/opd/opd_train.py` 已改为在训练开始前记录。
-- **脚本位置**：OPD 训练代码在 [scripts/opd/](../scripts/opd/)，选学习率的编排脚本在 [scripts/opd/lr_sweep/](../scripts/opd/lr_sweep/)（与实际运行版本的差异见其 README）；SFT 放在 [scripts/sft/](../scripts/sft/)，两者都分为 `lr_sweep/` 和 `formal/`。
+- **脚本位置**：OPD 训练代码在 [scripts/opd/](../scripts/opd/)，选学习率的编排脚本在 [scripts/opd/lr_sweep/](../scripts/opd/lr_sweep/)（与实际运行版本的差异见其 README）；SFT 放在 [scripts/sft/](../scripts/sft/)，两者的正式训练编排共用 [scripts/formal/](../scripts/formal/)。
 - **A100 实测**（每步 160 条序列，micro batch 16）：
   - beta=1 和 beta=0.5（top1 模式）每步都约 46 秒，25 步约 20 分钟；加上加载、保存和 dev 生成，每个 run 约 32 分钟；
   - 显存峰值约 27.5 GB；
@@ -146,4 +146,18 @@ artifacts/train/、artifacts/checkpoints/  运行日志与权重（被忽略）
 - **L4 实测**（每步 40 条，micro batch 4 × 累积 10）：第一步约 130 秒（编译 kernel），之后每步约 13 秒；显存峰值 14.8 GB；25 步训练约 5.5 分钟，加上 vLLM 生成 200 条 dev 输出，每个 run 约 9 分钟。整轮（安装、小测试、3 个 run）共 1.44 单元。
 - **先做小测试**：在同一个 VM 上训练 2 步并生成 dev 输出，用约 8 分钟确认整条流程跑通，再启动 watchdog 正式跑。
 - **同步时日志可能缺失**：watchdog 只在 dev 输出完整时才算同步完成，vLLM 的 `dev.log` 没有一起拉回来，VM 停掉后就丢了。正式训练时，停 VM 前要确认所有要保留的日志都在本地。
+
+## 9. 正式训练的工程经验（2026-11-24）
+
+结果见[训练报告](../results/training/formal_v1_report.md)；本节只记工程经验。脚本在 [scripts/formal/](../scripts/formal/)。
+
+- **Drive 配额**：rclone 默认共用的 client ID 经常撞上 Google 的限流（`RATE_LIMIT_EXCEEDED`），一份 9 GB 的 checkpoint 有时要传几十分钟。做法：上传全部放到后台，失败了长时间重试，训练从不等 Drive；只有收尾时才等上传完成，而且有时间上限。OPD 的 1k/2k/4k bf16 副本最终没有传完（可以从 fp32 checkpoint 重新转出）。下次可以申请自己的 client ID。
+- **bf16 上传不该挡住生成**：运行的版本每导出一个规模都先等上传再生成，SFT 和 OPD 各有几个规模因此卡了最长 1 小时。仓库里的 `run_formal.py` 已改为后台上传。
+- **续训会悄悄失效**：checkpoint 里的权重名是 `model.language_model.*`，Trainer 续训时不会对上名字，结果用的是未训练的权重，却不报错。冒烟测试里比较“中断再续训”和“不中断”的 loss 才发现（相差 0.03–0.045）。改为续训时用 `from_pretrained` 加载 checkpoint，再让 Trainer 恢复优化器和步数，之后相差不超过 0.001。续训一定要用 loss 对照验证，不能只看有没有报错。
+- **长度上限要按最长样本定**：训练集 rank 1543 的 prompt 有 2307 个 token，原来 2048 的上限会让 OPD 的 vLLM 中途报错、让 SFT 截断样本。上限提高到 4096，SFT 训练前检查预处理没有丢样本。
+- **冒烟测试要覆盖续训和 Drive**：4 步训练，第 3 步后模拟崩溃、删掉本地 checkpoint，强制从 Drive 下载续训，再导出和生成。上面两个问题都是这一步发现的。
+- **`colab exec` 不要从标准输入喂代码**：后台运行时这种调用会挂住，命令可能在之后某个时刻才执行。一律写成文件用 `-f` 执行。
+- **GPU 备选按时间算**：原来按失败次数换 GPU，一次失败的申请就要几分钟，算下来约 2 小时才会换 H100。改为每种 GPU 最多等 30 分钟。
+- **连不上 Colab 不等于会话被回收**：Mac 断网时 `colab sessions` 失败，watchdog 只跳过这次检查；只有明确列出会话不存在才重新申请。
+- **用量**：本轮 Colab 共 90.5 单元（冒烟测试、等 Drive 时的空转和两次正式训练）；Tinker 正式训练 2612 万 token，加冒烟约 2680 万，约 $16。
 

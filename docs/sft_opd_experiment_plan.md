@@ -2,7 +2,7 @@
 
 本文描述训练与评测方案的设计：用同一个教师，分别通过 SFT 和在策略蒸馏（OPD）训练 0.8B 学生，再比较两者的效果。
 
-状态截至 **2026-11-24**：学习率已选定（OPD `beta=0.5`、2e-6；SFT 5e-6），正式训练尚未开始。设计依据、试点结果和工程备忘见[训练实验杂记](training_notes.md)。
+状态截至 **2026-11-24**：学习率已选定（OPD `beta=0.5`、2e-6；SFT 5e-6）；正式训练已完成，两种方法 1k/2k/4k/8k 的 test 和 dev 输出以及参照系统（未训练学生、397B 老师）的 test 输出已入库（[训练报告](../results/training/formal_v1_report.md)）；test 评测尚未开始。设计依据、试点结果和工程备忘见[训练实验杂记](training_notes.md)。
 
 ## 1. 研究问题
 
@@ -74,6 +74,8 @@ dev 和 train 都从训练池抽取，按 `group_id` 去重。四个数据集互
 
 dev 上的 SFT loss 和 OPD 反向 KL 只用来监控训练，不参与选择。
 
+**正式训练（2026-11-24）**：两种方法都按上面的设置从头训练 200 步到 8k，一次跑完，没有中断；每 25 步的完整 checkpoint 都在 Google Drive 上。与方案的唯一差异是训练和生成的长度上限从 2048 提高到 4096（训练集有一个 2307 token 的 prompt，test 最长 1968 token）。结果在 `results/training/{sft,opd}_formal_v1/`，参照系统在 `results/training/test_references_v1/`，见[训练报告](../results/training/formal_v1_report.md)。
+
 **OPD 选择结果（2026-11-23）**：`beta=0.5`，学习率 2e-6。两个 beta 各扫了三个学习率，组内都是 2e-6 胜出，组间对决 `beta=0.5` 胜率 0.62（95% 区间 0.56–0.68）。实际每步用了 40 个 prompt × 4 次采样；选定 run 的 1k checkpoint 没有保留，正式训练从头训练。详见[选择报告](../results/training/opd_lr_sweep_v1/report.md)。
 
 **SFT 选择结果（2026-11-24）**：学习率 5e-6。三个候选在 dev 上分不出高下：平均胜率最高的是 1e-5（0.52），但它对第二名 5e-6 的区间含 50%，按规则取较小的 5e-6；三场比较的区间全部含 50%。每步同样用 40 条；各 run 的 checkpoint 没有保留，正式训练从头训练。详见[选择报告](../results/training/sft_lr_sweep_v1/report.md)。
@@ -121,5 +123,7 @@ dev 上的学习率选择见第 5 节。
 ## 8. 待定项
 
 - [x] OPD 的损失设置：选定 `beta=0.5`、学习率 2e-6（[选择报告](../results/training/opd_lr_sweep_v1/report.md)）。
+- [x] 正式训练：已完成（[训练报告](../results/training/formal_v1_report.md)）。
+- [ ] test 评测的具体设计，包括是否还要 GLM 作为参照（目前已有未训练学生和 397B 老师的 test 输出）。
 - [ ] 单条 rubric 能否承担事实核查。
 - [ ] 人工盲评的标注人和规模。
