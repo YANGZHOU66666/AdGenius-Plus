@@ -1,0 +1,340 @@
+{
+ "run": "beta0.5_lr2e-06",
+ "experiment": "opd_lr_sweep_v1",
+ "status": "completed",
+ "method": "on-policy distillation: TRL 1.18 ServerDistillationTrainer with completion-only student logits",
+ "student": {
+  "model": "Qwen/Qwen3.5-0.8B",
+  "loaded_as": "text-only Qwen3_5ForCausalLM export of the hub model",
+  "master_weights": "fp32",
+  "mixed_precision": "bf16"
+ },
+ "teacher": {
+  "model": "Qwen/Qwen3.5-397B-A17B",
+  "provider": "Tinker",
+  "signal": "actual-token logprobs + teacher top-1 token",
+  "proxy_mode": "top1",
+  "proxy_version": "fixed",
+  "proxy_sha256": "6e1c0b1bacdcb0ca65ac38625063435a74cbca4dff989715a57f1ce429c16e74",
+  "full_rescore_fallbacks": 0
+ },
+ "hyperparameters": {
+  "beta": 0.5,
+  "learning_rate": 2e-06,
+  "seed": 20261123,
+  "prompts": 1000,
+  "prompts_per_step": 40,
+  "samples_per_prompt": 4,
+  "sequences_per_step": 160,
+  "micro_batch": 16,
+  "gradient_accumulation": 10,
+  "max_steps": 25,
+  "warmup_steps": 3,
+  "lr_scheduler": "constant_with_warmup",
+  "optimizer": "adamw_torch_fused",
+  "loss_top_k": 1,
+  "sampling_temperature": 1.0,
+  "max_completion_length": 128,
+  "gradient_checkpointing": true,
+  "rollouts": "vLLM colocate, gpu_memory_utilization 0.15, max_model_len 2048",
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  }
+ },
+ "data": {
+  "train_products": "data/train/v1/train_products.jsonl",
+  "frozen_prompts_sha256": "13144069d641ded0c61ce17ff0ef6f118db7336a7509eb22c89626407f2a899f",
+  "order": "rank order; shuffled only within blocks [0,1k),[1k,2k),[2k,4k),[4k,8k) with the seed; first 1k used",
+  "first_product_ids": [
+   "train_product_138699",
+   "train_product_182938",
+   "train_product_448201",
+   "train_product_135287",
+   "train_product_442819"
+  ]
+ },
+ "timeline_utc": {
+  "train_start": "2026-11-24T05:50:44Z",
+  "train_done": "2026-11-24T06:11:10Z",
+  "dev_done": "2026-11-24T06:14:27Z"
+ },
+ "training": {
+  "train_seconds": 1171.9,
+  "mean_step_seconds": 45.8,
+  "step_seconds": [
+   47.55,
+   49.79,
+   47.85,
+   50.17,
+   45.32,
+   45.26,
+   42.95,
+   43.05,
+   41.18,
+   40.29,
+   44.81,
+   47.12,
+   46.33,
+   47.49,
+   47.23,
+   49.69,
+   50.0,
+   45.51,
+   47.45,
+   46.84,
+   44.66,
+   42.13,
+   42.36,
+   45.83,
+   44.65
+  ],
+  "peak_gpu_allocated_gb": 27.45,
+  "log": [
+   {
+    "step": 1,
+    "loss": 0.07344116270542145,
+    "grad_norm": 3.2633652687072754,
+    "learning_rate": 0.0,
+    "completions/mean_length": 84.20625305175781,
+    "completions/clipped_ratio": 0.16250000894069672
+   },
+   {
+    "step": 2,
+    "loss": 0.07280436158180237,
+    "grad_norm": 3.350620746612549,
+    "learning_rate": 6.666666666666666e-07,
+    "completions/mean_length": 83.2562484741211,
+    "completions/clipped_ratio": 0.13125000894069672
+   },
+   {
+    "step": 3,
+    "loss": 0.07569732517004013,
+    "grad_norm": 3.7299294471740723,
+    "learning_rate": 1.3333333333333332e-06,
+    "completions/mean_length": 75.8375015258789,
+    "completions/clipped_ratio": 0.04374999925494194
+   },
+   {
+    "step": 4,
+    "loss": 0.0743621215224266,
+    "grad_norm": 4.379012107849121,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 57.118751525878906,
+    "completions/clipped_ratio": 0.02500000037252903
+   },
+   {
+    "step": 5,
+    "loss": 0.08972208201885223,
+    "grad_norm": 2.0186264514923096,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 21.1875,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 6,
+    "loss": 0.09077262133359909,
+    "grad_norm": 2.1052045822143555,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 20.912500381469727,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 7,
+    "loss": 0.08428284525871277,
+    "grad_norm": 1.6956346035003662,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 23.89375114440918,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 8,
+    "loss": 0.07909677177667618,
+    "grad_norm": 1.8718252182006836,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 23.98750114440918,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 9,
+    "loss": 0.07937026023864746,
+    "grad_norm": 1.5029401779174805,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 24.256250381469727,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 10,
+    "loss": 0.07913406938314438,
+    "grad_norm": 1.3659590482711792,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 24.418750762939453,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 11,
+    "loss": 0.07555393874645233,
+    "grad_norm": 1.12175452709198,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 28.762500762939453,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 12,
+    "loss": 0.07273954898118973,
+    "grad_norm": 1.2651108503341675,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 33.212501525878906,
+    "completions/clipped_ratio": 0.0062500000931322575
+   },
+   {
+    "step": 13,
+    "loss": 0.07205371558666229,
+    "grad_norm": 1.2628982067108154,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 33.03750228881836,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 14,
+    "loss": 0.0746961236000061,
+    "grad_norm": 1.1033121347427368,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 31.70625114440918,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 15,
+    "loss": 0.07762780040502548,
+    "grad_norm": 1.2164885997772217,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 27.443750381469727,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 16,
+    "loss": 0.07304427027702332,
+    "grad_norm": 1.1380910873413086,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 30.787500381469727,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 17,
+    "loss": 0.07737287133932114,
+    "grad_norm": 1.0755648612976074,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 31.9375,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 18,
+    "loss": 0.07267989963293076,
+    "grad_norm": 1.0941566228866577,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 35.525001525878906,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 19,
+    "loss": 0.0723542645573616,
+    "grad_norm": 1.077588677406311,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 36.275001525878906,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 20,
+    "loss": 0.07239406555891037,
+    "grad_norm": 0.9251410961151123,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 33.13750076293945,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 21,
+    "loss": 0.0712285041809082,
+    "grad_norm": 0.9722182154655457,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 33.85000228881836,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 22,
+    "loss": 0.07478197664022446,
+    "grad_norm": 1.0111382007598877,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 31.568750381469727,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 23,
+    "loss": 0.07574599236249924,
+    "grad_norm": 1.024249792098999,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 31.73750114440918,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 24,
+    "loss": 0.07371308654546738,
+    "grad_norm": 0.9512844681739807,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 34.97500228881836,
+    "completions/clipped_ratio": 0.0
+   },
+   {
+    "step": 25,
+    "loss": 0.06968623399734497,
+    "grad_norm": 0.9343055486679077,
+    "learning_rate": 2e-06,
+    "completions/mean_length": 36.53125,
+    "completions/clipped_ratio": 0.0
+   }
+  ]
+ },
+ "teacher_usage": {
+  "requests": 250,
+  "tokens_sent": 3252930
+ },
+ "dev_generation": {
+  "run_id": "gen_opd_lr_sweep_dev_beta0p5_lr2em06",
+  "file": "../../generations/beta0.5_lr2e-06.jsonl",
+  "sha256": "3bf7de98e0bf031b6dc9e77b918d745f7a88e0506d7e59c9f212654dfdc486a6",
+  "records": 200,
+  "status_counts": {
+   "success": 200,
+   "truncated": 0,
+   "failed": 0
+  },
+  "source_sha256": "8bf773dbf9e3deeb719a0100f64f7b8c631caed8f79622a50f315bc8572dad9d",
+  "guardrails": {
+   "mean_words": 25.2,
+   "over_35_words": 2,
+   "truncated": 0,
+   "empty": 0
+  }
+ },
+ "hardware": "NVIDIA A100-SXM4-40GB, 40960 MiB, 580.82.07",
+ "packages": {
+  "torch": "2.13.0",
+  "vllm": "0.30.0",
+  "trl": "1.18.0",
+  "transformers": "5.23.0",
+  "accelerate": "1.15.0",
+  "datasets": "4.8.5",
+  "tinker": "0.40.0",
+  "flash-linear-attention": "0.6.0"
+ },
+ "code_sha256_at_report_time": {
+  "opd_train.py": "0415c8f9e57cd048dd1f9a4f2b559920f7d34d736c78ebe9d4ffdd9866e398b9",
+  "completion_logits_trainer.py": "2c89a8633a838b8b8c0ad5c8263eb46e5a225a85858c331322027efc70a5bf52",
+  "teacher_proxy.py": "6e1c0b1bacdcb0ca65ac38625063435a74cbca4dff989715a57f1ce429c16e74",
+  "prompts_train_v1.jsonl": "13144069d641ded0c61ce17ff0ef6f118db7336a7509eb22c89626407f2a899f"
+ },
+ "code_note": "run_report hashes were taken when the report was written, after training; teacher.proxy_version records the proxy that actually served this run.",
+ "checkpoint": {
+  "retained": false,
+  "reason": "VM disk is ephemeral; the formal run retrains with the selected setting"
+ },
+ "local_logs": "artifacts/train/opd_lr_sweep_v1/runs/beta0.5_lr2e-06/"
+}

@@ -1,0 +1,454 @@
+{
+ "run": "sft_formal_v1",
+ "experiment": "formal_v1",
+ "status": "completed",
+ "landed_at": "2026-11-25T02:47:32Z",
+ "description": "Formal SFT run with the setting chosen on dev, one seed, trained to 8k; outputs at 1k/2k/4k/8k on test (1,000) and dev (200). docs/sft_opd_experiment_plan.md; report: results/training/formal_v1_report.md",
+ "method": "supervised fine-tuning on frozen Qwen3.5-397B teacher ads: TRL 1.18 SFTTrainer, completion-only loss",
+ "student": {
+  "model": "Qwen/Qwen3.5-0.8B",
+  "loaded_as": "text-only Qwen3_5ForCausalLM export of the hub model",
+  "master_weights": "fp32",
+  "mixed_precision": "bf16"
+ },
+ "targets": {
+  "path": "data/train/v1/teacher_qwen397b_train.jsonl",
+  "run_id": "gen_teacher_qwen397b_train_v1",
+  "sft_examples_sha256": "595f1c37b2d82b53aa670032595aeda600cecfdedc1393b28918774878bc9bae",
+  "local_copy": "artifacts/train/sft_data/v1/sft_train_v1.jsonl"
+ },
+ "selected_on": "results/training/sft_lr_sweep_v1/manifest.json",
+ "hyperparameters": {
+  "learning_rate": 5e-06,
+  "seed": 20261123,
+  "warmup_steps": 3,
+  "max_steps": 200,
+  "save_steps": 25,
+  "lr_scheduler": "constant_with_warmup",
+  "optimizer": "adamw_torch_fused",
+  "gradient_checkpointing": true,
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "examples": 8000,
+  "per_step": 40,
+  "micro_batch": 4,
+  "gradient_accumulation": 10,
+  "completion_only_loss": true,
+  "max_length": 4096,
+  "train_sampling_strategy": "sequential",
+  "sampler_used": "SequentialSampler"
+ },
+ "data": {
+  "train_sha256": "595f1c37b2d82b53aa670032595aeda600cecfdedc1393b28918774878bc9bae",
+  "order": "rank order; shuffled only within blocks [0,1k),[1k,2k),[2k,4k),[4k,8k) with the seed (same function and order for SFT and OPD)",
+  "first_product_ids": [
+   "train_product_138699",
+   "train_product_182938",
+   "train_product_448201",
+   "train_product_135287",
+   "train_product_442819"
+  ],
+  "scales": {
+   "1k": "first 1k products = steps 1-25",
+   "2k": "first 2k products = steps 1-50",
+   "4k": "first 4k products = steps 1-100",
+   "8k": "first 8k products = steps 1-200"
+  }
+ },
+ "timeline_utc": {
+  "vm_cell_started": "2026-11-24T17:51:28Z",
+  "train_start": "2026-11-24T17:51:38Z",
+  "train_done": "2026-11-24T18:41:18Z",
+  "generation_done": "2026-11-24T20:17:11Z",
+  "done": "2026-11-24T20:50:38Z",
+  "events": [
+   "2026-11-24T17:51:38Z training attempt 1, resume from scratch",
+   "2026-11-24T18:41:18Z training attempt 1 exited with 0",
+   "2026-11-24T19:17:51Z exported bf16 weights for scale_1k; Drive upload ok",
+   "2026-11-24T19:20:54Z generated scale_1k dev",
+   "2026-11-24T19:22:33Z generated scale_1k test",
+   "2026-11-24T19:24:28Z exported bf16 weights for scale_2k; Drive upload ok",
+   "2026-11-24T19:27:31Z generated scale_2k dev",
+   "2026-11-24T19:29:10Z generated scale_2k test",
+   "2026-11-24T20:05:40Z exported bf16 weights for scale_4k; Drive upload ok",
+   "2026-11-24T20:08:58Z generated scale_4k dev",
+   "2026-11-24T20:10:39Z generated scale_4k test",
+   "2026-11-24T20:12:27Z exported bf16 weights for scale_8k; Drive upload ok",
+   "2026-11-24T20:15:31Z generated scale_8k dev",
+   "2026-11-24T20:17:11Z generated scale_8k test",
+   "2026-11-24T20:19:10Z generated base test",
+   "2026-11-24T20:50:41Z DONE"
+  ]
+ },
+ "training": {
+  "attempts": 1,
+  "resumed": false,
+  "train_seconds": 2888.3,
+  "mean_step_seconds": 13.4,
+  "peak_gpu_allocated_gb": 15.47,
+  "first_loss": 1.7414,
+  "last10_mean_loss": 0.9809,
+  "loss_mean_per_1k": [
+   1.3131,
+   1.1254,
+   1.0646,
+   1.0359,
+   1.0018,
+   0.9981,
+   0.9727,
+   0.9787
+  ],
+  "log": "training_log.jsonl",
+  "diverged": false
+ },
+ "checkpoints": {
+  "drive_root": "gdrive:adgenius_checkpoints/sft_formal_v1",
+  "listing": "drive_checkpoints.json",
+  "total_bytes": 78494231520,
+  "full": {
+   "what": "full resumable state every 25 steps (fp32 weights, optimizer, scheduler, RNG, trainer state)",
+   "steps": {
+    "step_0025": {
+     "complete": true,
+     "files": 12,
+     "bytes": 9049068026,
+     "model_safetensors_md5": "23212e872b13e01d128ad814aeac4db1"
+    },
+    "step_0050": {
+     "complete": true,
+     "files": 12,
+     "bytes": 9049074783,
+     "model_safetensors_md5": "f3359e6cab26e09125b6ad1ee655c5c7"
+    },
+    "step_0075": {
+     "complete": true,
+     "files": 12,
+     "bytes": 9049081561,
+     "model_safetensors_md5": "b247b3ec528946fad723599c9389a2b7"
+    },
+    "step_0100": {
+     "complete": true,
+     "files": 12,
+     "bytes": 9049088332,
+     "model_safetensors_md5": "aff31872928250616d9aa3c39a58899c"
+    },
+    "step_0125": {
+     "complete": true,
+     "files": 12,
+     "bytes": 9049095130,
+     "model_safetensors_md5": "408bc40682218301ef1d4e29beb440b5"
+    },
+    "step_0150": {
+     "complete": true,
+     "files": 12,
+     "bytes": 9049101919,
+     "model_safetensors_md5": "f4de5c51f403115b2997911e7028f75c"
+    },
+    "step_0175": {
+     "complete": true,
+     "files": 12,
+     "bytes": 9049108722,
+     "model_safetensors_md5": "e7effd98da0adffab135f15576b6fc18"
+    },
+    "step_0200": {
+     "complete": true,
+     "files": 12,
+     "bytes": 9049115511,
+     "model_safetensors_md5": "f955858fb24ab1367f02477a0e4f0cda"
+    }
+   }
+  },
+  "milestones": {
+   "1k": "full/step_0025",
+   "2k": "full/step_0050",
+   "4k": "full/step_0100",
+   "8k": "full/step_0200"
+  },
+  "weights_bf16": {
+   "what": "inference export per scale: from_pretrained(fp32).to(bfloat16).save_pretrained + student tokenizer; the generations used these exports (on the VM)",
+   "scales": {
+    "scale_1k": {
+     "complete": true,
+     "files": [
+      "chat_template.jinja",
+      "config.json",
+      "generation_config.json",
+      "model.safetensors",
+      "tokenizer.json",
+      "tokenizer_config.json"
+     ],
+     "model_safetensors_md5": "2818dedbd78325aeb058d2162e214182"
+    },
+    "scale_2k": {
+     "complete": true,
+     "files": [
+      "chat_template.jinja",
+      "config.json",
+      "generation_config.json",
+      "model.safetensors",
+      "tokenizer.json",
+      "tokenizer_config.json"
+     ],
+     "model_safetensors_md5": "b0699fc64ace115c8b64466e7b5cec5c"
+    },
+    "scale_4k": {
+     "complete": true,
+     "files": [
+      "chat_template.jinja",
+      "config.json",
+      "generation_config.json",
+      "model.safetensors",
+      "tokenizer.json",
+      "tokenizer_config.json"
+     ],
+     "model_safetensors_md5": "d0809e867a7f8f1ecb6777e7b2e3aaee"
+    },
+    "scale_8k": {
+     "complete": true,
+     "files": [
+      "chat_template.jinja",
+      "config.json",
+      "generation_config.json",
+      "model.safetensors",
+      "tokenizer.json",
+      "tokenizer_config.json"
+     ],
+     "model_safetensors_md5": "8d03806b1a5f3f34e47136841182c64b"
+    }
+   }
+  }
+ },
+ "generations": {
+  "test/scale_1k": {
+   "run_id": "gen_sft_formal_v1_1k_test",
+   "file": "generations/test/scale_1k.jsonl",
+   "sha256": "efa7b24b4257285bf0b4efdc57d71de5612c55063b75a2744c0b838ef6aa5371",
+   "records": 1000,
+   "status_counts": {
+    "success": 1000,
+    "truncated": 0,
+    "failed": 0
+   },
+   "mean_words": 25.4,
+   "median_words": 25.0,
+   "over_35_words": 13,
+   "empty": 0,
+   "completion_tokens_mean": 38.5,
+   "source_sha256": "9f57d0461e6930a4fc96161355a8c4581c0f32024e54c79cf8651ae337c914a7"
+  },
+  "test/scale_2k": {
+   "run_id": "gen_sft_formal_v1_2k_test",
+   "file": "generations/test/scale_2k.jsonl",
+   "sha256": "42f2e7c9614b8b9602efa47dadcead856264022f360cd49fcfa8433b10f27c52",
+   "records": 1000,
+   "status_counts": {
+    "success": 1000,
+    "truncated": 0,
+    "failed": 0
+   },
+   "mean_words": 24.8,
+   "median_words": 25.0,
+   "over_35_words": 3,
+   "empty": 0,
+   "completion_tokens_mean": 36.6,
+   "source_sha256": "afee4003c348a5110a916cdb021cdfa63be8a876404eceed2167bfb969e7c3eb"
+  },
+  "test/scale_4k": {
+   "run_id": "gen_sft_formal_v1_4k_test",
+   "file": "generations/test/scale_4k.jsonl",
+   "sha256": "78579a3f85bce239ecd25bbea03803fcb45bc854aa74f8c27230613ee0843e42",
+   "records": 1000,
+   "status_counts": {
+    "success": 1000,
+    "truncated": 0,
+    "failed": 0
+   },
+   "mean_words": 27.6,
+   "median_words": 28.0,
+   "over_35_words": 29,
+   "empty": 0,
+   "completion_tokens_mean": 40.8,
+   "source_sha256": "1715cd55238ade325a9406ae035ddcf3ab69bf0bf5a1ae716d0d011fc99cdf24"
+  },
+  "test/scale_8k": {
+   "run_id": "gen_sft_formal_v1_8k_test",
+   "file": "generations/test/scale_8k.jsonl",
+   "sha256": "a7945e84b86d2a59f74caa21981044070811d7b8d624fe075d55cb266d7aa09a",
+   "records": 1000,
+   "status_counts": {
+    "success": 1000,
+    "truncated": 0,
+    "failed": 0
+   },
+   "mean_words": 26.1,
+   "median_words": 26.0,
+   "over_35_words": 7,
+   "empty": 0,
+   "completion_tokens_mean": 39.9,
+   "source_sha256": "ba58796ccb74f093302276a83ad1d31dd38dc10fa8b1b9f88e43b2ba0eb4c7d7"
+  },
+  "dev/scale_1k": {
+   "run_id": "gen_sft_formal_v1_1k_dev",
+   "file": "generations/dev/scale_1k.jsonl",
+   "sha256": "52f3bf3e827957daeab881743e3355073006e4c4559707ddd413a58bc8d2d084",
+   "records": 200,
+   "status_counts": {
+    "success": 200,
+    "truncated": 0,
+    "failed": 0
+   },
+   "mean_words": 26.0,
+   "median_words": 26.0,
+   "over_35_words": 4,
+   "empty": 0,
+   "completion_tokens_mean": 39.3,
+   "source_sha256": "8834382dc581534ca702b39be70c7788fcc040210563b72eeccfd6cbc8b82270"
+  },
+  "dev/scale_2k": {
+   "run_id": "gen_sft_formal_v1_2k_dev",
+   "file": "generations/dev/scale_2k.jsonl",
+   "sha256": "9df1c50ba0f46f9d20e555c84975e41a9c0765ece4febfa0561d32a83eead66d",
+   "records": 200,
+   "status_counts": {
+    "success": 200,
+    "truncated": 0,
+    "failed": 0
+   },
+   "mean_words": 25.0,
+   "median_words": 25.5,
+   "over_35_words": 0,
+   "empty": 0,
+   "completion_tokens_mean": 36.7,
+   "source_sha256": "e0744f9e04bcf7ab7936e5281cdd2cde0e5c70930048be55277e77eb8bed236d"
+  },
+  "dev/scale_4k": {
+   "run_id": "gen_sft_formal_v1_4k_dev",
+   "file": "generations/dev/scale_4k.jsonl",
+   "sha256": "1eb70f721be623d7262f34a40393644aa8d4ee7cfc0e427e830b9143b581ff6d",
+   "records": 200,
+   "status_counts": {
+    "success": 200,
+    "truncated": 0,
+    "failed": 0
+   },
+   "mean_words": 28.0,
+   "median_words": 28.0,
+   "over_35_words": 6,
+   "empty": 0,
+   "completion_tokens_mean": 41.8,
+   "source_sha256": "5d57d643630c1927f725472d882c43801c86f8fe65d4cb11854c304306a7a1b9"
+  },
+  "dev/scale_8k": {
+   "run_id": "gen_sft_formal_v1_8k_dev",
+   "file": "generations/dev/scale_8k.jsonl",
+   "sha256": "d9fe631a42614a3df3ffcaa5c6012f4382c821a818d91cc219b59a1175932eb4",
+   "records": 200,
+   "status_counts": {
+    "success": 200,
+    "truncated": 0,
+    "failed": 0
+   },
+   "mean_words": 26.5,
+   "median_words": 26.0,
+   "over_35_words": 0,
+   "empty": 0,
+   "completion_tokens_mean": 40.3,
+   "source_sha256": "1db1c641d25c9c03a9df784616d59a171db5a067f7e0e534d84e7f9d21871c72"
+  }
+ },
+ "generation": {
+  "engine": "vLLM 0.30.0",
+  "dtype": "bfloat16",
+  "temperature": 0.0,
+  "max_tokens": 200,
+  "seed": 0,
+  "max_model_len": 4096,
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "prompts": {
+   "test": {
+    "file": "artifacts/train/prompts/v1/prompts_test_v1.jsonl",
+    "sha256": "a39e2a89eca42c4a756992e230b74ae745c494faa9053466e930eb9b42dfaf47",
+    "rows": 1000
+   },
+   "dev": {
+    "file": "artifacts/train/prompts/v1/prompts_dev_v1.jsonl",
+    "sha256": "2e35dec3ffb79b3c9931cc519c13f4098f58a53ba325ba527c5da792923d739d",
+    "rows": 200
+   }
+  },
+  "schema": {
+   "path": "metadata/schemas/generation_result.schema.json",
+   "version": "GenerationResult v1.1",
+   "sha256": "86203f03c391eb96a90de6d229cc042fe621a6f61a48ac2ee6becb10c836f8b1"
+  },
+  "candidate_id": "cand_ + sha256(json([run_id, product_id, 0]))[:24]",
+  "trace_id": "null: local generation, no API call log",
+  "rules": [
+   "Each system generates once per product; outputs are never regenerated based on their content.",
+   "A length stop with written text is recorded as truncated (error output_too_long) and kept."
+  ]
+ },
+ "references": "results/training/test_references_v1/manifest.json",
+ "hardware": "NVIDIA L4, 23034 MiB, 580.82.07",
+ "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+ "packages": {
+  "torch": "2.13.0",
+  "vllm": "0.30.0",
+  "trl": "1.18.0",
+  "transformers": "5.23.0",
+  "accelerate": "1.15.0",
+  "datasets": "4.8.5",
+  "tinker": null,
+  "flash-linear-attention": "0.6.0"
+ },
+ "code": {
+  "training_sha256_at_start": {
+   "sft_train.py": "e737465e7ff99f6822f0848b08b451a3b340151fe4d8599820d35aaadf92f210",
+   "drive_sync.py": "e69e245e641678b49e565d5c459c1542cc2bf0fc7690af4c0df61612bc55dbe6",
+   "sft_train_v1.jsonl": "595f1c37b2d82b53aa670032595aeda600cecfdedc1393b28918774878bc9bae"
+  },
+  "repo_paths": {
+   "training": "scripts/sft/",
+   "orchestration": "scripts/formal/"
+  },
+  "ran": "artifacts/train/sft_formal_v1/code/ (local only)",
+  "ran_sha256": {
+   "cleanup_sft_cell.py": "008c76e37798c8b84383acea4390d2998fe90b8ccfdf70ef3837cbc85c2135d6",
+   "drive_sync.py": "e69e245e641678b49e565d5c459c1542cc2bf0fc7690af4c0df61612bc55dbe6",
+   "fix_test_cell.py": "68d3cf52afdd53e6e0ac7adf68b00e20399aef546699071d396eb7a9e28ed8fe",
+   "formal_cell.py": "335949da04da2c1e37751147a2e184be2fe71660181553a58d95ca2a2f8ad7ec",
+   "gen_outputs.py": "fbc8cc6d0fe5e9a05dd7845a3ffc8886a5e2c19a650c4274004dfb15e194011f",
+   "land_formal.py": "fbc593d3287d18ccfddac2fcdc7054a55eabb6877846bd932909e706f360b645",
+   "run_formal.py": "ec6164f52f6275b20ed52285941a90a2eb59fe9d523c607889ebc339c147fe50",
+   "sft_train.py": "e737465e7ff99f6822f0848b08b451a3b340151fe4d8599820d35aaadf92f210",
+   "smoke.py": "8a173968727d602473ad4a15ce22d72537b1608ab0fc5ce856f4f1b20788d594",
+   "summarize.py": "7b8a0e570eeffe649f132d1224242a71f3a4fc58048a7ac8655f72106a279187",
+   "wait_uploads_cell.py": "aeff333ecd60d2c9204f6c4d03e6caee7a6852f8f1bc4a88597efd914dacc995",
+   "watchdog_formal.py": "a6050746600f71741cf0dbc67032535fbc56662213f7560c4f2fd83287cd9ed2"
+  },
+  "note": "Training code in the repo is byte-identical to what ran. The repo run_formal.py uploads bf16 exports in the background; the run used a version that waited for each upload before generating (timing only)."
+ },
+ "local_artifacts": {
+  "logs": "artifacts/train/sft_formal_v1/logs/",
+  "vm_state": "artifacts/train/sft_formal_v1/vm/",
+  "raw_outputs": "artifacts/train/sft_formal_v1/outputs_raw/ (incl. vLLM logs)",
+  "smoke_test": "artifacts/train/formal_smoke_v1/"
+ },
+ "deviations_from_plan": [
+  "Length limit raised from 2048 to 4096 tokens for training (SFT max_length, OPD vLLM max_model_len) and generation: train rank 1543 has a 2307-token prompt and the longest test prompt has 1968 tokens. No output changes for prompts that fit in 2048.",
+  "One seed (20261123) for both methods (plan changed before the runs, ec47c91)."
+ ],
+ "incidents": [
+  "Drive uploads through rclone's shared client ID hit Google's rate limit (RATE_LIMIT_EXCEEDED); uploads were made best-effort with long retries and training never waited for them. All 8 full checkpoints of both runs reached Drive.",
+  "Resume did not load weights: checkpoints store them as model.language_model.*, which Trainer's resume does not map, so it silently kept the untrained weights. Found in the smoke test (loss after resume differed by 0.03-0.045); fixed by loading the checkpoint with from_pretrained (difference <= 0.001 afterwards). The formal runs never resumed.",
+  "colab exec with the cell fed on stdin hung in the background twice; those commands were killed before they ran and all later cells were run from files (-f).",
+  "Restarting the kernel was not permitted, so the old orchestration could not be swapped for the background-upload version while the run was live; the end of each run waited for bf16 uploads."
+ ],
+ "costs": {
+  "colab": "both runs, smoke tests and waits: 90.5 compute units in total (244.0 -> 153.6)",
+  "tinker": "not used"
+ }
+}

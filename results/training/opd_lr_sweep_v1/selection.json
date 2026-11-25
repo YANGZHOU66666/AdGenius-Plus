@@ -1,0 +1,177 @@
+{
+ "rules": ", fixed before any judgment was read (docs/sft_opd_experiment_plan.md §5 and the sweep notes):\n- Denominator is always the 200 dev products. A product's score for run A in a matchup is the mean over its\n  successful orders of 1 (A wins) or 0 (B wins). Products settled without a judge call: identical texts -> 0.5;\n  one side empty -> the non-empty side wins (both empty -> 0.5). If both orders failed after retries -> 0.5.\n- Truncated outputs keep their text and are judged as written; truncation is reported, not penalised separately.\n- Within each beta, a learning rate's score is the mean of its win rates in its two matchups. The best one wins\n  unless the product-bootstrap 95% CI of its win rate against the runner-up contains 0.5; then the smaller of\n  the two learning rates is chosen.\n- The two beta winners are compared head to head. If that CI contains 0.5, beta=1 is chosen (simpler and\n  cheaper: no teacher top-1 retrieval).\n- No per-item regeneration of model outputs; only judge calls are retried (repo evaluator behaviour).",
+ "groups": {
+  "1": {
+   "matchups": [
+    {
+     "a": "beta1_lr5e-07",
+     "b": "beta1_lr1e-06",
+     "judge_run_id": "opd_sweep_dev_b1_lr5e7_vs_lr1e6",
+     "products": 200,
+     "a_win_rate": 0.555,
+     "ci95": [
+      0.495,
+      0.6175
+     ],
+     "order_inconsistent": 40,
+     "both_orders_failed": 0,
+     "settled_by_rule": 2
+    },
+    {
+     "a": "beta1_lr5e-07",
+     "b": "beta1_lr2e-06",
+     "judge_run_id": "opd_sweep_dev_b1_lr5e7_vs_lr2e6",
+     "products": 200,
+     "a_win_rate": 0.305,
+     "ci95": [
+      0.25,
+      0.36
+     ],
+     "order_inconsistent": 44,
+     "both_orders_failed": 0,
+     "settled_by_rule": 0
+    },
+    {
+     "a": "beta1_lr1e-06",
+     "b": "beta1_lr2e-06",
+     "judge_run_id": "opd_sweep_dev_b1_lr1e6_vs_lr2e6",
+     "products": 200,
+     "a_win_rate": 0.2325,
+     "ci95": [
+      0.185,
+      0.2825
+     ],
+     "order_inconsistent": 41,
+     "both_orders_failed": 0,
+     "settled_by_rule": 0
+    }
+   ],
+   "mean_score": {
+    "beta1_lr5e-07": 0.43,
+    "beta1_lr1e-06": 0.3387,
+    "beta1_lr2e-06": 0.7312
+   },
+   "best": "beta1_lr2e-06",
+   "runner_up": "beta1_lr5e-07",
+   "best_vs_runner_up_ci_contains_half": false,
+   "chosen": "beta1_lr2e-06"
+  },
+  "0.5": {
+   "matchups": [
+    {
+     "a": "beta0.5_lr5e-07",
+     "b": "beta0.5_lr1e-06",
+     "judge_run_id": "opd_sweep_dev_b05_lr5e7_vs_lr1e6",
+     "products": 200,
+     "a_win_rate": 0.295,
+     "ci95": [
+      0.24,
+      0.35
+     ],
+     "order_inconsistent": 43,
+     "both_orders_failed": 0,
+     "settled_by_rule": 1
+    },
+    {
+     "a": "beta0.5_lr5e-07",
+     "b": "beta0.5_lr2e-06",
+     "judge_run_id": "opd_sweep_dev_b05_lr5e7_vs_lr2e6",
+     "products": 200,
+     "a_win_rate": 0.235,
+     "ci95": [
+      0.185,
+      0.2875
+     ],
+     "order_inconsistent": 36,
+     "both_orders_failed": 0,
+     "settled_by_rule": 0
+    },
+    {
+     "a": "beta0.5_lr1e-06",
+     "b": "beta0.5_lr2e-06",
+     "judge_run_id": "opd_sweep_dev_b05_lr1e6_vs_lr2e6",
+     "products": 200,
+     "a_win_rate": 0.4075,
+     "ci95": [
+      0.35,
+      0.4675
+     ],
+     "order_inconsistent": 46,
+     "both_orders_failed": 0,
+     "settled_by_rule": 1
+    }
+   ],
+   "mean_score": {
+    "beta0.5_lr5e-07": 0.265,
+    "beta0.5_lr1e-06": 0.5563,
+    "beta0.5_lr2e-06": 0.6787
+   },
+   "best": "beta0.5_lr2e-06",
+   "runner_up": "beta0.5_lr1e-06",
+   "best_vs_runner_up_ci_contains_half": false,
+   "chosen": "beta0.5_lr2e-06"
+  }
+ },
+ "final": {
+  "matchup": {
+   "a": "beta1_lr2e-06",
+   "b": "beta0.5_lr2e-06",
+   "judge_run_id": "opd_sweep_dev_final_b1_lr2e6_vs_b05_lr2e6",
+   "products": 200,
+   "a_win_rate": 0.38,
+   "ci95": [
+    0.3225,
+    0.4375
+   ],
+   "order_inconsistent": 50,
+   "both_orders_failed": 0,
+   "settled_by_rule": 0
+  },
+  "ci_contains_half": false,
+  "chosen": "beta0.5_lr2e-06"
+ },
+ "guardrails": {
+  "base": {
+   "mean_words": 51.0,
+   "over_35_words": 154,
+   "truncated": 3,
+   "empty": 0
+  },
+  "beta1_lr5e-07": {
+   "mean_words": 19.5,
+   "over_35_words": 5,
+   "truncated": 5,
+   "empty": 0
+  },
+  "beta1_lr1e-06": {
+   "mean_words": 16.7,
+   "over_35_words": 4,
+   "truncated": 5,
+   "empty": 0
+  },
+  "beta1_lr2e-06": {
+   "mean_words": 17.9,
+   "over_35_words": 3,
+   "truncated": 0,
+   "empty": 0
+  },
+  "beta0.5_lr5e-07": {
+   "mean_words": 18.0,
+   "over_35_words": 4,
+   "truncated": 2,
+   "empty": 0
+  },
+  "beta0.5_lr1e-06": {
+   "mean_words": 16.8,
+   "over_35_words": 2,
+   "truncated": 0,
+   "empty": 0
+  },
+  "beta0.5_lr2e-06": {
+   "mean_words": 25.2,
+   "over_35_words": 2,
+   "truncated": 0,
+   "empty": 0
+  }
+ }
+}

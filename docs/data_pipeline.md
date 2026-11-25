@@ -35,7 +35,7 @@ flowchart TD
     T -.-> W[后续最终测试]
 ```
 
-虚线部分尚未落地。**gold 与 test 是两个互不重叠的商品集合；两者都排除在训练池之外。** gold 用于评委校准，最终 test 不参与 prompt 调整或评委选择。当前没有标准化 test ProductItem、测试广告或 SFT 数据；rubric 只评 `factual_support` 一项，v0.1 的 `concrete_product_info` 已决定不做（见 [rubric v0.2](individual_rubric_v0.2.md)）。
+虚线部分尚未落地。**gold 与 test 是两个互不重叠的商品集合；两者都排除在训练池之外。** gold 用于评委校准，最终 test 不参与 prompt 调整或评委选择。test 已转换为标准 ProductItem（`data/eval/test/`，见第 4 节）；正式训练各规模及参照系统的 test 广告在 `results/training/`，test 上还没有评测。rubric 只评 `factual_support` 一项，v0.1 的 `concrete_product_info` 已决定不做（见 [rubric v0.2](individual_rubric_v0.2.md)）。
 
 ## 2. 当前文件清单
 
@@ -49,6 +49,8 @@ flowchart TD
 | `data/processed/v1/gold_products.jsonl` | 原始格式商品对象 | 100；保留原始 gold 资料 | 划分时按源文件顺序提取 |
 | `data/processed/v1/test_products.jsonl` | 原始格式商品对象 | 1,000；保留原始 test 资料 | 同上 |
 | `data/eval/gold/product_items.jsonl` | 标准 `ProductItem` | 100；生成和商品信息展示共用 | 原始 gold 商品包装，见第 4 节 |
+| `data/eval/test/product_items.jsonl` | 标准 `ProductItem` | 1,000；只用于最终评测 | 原始 test 商品 → `build_test_products.py`，见第 4 节 |
+| `data/eval/test/manifest.json` | test 数据集说明 | 输入哈希、ID 映射、schema、代码提交、重叠检查和描述性计数 | 同上 |
 | `data/eval/gold/results_qwen_local.jsonl` | 一次候选生成的最终标准结果 | 100；本地 Qwen 候选 | 生成、失败补跑后发布 |
 | `data/eval/gold/results_gemma_31b.jsonl` | 同上 | 100；Gemma 候选 | 同上 |
 | `data/eval/gold/results_glm53_flash.jsonl` | 同上 | 100；GLM 候选 | 同上 |
@@ -63,6 +65,12 @@ flowchart TD
 | `results/rubric/<run_id>/metrics.json` | 一次 rubric 运行按生成模型的冲突率与两两差 | 新运行写出；四次导入的运行没有 | `evaluate_rubric.py` |
 | `results/rubric/comparison/` | 四个评委与人工标签的一致率统计和 manifest | 一份 | `compare_rubric.py` |
 | `data/eval/gold/manifest.json` | 当前 gold 数据集说明 | 文件哈希、数量、schema、生成 prompt/模型/参数和标签版本 | 发布、整理时维护的冻结索引 |
+| `data/train/v1/dev_products.jsonl` | 标准 `ProductItem` | 200；选学习率，不进入训练 | 训练池 → `build_train_split.py`，见第 11 节 |
+| `data/train/v1/train_products.jsonl` | 标准 `ProductItem`，行序即 rank | 8,000；前 1k/2k/4k/8k 行为嵌套数据规模 | 同上 |
+| `data/train/v1/split_index.jsonl` | 一件入选商品的 split、rank、内容组和原始行号 | 8,200；溯源 | 同上 |
+| `data/train/v1/manifest.json` | 训练/开发集划分说明 | 种子、过滤规则、剔除计数、各规模类别分布、输入输出哈希 | 同上 |
+| `data/train/v1/teacher_qwen397b_{dev,train}.jsonl` | 教师为一件商品写的一条广告（`GenerationResult`） | 200 / 8,000；SFT 目标与 dev 监控 | 上面两份商品 → `generate_teacher_data.py` |
+| `data/train/v1/teacher_qwen397b.manifest.json` | 教师数据说明 | 模型配置、prompt 哈希、采样参数、usage、长度统计、输入输出哈希 | 同上 |
 
 JSONL 文件均为每行一个 JSON 对象。`splits/v1` 和 `processed/v1` 的 `v1` 表示仍在使用的源划分，不表示存在多套并行使用的候选数据。当前正式 gold 只有 `data/eval/gold/` 这一套。
 
@@ -100,6 +108,7 @@ JSONL 文件均为每行一个 JSON 对象。`splits/v1` 和 `processed/v1` 的 
 | `artifacts/generation/gold/results_<alias>.jsonl` | 当前生成批次的本地最终快照；发布后的共享输入以 `data/eval/gold/` 为准 |
 | `artifacts/generation/gold/calls_<alias>.jsonl` | 各模型所有生成尝试的请求、响应、失败、重试关系和 usage |
 | `artifacts/pairwise/<run_id>/calls.jsonl` | judge 的调用日志；包括中途失败和补跑，行数可能大于 200 |
+| `artifacts/generation/train_v1/<split>/results_qwen397b.jsonl`、`calls_qwen397b.jsonl` | 教师数据生成的逐次结果和全部调用记录；续跑依据，冻结版本以 `data/train/v1/` 为准 |
 | `artifacts/rubric/<run_id>/calls.jsonl` | rubric 评委的每次尝试及原始返回文本；导入时重建，没有调用时间和延迟 |
 | `artifacts/annotation/workbench.log` | 标注服务运行日志；人工结论写在正式标签 JSONL 中 |
 | `deprecated/data/eval/gold/pairwise_annotations_zhou.original.jsonl` | 复核前的人工标签，按约定退出当前数据路径 |
@@ -107,7 +116,7 @@ JSONL 文件均为每行一个 JSON 对象。`splits/v1` 和 `processed/v1` 的 
 | `deprecated/migration_manifest.json` | 第一轮整理的路径迁移和哈希索引 |
 | `deprecated/layout_migrations/data_results_artifacts_20261114/` | 后续目录调整前的元数据、迁移索引及静态校验记录 |
 
-其他旧候选、旧 prompt、试跑和旧统计见[归档目录说明](../deprecated/README.md)。锁文件和草稿侧文件属于运行辅助文件，不是完成的偏好标签。`data/train/` 当前没有正式训练集；模型权重也尚未产出。
+其他旧候选、旧 prompt、试跑和旧统计见[归档目录说明](../deprecated/README.md)。锁文件和草稿侧文件属于运行辅助文件，不是完成的偏好标签。`data/train/v1/` 是第一版训练集和开发集（第 11 节）；模型权重尚未产出。
 
 ## 3. 原始资料 → 固定划分
 
@@ -147,7 +156,23 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 
 例如首条项目 ID 为 `gold_product_000000`。存储保留 `title`、`features`、`description`、`details`、`categories`、`main_category`、`store`、`price`、`average_rating`、`rating_number`、`images`、`videos`、`bought_together` 等原始属性；空值不在此步骤补造。
 
-结构定义见 [product_item.schema.json](../metadata/schemas/product_item.schema.json)。**目前没有独立的 ProductItem 转换 CLI**，`build_data_split.py` 只输出原始格式商品，不能把它描述为已完成此转换。后续应补可复现的转换入口；在此之前直接消费已冻结的文件，不重新编号。test 的同类转换尚未执行。
+结构定义见 [product_item.schema.json](../metadata/schemas/product_item.schema.json)。**目前没有独立的 ProductItem 转换 CLI**，`build_data_split.py` 只输出原始格式商品，不能把它描述为已完成此转换。后续应补可复现的转换入口；在此之前直接消费已冻结的文件，不重新编号。
+
+**test 用同一规则转换**，生产入口为 [scripts/build_test_products.py](../scripts/build_test_products.py)：
+
+```text
+按 data/processed/v1/test_products.jsonl 的行顺序，从 i = 0 编号：
+product_id   = "test_product_" + 六位补零的 i
+source_id    = 原始 parent_asin
+product_info = 原始商品对象去掉 parent_asin 后的全部字段
+```
+
+输出 `data/eval/test/product_items.jsonl`（1,000 条）和 `manifest.json`。脚本会校验输入文件与 `data/splits/v1/manifest.json` 中的哈希一致、行序与 `data/splits/v1/test.jsonl` 一致，并重新读取输出，检查 ProductItem schema、ID 唯一、取值未被改动，以及与 gold、dev、train 没有共同的 ASIN 或内容组。test 是固定集合，**不做任何过滤**；manifest 记录训练过滤会剔除的商品数量作参考（182 件既没有卖点也没有描述）。
+
+```sh
+PYTHONPATH=src .venv/bin/python scripts/build_test_products.py           # 已存在时拒绝覆盖
+PYTHONPATH=src .venv/bin/python scripts/build_test_products.py --force   # 重建，结果逐字节相同
+```
 
 ## 5. ProductItem → 四模型候选
 
@@ -166,9 +191,9 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 
 生成 system prompt 位于脚本的 `SYSTEM_PROMPT`，本批次全文及哈希也冻结在 gold manifest。要求英文短广告、选择重要且适合短广告的信息，无需覆盖全部属性；一至两句，prefer <25 words、最多 35 words，并保持事实有依据。该长度是 prompt 约束，脚本没有按词数截断或进行广告质量筛选。
 
-本批次 temperature=0.2、max_output_tokens=2048；各模型 thinking 等差异见 gold manifest。一个候选使用 `run_id + product_id + sample_index` 派生稳定 `candidate_id`。每次 API 尝试单独记录 `trace_id`，标准 [GenerationResult](../metadata/schemas/generation_result.schema.json) 只保存最终 `success/failed`、文本和字符串错误码。
+本批次 temperature=0.2、max_output_tokens=2048；各模型 thinking 等差异见 gold manifest。一个候选使用 `run_id + product_id + sample_index` 派生稳定 `candidate_id`。每次 API 尝试单独记录 `trace_id`，标准 [GenerationResult](../metadata/schemas/generation_result.schema.json) 只保存最终状态（`success`、`truncated` 或 `failed`，定义见 [metadata/README.md](../metadata/README.md)）、文本和字符串错误码。
 
-失败修复入口是 [scripts/retry_failed_candidates.py](../scripts/retry_failed_candidates.py)：从调用日志恢复实际请求设置，只补失败候选，保持候选 ID 及成功样本不变。有限自动重试不保证每次都尝试四次；例如截断或无效返回可以直接记为失败，后续再显式补跑。**日志里存在 failed 不代表当前最终结果仍失败**；当前正式四份结果均为 100 条 success，success 仅表示生成过程成功，不表示广告通过质量评审。
+失败修复入口是 [scripts/retry_failed_candidates.py](../scripts/retry_failed_candidates.py)：从调用日志恢复实际请求设置，只补失败候选，保持候选 ID 及成功样本不变。有限自动重试不保证每次都尝试四次；例如无效返回或正文为空的截断可以直接记为失败，后续再显式补跑。本批次的截断都发生在思考用完输出预算、正文为空的情况，因此记为 `failed` 并已补跑；按现行定义，写出了正文的截断记为 `truncated`，此脚本不会重试。**日志里存在 failed 不代表当前最终结果仍失败**；当前正式四份结果均为 100 条 success，success 仅表示生成过程成功，不表示广告通过质量评审。
 
 新实验示例见[生成与补跑指南](gold_candidate_generation.md)。生成默认写入 `artifacts/generation/gold/`，并拒绝已有结果/日志文件；新批次指定新的输出目录。成功运行、补跑与将结果发布到 `data/` 是分开的步骤。
 
@@ -263,7 +288,7 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 |---|---|
 | 原始 `parent_asin` | 原始商品 ID；当前源文件中唯一 |
 | `source_id` | ProductItem 和训练池索引保留的原始 ASIN |
-| `product_id` | 标准 gold 使用 `gold_product_000000` 起的项目 ID；训练池使用 `train_product_000000` 起的项目 ID |
+| `product_id` | 标准 gold 使用 `gold_product_000000` 起的项目 ID；test 使用 `test_product_000000` 起的项目 ID；训练池使用 `train_product_000000` 起的项目 ID |
 | split 索引中的 `product_id` | **gold/test 索引仍保存原始 ASIN**，应与标准 ProductItem 的 `source_id` 关联，不能直接按项目 `product_id` join |
 | `candidate_id` | 一条具体生成候选；关联候选文件、pair 中的文本、人工/模型赢家、rubric 样本与标签 |
 | `item_id` | rubric 样本中的展示编号 `rubric_item_NNN`；只在 `rubric_sample.jsonl` 内使用，rubric 标签按 `candidate_id` 关联 |
@@ -287,10 +312,13 @@ product_info = 原始商品对象去掉 parent_asin 后的全部字段
 | pair → 模型判断 | 有评测、日志和续跑机制 | 重调用不保证同一选择或理由；冻结结果是此次实验记录 |
 | 结果 → decisions / 常规一致率 | 有派生函数及离线校验 | 需要同一 pair 集与指定标签快照；完整资源统计另需日志 |
 | 四模型 comparison / bootstrap / report | 有冻结结果和计算口径 | 尚无专门批量重建 CLI，不能声称已一键复现 |
+| 训练池 → 训练集与开发集 | 有确定性脚本和离线测试 | 需要原始 gzip 与训练池索引；同一 seed 逐字节复现（第 11 节） |
+| 训练/开发商品 → 教师广告 | 有可续跑生成脚本 | 外部模型重调用不保证逐字相同；精确复现应读取 `data/train/v1/` 中的冻结版本 |
 | 候选 → rubric 样本 | 有确定性脚本 | 四份冻结候选、商品全集、seed 20261123；脚本默认覆盖冻结文件，重建时指定新 `--output` |
 | rubric 样本 → 人工标签 | 有标注台、当前标签及离线校验 | 人工决定无法由脚本重建 |
 | rubric 样本 → 评委判断 / 一致率 | 有评委脚本、冻结结果和统计脚本 | 重调用不保证同一判断；四次运行由探索脚本跑出后导入，见各 manifest 的 `provenance` |
-| 训练集、训练、最终 test 生成 | 尚未完成 | 需要后续实现与实验记录 |
+| 冻结 prompt → 训练与各规模输出 | 有编排脚本（`scripts/formal/`）、冻结输出和 Drive 上的 checkpoint | GPU 训练不保证逐位复现；精确复现应读取 `results/training/` 中的冻结输出，或从 Drive 上的 checkpoint 重新生成 |
+| 最终 test 评测 | 尚未完成 | 需要后续实现与实验记录 |
 
 离线校验入口为 [scripts/validate_gold_data.py](../scripts/validate_gold_data.py)：
 
@@ -309,3 +337,32 @@ PYTHONPATH=src .venv/bin/python scripts/validate_gold_data.py
 5. 同步本文及 data/results 索引；旧记录按约定归入 `deprecated/` 并保留迁移映射，不能让历史路径看起来像当前可直接续跑的配置。
 
 目前生产逻辑最需要后续补齐的两项是 **ProductItem 转换脚本** 和 **四模型对比报告重建脚本**。
+
+## 11. 训练池 → 训练集、开发集与教师广告（v1）
+
+用途与实验设计见 [SFT 与 OPD 蒸馏实验方案](sft_opd_experiment_plan.md)。
+
+**划分**，生产入口为 [scripts/build_train_split.py](../scripts/build_train_split.py)：
+
+1. 读取 `artifacts/cache/office_products/train_pool.jsonl`。gold 和 test 已在上游排除。每个 `group_id` 只取 ID 最小的一件，再按 `sha256("20261123:" + group_id)` 排序。
+2. 按顺序逐件检查，剔除以下商品：没有标题的；卖点和描述都为空的；渲染后的商品信息超过 6,000 字符的。v1 共检查 10,127 件，按两类原因分别剔除 1,917 件和 10 件。
+3. 前 200 件合格商品作为 dev，之后的 8,000 件作为 train。train 的行序就是 rank，前 1k、2k、4k、8k 行构成嵌套的数据规模。
+4. 写出 `ProductItem`（与 gold 格式相同，保留全部原始字段）、`split_index.jsonl` 和 manifest，并重新校验以下各项：数量、文件哈希、dev 与 train 没有重复的商品、ASIN 或内容组、与 gold/test 没有交集、rank 连续。
+
+```sh
+PYTHONPATH=src .venv/bin/python scripts/build_train_split.py            # 已存在时拒绝覆盖
+PYTHONPATH=src .venv/bin/python scripts/build_train_split.py --force    # 重建，结果逐字节相同
+```
+
+**教师广告**，生产入口为 [scripts/generate_teacher_data.py](../scripts/generate_teacher_data.py)：
+
+1. 用 `configs/models.toml` 中的 `qwen397b`（`qwen3.5-397b-a17b`，关闭思考，`top_p=1.0`）为每件商品写一条广告。temperature 为 1.0，输出上限 512 token。系统提示与 gold 冻结 prompt 相同，启动时会校验哈希。
+2. 每次尝试都写入 `artifacts/generation/train_v1/<split>/`。中断后重跑时，已有成功结果的商品会被跳过。
+3. 一个 split 的全部商品都成功后，按商品文件的行序冻结为 `data/train/v1/teacher_qwen397b_<split>.jsonl`，每条记录都通过 `GenerationResult` schema 校验，并同时更新 `teacher_qwen397b.manifest.json`。
+
+```sh
+PYTHONPATH=src .venv/bin/python scripts/generate_teacher_data.py --limit 5   # 冒烟测试，结果不会冻结
+PYTHONPATH=src .venv/bin/python scripts/generate_teacher_data.py --workers 8 # 全量，可以重复运行续跑
+```
+
+离线测试：`tests/test_train_split.py` 和 `tests/test_generate_teacher_data.py`（使用 mock 模型，不调用 API）。

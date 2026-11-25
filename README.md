@@ -4,6 +4,8 @@ Office Products 广告生成、离线评测与小模型微调实验。仓库结�
 
 所有现有数据的含义、来源、生产步骤、依赖关系和重建能力统一见 [数据说明与生产链路](docs/data_pipeline.md)。
 
+小模型训练实验（SFT 与 OPD 对比）的训练与评测设计见 [SFT 与 OPD 蒸馏实验方案](docs/sft_opd_experiment_plan.md)（方案阶段）；设计依据、试点结果和工程备忘见 [训练实验杂记](docs/training_notes.md)。
+
 ## 安装与 Key
 
 Python 3.11+：

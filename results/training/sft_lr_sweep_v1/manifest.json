@@ -1,0 +1,292 @@
+{
+ "experiment": "sft_lr_sweep_v1",
+ "description": "SFT learning-rate selection on 200 dev products (docs/sft_opd_experiment_plan.md §5).",
+ "landed_at": "2026-11-24T11:26:27Z",
+ "status": "completed",
+ "decision": {
+  "chosen_run": "sft_lr5e-06",
+  "learning_rate": 5e-06,
+  "selection": "selection.json",
+  "report": "report.md",
+  "how": "1e-05 had the highest mean win rate, but its CI against the runner-up 5e-06 contains 0.5, so the pre-registered rule picks the smaller learning rate; all three matchups are within noise."
+ },
+ "inputs": {
+  "data_commit": "272ada528790fc1e014f69b2496be37a2fb16e98",
+  "train_products": {
+   "path": "data/train/v1/train_products.jsonl",
+   "sha256": "d5bb1758a5443e60a86d2c42016323243529ed2cd4eb70389e82e08205e68bba"
+  },
+  "dev_products": {
+   "path": "data/train/v1/dev_products.jsonl",
+   "sha256": "c8b60f2a71ba6c6649862cb2e0399bd2bdacb2b138764e5591777186bb06a8bb"
+  },
+  "messages": {
+   "system": "scripts/generate_candidates.py SYSTEM_PROMPT (same as gold, teacher data and OPD)",
+   "system_prompt_sha256": "b4fe55a76e3b32682603210ca890a8507ae47378c4b03235f371fd8e507bc8f2",
+   "user": "adgenius.shared.product.render_product_information(ProductItem)"
+  },
+  "frozen_prompts": {
+   "prompts_train_v1.jsonl": {
+    "rows": 8000,
+    "sha256": "13144069d641ded0c61ce17ff0ef6f118db7336a7509eb22c89626407f2a899f"
+   },
+   "prompts_dev_v1.jsonl": {
+    "rows": 200,
+    "sha256": "2e35dec3ffb79b3c9931cc519c13f4098f58a53ba325ba527c5da792923d739d"
+   }
+  },
+  "sft_examples": {
+   "rows": 8000,
+   "sha256": "595f1c37b2d82b53aa670032595aeda600cecfdedc1393b28918774878bc9bae",
+   "teacher": {
+    "path": "data/train/v1/teacher_qwen397b_train.jsonl",
+    "sha256": "8da5b35f73968df4c407508c100911fbd4982d65fa1bcbc5a08dcf3a4e31e19d",
+    "run_id": "gen_teacher_qwen397b_train_v1"
+   },
+   "local_copy": "artifacts/train/sft_lr_sweep_v1/data/sft_train_v1.jsonl"
+  }
+ },
+ "runs": [
+  {
+   "name": "sft_lr5e-06",
+   "learning_rate": 5e-06,
+   "manifest": "runs/sft_lr5e-06/manifest.json",
+   "generations": "generations/sft_lr5e-06.jsonl"
+  },
+  {
+   "name": "sft_lr1e-05",
+   "learning_rate": 1e-05,
+   "manifest": "runs/sft_lr1e-05/manifest.json",
+   "generations": "generations/sft_lr1e-05.jsonl"
+  },
+  {
+   "name": "sft_lr2e-05",
+   "learning_rate": 2e-05,
+   "manifest": "runs/sft_lr2e-05/manifest.json",
+   "generations": "generations/sft_lr2e-05.jsonl"
+  }
+ ],
+ "generations": {
+  "sft_lr5e-06": {
+   "run_id": "gen_sft_lr_sweep_dev_sft_lr5em06",
+   "file": "generations/sft_lr5e-06.jsonl",
+   "sha256": "1771ca56bb7623b93337198cf4faf02d38cf1f2191e06be445587678c87bb45b",
+   "records": 200,
+   "status_counts": {
+    "success": 200,
+    "truncated": 0,
+    "failed": 0
+   },
+   "source_sha256": "606bf0bab30424264a3a84f4afd9feba67d721f982ce623fdf5284abcc300afa"
+  },
+  "sft_lr1e-05": {
+   "run_id": "gen_sft_lr_sweep_dev_sft_lr1em05",
+   "file": "generations/sft_lr1e-05.jsonl",
+   "sha256": "8b8c264d6af45655c7022a1af0e158344b56fb4c2c5987117af9b5f5b70352a0",
+   "records": 200,
+   "status_counts": {
+    "success": 200,
+    "truncated": 0,
+    "failed": 0
+   },
+   "source_sha256": "21632d2f0eacb5aebff626051409a85cf08d9800268d6e881610b37313fd3b2d"
+  },
+  "sft_lr2e-05": {
+   "run_id": "gen_sft_lr_sweep_dev_sft_lr2em05",
+   "file": "generations/sft_lr2e-05.jsonl",
+   "sha256": "c9d7d901df140adfa6f5cfc4510c67fb2781f92e8d7be38d695405c416359918",
+   "records": 200,
+   "status_counts": {
+    "success": 200,
+    "truncated": 0,
+    "failed": 0
+   },
+   "source_sha256": "b9950d52bd80fa75b492d01dbd28d38a6b85f977e2be14152a7621c94f4b6c55"
+  },
+  "base": {
+   "file": "../opd_lr_sweep_v1/generations/base.jsonl",
+   "sha256": "d5ecdad9f3ee45ddddf63d5921fc2886f4484445c7625f5269e1aee2a7cd8380",
+   "note": "untrained student, shared with opd_lr_sweep_v1 (same model, prompts and settings)"
+  }
+ },
+ "dev_generation": {
+  "products": 200,
+  "engine": "vLLM 0.30.0",
+  "dtype": "bfloat16",
+  "temperature": 0.0,
+  "max_tokens": 200,
+  "seed": 0,
+  "max_model_len": 2048,
+  "chat_template_kwargs": {
+   "enable_thinking": false
+  },
+  "schema": {
+   "path": "metadata/schemas/generation_result.schema.json",
+   "version": "GenerationResult v1.1",
+   "sha256": "86203f03c391eb96a90de6d229cc042fe621a6f61a48ac2ee6becb10c836f8b1"
+  },
+  "trace_id": "null: local generation, no API call log",
+  "rules": [
+   "Each system generates once per product; outputs are never regenerated based on their content.",
+   "A length stop with written text is recorded as truncated and judged as written.",
+   "The denominator is always all 200 dev products."
+  ]
+ },
+ "evaluation": {
+  "evaluator": "scripts/evaluate_pairwise.py",
+  "eval_config": "configs/eval/pairwise_deepseek.toml",
+  "model": "deepseek-flash",
+  "protocol_version": "pairwise-v0.2",
+  "input_mode": "ad_text_only",
+  "human_annotations": null,
+  "rules": ", fixed before any judgment was read (docs/sft_opd_experiment_plan.md §5; same as the OPD sweep):\n- Runs whose training loss is not finite (diverged) are excluded before judging.\n- Denominator is always the 200 dev products. A product's score for run A in a matchup is the mean over its\n  successful orders of 1 (A wins) or 0 (B wins). Products settled without a judge call: identical texts -> 0.5;\n  one side empty -> the non-empty side wins (both empty -> 0.5). If both orders failed after retries -> 0.5.\n- Truncated outputs keep their text and are judged as written; truncation is reported, not penalised separately.\n- A learning rate's score is the mean of its win rates in its matchups. The best one wins unless the\n  product-bootstrap 95% CI of its win rate against the runner-up contains 0.5; then the smaller of the two\n  learning rates is chosen. A winner at the edge of the grid is reported, not extended.\n- No per-item regeneration of model outputs; only judge calls are retried (repo evaluator behaviour).",
+  "bootstrap": {
+   "unit": "product",
+   "resamples": 10000,
+   "seed": 20261123,
+   "interval": "2.5th-97.5th percentile"
+  },
+  "judge_runs": {
+   "sft_sweep_dev_lr5e6_vs_lr1e5": {
+    "matchup": "sft_lr5e-06__vs__sft_lr1e-05",
+    "a": "sft_lr5e-06",
+    "b": "sft_lr1e-05",
+    "pairs": "pairs/sft_lr5e-06__vs__sft_lr1e-05.jsonl",
+    "pairs_sha256": "4ad90cd879240ccc2ed5cd3dbe99ac439987d9c68a0308b1dc1708f9c575efcd",
+    "settled": "pairs/sft_lr5e-06__vs__sft_lr1e-05.settled.json",
+    "pairs_judged": 200,
+    "settled_by_rule": 0,
+    "captured_pairs_path": "analysis/sft_lr_sweep_20261124/eval/pairs/sft_lr5e-06__vs__sft_lr1e-05.jsonl",
+    "results": "results/pairwise/sft_sweep_dev_lr5e6_vs_lr1e5/",
+    "calls": "artifacts/pairwise/sft_sweep_dev_lr5e6_vs_lr1e5/calls.jsonl",
+    "results_sha256": "e73d67f40d19d98a5b5910fe3fe31b10c485d719f947fae5de97105476979f77",
+    "config_fingerprint": "bd15438a2ea4a9766c7b26bff2ba0f61751147475e867db857eb689f4f889fbe",
+    "a_win_rate": 0.485,
+    "ci95": [
+     0.43,
+     0.54
+    ]
+   },
+   "sft_sweep_dev_lr5e6_vs_lr2e5": {
+    "matchup": "sft_lr5e-06__vs__sft_lr2e-05",
+    "a": "sft_lr5e-06",
+    "b": "sft_lr2e-05",
+    "pairs": "pairs/sft_lr5e-06__vs__sft_lr2e-05.jsonl",
+    "pairs_sha256": "6b127af05db82284e9ae36208f193b8af6042d2fee64a38c93f53ae2c69e8019",
+    "settled": "pairs/sft_lr5e-06__vs__sft_lr2e-05.settled.json",
+    "pairs_judged": 200,
+    "settled_by_rule": 0,
+    "captured_pairs_path": "analysis/sft_lr_sweep_20261124/eval/pairs/sft_lr5e-06__vs__sft_lr2e-05.jsonl",
+    "results": "results/pairwise/sft_sweep_dev_lr5e6_vs_lr2e5/",
+    "calls": "artifacts/pairwise/sft_sweep_dev_lr5e6_vs_lr2e5/calls.jsonl",
+    "results_sha256": "ce3d3879944e1cca85417cad5b8d61e1b93aec8160dbb0b46700e03cba309edc",
+    "config_fingerprint": "cc374f0bfd83a4d854a7d76399ee5af55ec52e5003780d7a618d24b5887c688b",
+    "a_win_rate": 0.5275,
+    "ci95": [
+     0.4675,
+     0.585
+    ]
+   },
+   "sft_sweep_dev_lr1e5_vs_lr2e5": {
+    "matchup": "sft_lr1e-05__vs__sft_lr2e-05",
+    "a": "sft_lr1e-05",
+    "b": "sft_lr2e-05",
+    "pairs": "pairs/sft_lr1e-05__vs__sft_lr2e-05.jsonl",
+    "pairs_sha256": "cc5526f0c1eb5a14df5131c16f3f1179571a90c4da831d6636f094a1583ad590",
+    "settled": "pairs/sft_lr1e-05__vs__sft_lr2e-05.settled.json",
+    "pairs_judged": 200,
+    "settled_by_rule": 0,
+    "captured_pairs_path": "analysis/sft_lr_sweep_20261124/eval/pairs/sft_lr1e-05__vs__sft_lr2e-05.jsonl",
+    "results": "results/pairwise/sft_sweep_dev_lr1e5_vs_lr2e5/",
+    "calls": "artifacts/pairwise/sft_sweep_dev_lr1e5_vs_lr2e5/calls.jsonl",
+    "results_sha256": "d34651f9ca05f5c19d8182125a4999be27c3299632a4b59772169aa72215fed8",
+    "config_fingerprint": "a4b75ba84720f31ea82b208d39fbb0275347fb35ea73b7367856b7594079104a",
+    "a_win_rate": 0.525,
+    "ci95": [
+     0.4675,
+     0.5825
+    ]
+   }
+  }
+ },
+ "relocation": "Judge runs were executed outside the repository and their manifests are kept exactly as captured (including absolute input paths). Each judge_runs entry maps captured_pairs_path to the repository copy; pairs_sha256 equals the hash recorded in the captured manifest. Win rates were recomputed from the repository copies and match selection.json.",
+ "environment": {
+  "started_utc": "2026-11-24T10:34:06Z",
+  "gpu": "NVIDIA L4, 23034 MiB, 580.82.07",
+  "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+  "packages": {
+   "torch": "2.13.0",
+   "vllm": "0.30.0",
+   "trl": "1.18.0",
+   "transformers": "5.23.0",
+   "accelerate": "1.15.0",
+   "datasets": "4.8.5",
+   "flash-linear-attention": "0.6.0"
+  }
+ },
+ "smoke_test": "2 steps at lr 1e-05 plus full dev generation on the same VM before the sweep; outputs not used",
+ "costs": {
+  "colab": {
+   "accelerator": "L4",
+   "session_utc": [
+    "2026-11-24T10:19Z",
+    "2026-11-24T11:06Z"
+   ],
+   "compute_units": 1.44,
+   "includes": "install, smoke test and the three runs"
+  },
+  "tinker": "not used",
+  "deepseek": {
+   "calls": 1200,
+   "input_tokens": 546528,
+   "cache_hit_tokens": 229376,
+   "output_tokens": 74860
+  }
+ },
+ "deviations_from_plan": [
+  "40 examples per step instead of 32, so 1k/2k/4k/8k fall on whole steps (25 steps per 1k), as in OPD.",
+  "Learning-rate score is the mean win rate over the two matchups (plan: most wins).",
+  "Run checkpoints were not retained; the formal run retrains from scratch with the selected setting."
+ ],
+ "incidents": [
+  "SFTTrainer used a RandomSampler despite shuffle_dataset=False (that flag only pre-shuffles the dataset); found by a local check before any GPU time and fixed with train_sampling_strategy='sequential' plus a pre-training assertion. All three runs used a SequentialSampler. OPD was not affected (its trainer's RepeatSampler honours shuffle_dataset=False).",
+  "The first L4 request returned Service Unavailable; the second, a minute later, succeeded."
+ ],
+ "code": {
+  "location": "artifacts/train/sft_lr_sweep_v1/code/ (local only): the exact versions that ran",
+  "sha256": {
+   "build_sft_data.py": "7dc9cdcd8a0a475482602cd7d8f8f2c06b2ed35097085dd7a239bc8825f5682d",
+   "check_sft_local.py": "afd9c345096a61cb1fcba3e8710fa918e9f947555e88de588cad9a89342e35cd",
+   "dev_generate.py": "752fbd2a0e1d0f7066c1b8d919796d15d35e3d9f5a2877a352aab45463b7d241",
+   "land_sft.py": "3f324ccb7541cdf82e69d1fed3854c715f8dccf1e9e366532673c36957d86936",
+   "prepare_eval_sft.py": "9a6d66379667a367fb07128926dfa86a1921f386987f7499931a99d9f16e3e98",
+   "run_judge.sh": "bad9631b5f088b9690c792dc16c007559bb6c5560efa8b9054702757f0e5b13a",
+   "select_sft.py": "713550fba2d7d99a8aef79f246274bf1498714d72ac4dc0f32e076cbc8473ae8",
+   "sft_train.py": "3f0ec0ade92edbd84fd3e196bf1f5c5e46873a6a90cb1b96ff9b1f43f160fe15",
+   "sweep_cell_sft.py": "d7579f847177acf4370ffad2410be6519de483f7cf5dbf7d53e15d6536bc15cc",
+   "vm_runner_sft.py": "bcb405a088dc268a3415641e4637a9bd77d7f884ca62a4aa72253fcd24cf340d",
+   "watchdog_sft.py": "17fc32626b1a9ab86a294dc7a28098e10dcb428e443ee19fb5c6aec466a3bfb4"
+  },
+  "repository": {
+   "training_code": "scripts/sft/",
+   "sweep_orchestration": "scripts/sft/lr_sweep/",
+   "shared": [
+    "scripts/build_training_prompts.py",
+    "scripts/dev_generate.py"
+   ],
+   "note": "Repository versions of the same scripts. They differ from the run versions only in paths and command-line options; see scripts/sft/lr_sweep/README.md. Re-running prepare_eval_sft.py and select_sft.py from there reproduces pairs/ and selection.json byte for byte, and build_sft_data.py reproduces the SFT examples hash.",
+   "rebuild_data": [
+    "PYTHONPATH=src .venv/bin/python scripts/build_training_prompts.py",
+    "python3 scripts/sft/build_sft_data.py"
+   ]
+  }
+ },
+ "not_retained": [
+  "model checkpoints"
+ ],
+ "local_artifacts": {
+  "training_logs": "artifacts/train/sft_lr_sweep_v1/runs/",
+  "vm_archive": "artifacts/train/sft_lr_sweep_v1/vm/",
+  "judge_calls": "artifacts/pairwise/<judge_run_id>/calls.jsonl"
+ }
+}

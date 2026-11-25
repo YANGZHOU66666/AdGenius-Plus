@@ -115,7 +115,10 @@ class CandidatePairTests(unittest.TestCase):
         missing = candidate_records(2)[1:]
         empty = candidate_records(2)
         empty[0]["generation_result"]["text"] = "  "
-        for label, records in (("failed", failed), ("missing", missing), ("empty", empty)):
+        truncated = candidate_records(2)
+        truncated[0]["generation_result"] = {"status": "truncated", "text": "Ad cut", "error": "output_too_long"}
+        for label, records in (("failed", failed), ("missing", missing), ("empty", empty),
+                               ("truncated", truncated)):
             with self.subTest(label=label):
                 status, output, manifest = self._invoke(records)
                 self.assertEqual(status, 2)

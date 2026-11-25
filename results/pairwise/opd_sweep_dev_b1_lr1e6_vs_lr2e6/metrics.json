@@ -1,0 +1,82 @@
+{
+  "expected_pair_count": 200,
+  "recorded_pair_count": 200,
+  "successful_order_count": 400,
+  "failed_or_missing_order_count": 0,
+  "order_success_rate": 1.0,
+  "both_orders_successful_count": 200,
+  "stable_winner_count": 159,
+  "order_inconsistent_count": 41,
+  "incomplete_pair_count": 0,
+  "stable_coverage_rate": 0.795,
+  "order_consistency_rate": 0.795,
+  "order_consistency_wilson_ci95": {
+    "lower": 0.7337430194757748,
+    "upper": 0.8451382379616379
+  },
+  "first_presented_choice_rate": 0.5325,
+  "human_agreement": {
+    "annotated_pair_count": 0,
+    "valid_label_count": 0,
+    "stable_compared_count": 0,
+    "stable_agreement_count": 0,
+    "stable_agreement_rate": null,
+    "stable_agreement_wilson_ci95": null,
+    "stable_coverage_of_labeled_pairs": null,
+    "stable_and_agree_rate_over_all_labels": null,
+    "per_order": {
+      "AB": {
+        "compared_count": 0,
+        "agreement_count": 0,
+        "agreement_rate": null
+      },
+      "BA": {
+        "compared_count": 0,
+        "agreement_count": 0,
+        "agreement_rate": null
+      }
+    },
+    "judge_protocol_version": "pairwise-v0.2",
+    "annotation_protocol_versions": []
+  },
+  "api_attempt_count": 400,
+  "failed_attempt_count": 0,
+  "attempt_error_counts": {},
+  "token_usage_all_attempts": {
+    "input_tokens": {
+      "known_sum": 174742,
+      "known_attempt_count": 400,
+      "unknown_attempt_count": 0
+    },
+    "output_tokens": {
+      "known_sum": 23530,
+      "known_attempt_count": 400,
+      "unknown_attempt_count": 0
+    },
+    "total_tokens": {
+      "known_sum": 198272,
+      "known_attempt_count": 400,
+      "unknown_attempt_count": 0
+    },
+    "reasoning_tokens": {
+      "known_sum": null,
+      "known_attempt_count": 0,
+      "unknown_attempt_count": 400
+    },
+    "cache_read_tokens": {
+      "known_sum": 94208,
+      "known_attempt_count": 400,
+      "unknown_attempt_count": 0
+    },
+    "cache_write_tokens": {
+      "known_sum": null,
+      "known_attempt_count": 0,
+      "unknown_attempt_count": 400
+    }
+  },
+  "latency_seconds": {
+    "sum": 505.43859320366755,
+    "mean": 1.2635964830091688
+  },
+  "uncertainty_note": "The Wilson interval is descriptive for stable pairs only. AB/BA calls are not independent samples; repeated pairs for one product also share an input. Use product-level resampling for final model comparisons."
+}

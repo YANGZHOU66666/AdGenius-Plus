@@ -1,0 +1,90 @@
+{
+  "version": "v1",
+  "teacher_alias": "qwen397b",
+  "splits": {
+    "dev": {
+      "products": 200,
+      "input": {
+        "path": "data/train/v1/dev_products.jsonl",
+        "sha256": "c8b60f2a71ba6c6649862cb2e0399bd2bdacb2b138764e5591777186bb06a8bb"
+      },
+      "output": {
+        "path": "data/train/v1/teacher_qwen397b_dev.jsonl",
+        "sha256": "f0a5a6d70704e5200894168a1b84d139e4c57b82e73a6d21479bd14c1e40e368"
+      },
+      "run_id": "gen_teacher_qwen397b_dev_v1",
+      "calls_log": "artifacts/generation/train_v1/dev/calls_qwen397b.jsonl",
+      "usage": {
+        "calls": 200,
+        "input_tokens": 152259,
+        "output_tokens": 7807
+      },
+      "length": {
+        "mean_words": 26.68,
+        "median_words": 27,
+        "over_25_words": 128,
+        "over_35_words": 1
+      },
+      "frozen_at": "2026-11-23T07:24:36Z"
+    },
+    "train": {
+      "products": 8000,
+      "input": {
+        "path": "data/train/v1/train_products.jsonl",
+        "sha256": "d5bb1758a5443e60a86d2c42016323243529ed2cd4eb70389e82e08205e68bba"
+      },
+      "output": {
+        "path": "data/train/v1/teacher_qwen397b_train.jsonl",
+        "sha256": "8da5b35f73968df4c407508c100911fbd4982d65fa1bcbc5a08dcf3a4e31e19d"
+      },
+      "run_id": "gen_teacher_qwen397b_train_v1",
+      "calls_log": "artifacts/generation/train_v1/train/calls_qwen397b.jsonl",
+      "usage": {
+        "calls": 8001,
+        "input_tokens": 6228176,
+        "output_tokens": 311997
+      },
+      "length": {
+        "mean_words": 26.82,
+        "median_words": 27,
+        "over_25_words": 5167,
+        "over_35_words": 84
+      },
+      "frozen_at": "2026-11-23T07:24:37Z"
+    }
+  },
+  "generation": {
+    "model": {
+      "provider": "openai_compatible",
+      "model": "qwen3.5-397b-a17b",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "base_url_env": "DASHSCOPE_BASE_URL",
+      "api_key_env": "DASHSCOPE_API_KEY",
+      "timeout_seconds": 120.0,
+      "max_retries": 0,
+      "request_options": {
+        "enable_thinking": false,
+        "top_p": 1.0
+      },
+      "max_tokens_parameter": "max_tokens"
+    },
+    "system_prompt_sha256": "b4fe55a76e3b32682603210ca890a8507ae47378c4b03235f371fd8e507bc8f2",
+    "system_prompt_source": "scripts/generate_candidates.py SYSTEM_PROMPT (identical to the gold manifest)",
+    "user_message": "adgenius.shared.product.render_product_information(ProductItem)",
+    "temperature": 1.0,
+    "max_output_tokens": 512,
+    "samples_per_product": 1
+  },
+  "schemas": {
+    "generations": {
+      "path": "metadata/schemas/generation_result.schema.json",
+      "version": "GenerationResult v1",
+      "sha256": "5257f57840afe12c4ee1f4b128847593b2d909ac2195428af12240de6ddfa381"
+    }
+  },
+  "code": {
+    "script": "scripts/generate_teacher_data.py",
+    "git_commit": "150e69222cf44c756e3e6191366b1cd155e24516",
+    "code_paths_dirty": false
+  }
+}

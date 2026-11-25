@@ -1,0 +1,135 @@
+{
+ "experiment": "test_references_v1",
+ "status": "completed",
+ "landed_at": "2026-11-25T02:47:32Z",
+ "description": "Reference systems for the final test evaluation of the formal runs: the 397B teacher and the untrained 0.8B student on the 1,000 test products.",
+ "products": {
+  "path": "data/eval/test/product_items.jsonl",
+  "sha256": "ab7341161c179414ca6d160e80ad572045891e283e20cde66130b78961b4831d",
+  "prompts": {
+   "file": "artifacts/train/prompts/v1/prompts_test_v1.jsonl",
+   "sha256": "a39e2a89eca42c4a756992e230b74ae745c494faa9053466e930eb9b42dfaf47"
+  }
+ },
+ "systems": {
+  "teacher_qwen397b": {
+   "file": "generations/test/teacher_qwen397b.jsonl",
+   "sha256": "d81556f931b36ac8e3e5053917fe2cbdd9e72d7a54b827f2950642faf5282974",
+   "records": 1000,
+   "run_id": "gen_teacher_qwen397b_test_v1",
+   "status_counts": {
+    "success": 1000,
+    "truncated": 0,
+    "failed": 0
+   },
+   "mean_words": 26.6,
+   "median_words": 26.5,
+   "over_35_words": 7,
+   "empty": 0,
+   "generation": {
+    "model": {
+     "provider": "openai_compatible",
+     "model": "qwen3.5-397b-a17b",
+     "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+     "base_url_env": "DASHSCOPE_BASE_URL",
+     "api_key_env": "DASHSCOPE_API_KEY",
+     "timeout_seconds": 120.0,
+     "max_retries": 0,
+     "request_options": {
+      "enable_thinking": false,
+      "top_p": 1.0
+     },
+     "max_tokens_parameter": "max_tokens"
+    },
+    "system_prompt_sha256": "b4fe55a76e3b32682603210ca890a8507ae47378c4b03235f371fd8e507bc8f2",
+    "user_message": "adgenius.shared.product.render_product_information(ProductItem)",
+    "temperature": 1.0,
+    "max_output_tokens": 512,
+    "samples_per_product": 1,
+    "same_settings_as": "data/train/v1/teacher_qwen397b.manifest.json"
+   },
+   "created_utc": "2026-11-24T21:57:36Z",
+   "calls": {
+    "attempts": 1000,
+    "usage": {
+     "input_tokens": 739903,
+     "output_tokens": 38550
+    },
+    "journal": "artifacts/generation/teacher_qwen397b_test_v1/run/calls_qwen397b.jsonl"
+   },
+   "trace_id": "Bailian call id per record (journal kept locally)",
+   "code": {
+    "repo_script": "scripts/generate_teacher_test.py",
+    "ran_as": "analysis/teacher_test_20261124/run_teacher_test.py (same code, paths outside the repo)",
+    "repo_functions": "scripts/generate_teacher_data.py run_split (read-only)",
+    "git_commit": "7b9ccde6e8b48afc0fca6f6683b962626cc2495a",
+    "code_paths_dirty": false
+   },
+   "cost": "about 740k input + 39k output tokens on Bailian (about CNY 1.2)"
+  },
+  "student_untrained": {
+   "run_id": "gen_student_untrained_test_v1",
+   "file": "generations/test/student_untrained.jsonl",
+   "sha256": "0e0db19a0670030405c6f5d75ac2c64bfdf60dd51a27acd588d346364c06b5f1",
+   "records": 1000,
+   "status_counts": {
+    "success": 979,
+    "truncated": 21,
+    "failed": 0
+   },
+   "mean_words": 50.2,
+   "median_words": 46.0,
+   "over_35_words": 716,
+   "empty": 0,
+   "completion_tokens_mean": 81.0,
+   "source_sha256": "d3f1bf4539dc8bd90ece5360b66d2fb50a522f2362ff2a6fc62f47589e150308",
+   "model": "Qwen/Qwen3.5-0.8B text-only export (bf16), no training",
+   "generated_by": "scripts/formal/run_formal.py --base-test on the sft_formal_v1 VM",
+   "generation": {
+    "engine": "vLLM 0.30.0",
+    "dtype": "bfloat16",
+    "temperature": 0.0,
+    "max_tokens": 200,
+    "seed": 0,
+    "max_model_len": 4096,
+    "chat_template_kwargs": {
+     "enable_thinking": false
+    },
+    "prompts": {
+     "file": "artifacts/train/prompts/v1/prompts_test_v1.jsonl",
+     "sha256": "a39e2a89eca42c4a756992e230b74ae745c494faa9053466e930eb9b42dfaf47",
+     "rows": 1000
+    },
+    "schema": {
+     "path": "metadata/schemas/generation_result.schema.json",
+     "version": "GenerationResult v1.1",
+     "sha256": "86203f03c391eb96a90de6d229cc042fe621a6f61a48ac2ee6becb10c836f8b1"
+    },
+    "candidate_id": "cand_ + sha256(json([run_id, product_id, 0]))[:24]",
+    "trace_id": "null: local generation, no API call log",
+    "rules": [
+     "Each system generates once per product; outputs are never regenerated based on their content.",
+     "A length stop with written text is recorded as truncated (error output_too_long) and kept."
+    ]
+   },
+   "hardware": "NVIDIA L4, 23034 MiB, 580.82.07",
+   "packages": {
+    "torch": "2.13.0",
+    "vllm": "0.30.0",
+    "trl": "1.18.0",
+    "transformers": "5.23.0",
+    "accelerate": "1.15.0",
+    "datasets": "4.8.5",
+    "tinker": null,
+    "flash-linear-attention": "0.6.0"
+   }
+  }
+ },
+ "dev_references": {
+  "student_untrained": "results/training/opd_lr_sweep_v1/generations/base.jsonl (same model, prompts and settings except max_model_len 2048; every dev prompt fits)",
+  "teacher_qwen397b": "data/train/v1/teacher_qwen397b_dev.jsonl"
+ },
+ "local_artifacts": {
+  "teacher_generation": "artifacts/generation/teacher_qwen397b_test_v1/"
+ }
+}

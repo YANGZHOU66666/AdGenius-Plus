@@ -152,12 +152,16 @@ def _validate_results(records: list[dict[str, Any]], path: Path) -> None:
         if not isinstance(candidate_id, str) or not candidate_id or candidate_id in ids:
             raise ValueError(f"Missing or duplicate candidate_id in {path}")
         ids.add(candidate_id)
-        if result.get("status") not in {"success", "failed"}:
+        if result.get("status") not in {"success", "truncated", "failed"}:
             raise ValueError(f"Invalid generation status for {candidate_id} in {path}")
         if result["status"] == "success" and (
                 not isinstance(result.get("text"), str) or not result["text"].strip()
                 or result.get("error") is not None):
             raise ValueError(f"Invalid successful result for {candidate_id} in {path}")
+        if result["status"] == "truncated" and (
+                not isinstance(result.get("text"), str) or not result["text"].strip()
+                or result.get("error") != "output_too_long"):
+            raise ValueError(f"Invalid truncated result for {candidate_id} in {path}")
         if result["status"] == "failed" and (
                 result.get("text") is not None or not isinstance(result.get("error"), str)):
             raise ValueError(f"Invalid failed result for {candidate_id} in {path}")
@@ -190,8 +194,9 @@ def _plan(source: Path, output: Path, input_path: Path, items: dict[str, dict[st
             if any(before[key] != after.get(key) for key in
                    ("candidate_id", "product_id", "run_id", "sample_index")):
                 raise ValueError(f"Candidate identities/order differ from source: {target}")
-            if before["generation_result"]["status"] == "success" and before != after:
-                raise ValueError(f"An original successful result was changed in {target}")
+            # Only failures are repaired; successful and truncated outputs are final.
+            if before["generation_result"]["status"] != "failed" and before != after:
+                raise ValueError(f"An original successful or truncated result was changed in {target}")
         target_calls = output / calls_path.name
         calls = _read_jsonl(target_calls) if target_calls.exists() else original_calls
         if calls[:len(original_calls)] != original_calls:
@@ -206,11 +211,11 @@ def _plan(source: Path, output: Path, input_path: Path, items: dict[str, dict[st
                 raise ValueError(f"Call does not belong to this model/results: {target_calls}")
             by_trace[trace] = call
 
-        # Recover the small interruption window between a flushed successful
-        # call and the atomic replacement of the result file.
+        # Recover the small interruption window between a flushed final (successful
+        # or truncated) call and the atomic replacement of the result file.
         for call in calls[len(original_calls):]:
             result = call.get("generation_result")
-            if result and result.get("status") == "success":
+            if result and result.get("status") in {"success", "truncated"}:
                 for row in records:
                     if (row["candidate_id"] == call["candidate_id"]
                             and row["generation_result"]["status"] == "failed"):

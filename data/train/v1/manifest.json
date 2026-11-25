@@ -1,0 +1,107 @@
+{
+  "version": "v1",
+  "seed": 20261123,
+  "schemas": {
+    "products": {
+      "path": "metadata/schemas/product_item.schema.json",
+      "version": "ProductItem v1",
+      "sha256": "4ef0bc45c37763455543fa90d1303d8561e262d6f90a85a52f1ace94b52b45ce"
+    }
+  },
+  "source_id_field": "parent_asin",
+  "id_mapping": "product_id is reused from the train-pool index (train_product_NNNNNN, assigned by scripts/build_data_split.py in source order); it never changes across rebuilds",
+  "code": {
+    "script": "scripts/build_train_split.py",
+    "git_commit": "150e69222cf44c756e3e6191366b1cd155e24516",
+    "code_paths_dirty": false
+  },
+  "selection": {
+    "order": "one product per content group, sorted by sha256(f'{seed}:{group_id}')",
+    "dev": "first 200 eligible products in that order",
+    "train": "next 8000 eligible products; line order is rank",
+    "scales": {
+      "1000": "first 1000 lines of train_products.jsonl",
+      "2000": "first 2000 lines of train_products.jsonl",
+      "4000": "first 4000 lines of train_products.jsonl",
+      "8000": "first 8000 lines of train_products.jsonl"
+    },
+    "filters": {
+      "title": "non-empty",
+      "features_or_description": "at least one non-empty",
+      "rendered_product_information_max_chars": 6000,
+      "duplicates": "one product per group_id"
+    },
+    "candidates_visited": 10127,
+    "rejected": {
+      "missing_features_and_description": 1917,
+      "rendered_too_long": 10
+    }
+  },
+  "counts": {
+    "dev": 200,
+    "train": 8000
+  },
+  "category_mix_top8": {
+    "dev": {
+      "Office & School Supplies": 0.74,
+      "Office Electronics": 0.155,
+      "Office Furniture & Lighting": 0.05,
+      "(none)": 0.04,
+      "Education Store": 0.01,
+      "Brother Remf Ink & Toner": 0.005
+    },
+    "train_1000": {
+      "Office & School Supplies": 0.733,
+      "Office Electronics": 0.15,
+      "Office Furniture & Lighting": 0.061,
+      "(none)": 0.047,
+      "Education Store": 0.009
+    },
+    "train_2000": {
+      "Office & School Supplies": 0.7425,
+      "Office Electronics": 0.1475,
+      "Office Furniture & Lighting": 0.0545,
+      "(none)": 0.0435,
+      "Education Store": 0.01,
+      "Printers & Accessories": 0.0015,
+      "Office Supplies Outlet": 0.0005
+    },
+    "train_4000": {
+      "Office & School Supplies": 0.746,
+      "Office Electronics": 0.1432,
+      "Office Furniture & Lighting": 0.059,
+      "(none)": 0.0413,
+      "Education Store": 0.0083,
+      "Printers & Accessories": 0.0013,
+      "Office Supplies Outlet": 0.0003,
+      "Canon Top Printer Deals": 0.0003
+    },
+    "train_8000": {
+      "Office & School Supplies": 0.7499,
+      "Office Electronics": 0.1414,
+      "Office Furniture & Lighting": 0.0583,
+      "(none)": 0.0403,
+      "Education Store": 0.0073,
+      "Printers & Accessories": 0.0018,
+      "Office Organization": 0.0003,
+      "Office Supplies Outlet": 0.0001
+    }
+  },
+  "inputs": {
+    "train_pool_index": {
+      "path": "artifacts/cache/office_products/train_pool.jsonl",
+      "sha256": "3f2e2a9442bb22e4f8bbc5d8618c117d65aca5a2ce6cdc41c691f0e2b47b85d5"
+    },
+    "raw_source_sha256": "2cd43a529967bc33d2bc074853ed940467e0d592493d0507df56676565d05594",
+    "split_manifest": "data/splits/v1/manifest.json"
+  },
+  "outputs_sha256": {
+    "data/train/v1/dev_products.jsonl": "c8b60f2a71ba6c6649862cb2e0399bd2bdacb2b138764e5591777186bb06a8bb",
+    "data/train/v1/train_products.jsonl": "d5bb1758a5443e60a86d2c42016323243529ed2cd4eb70389e82e08205e68bba",
+    "data/train/v1/split_index.jsonl": "125cbb895fdb4b684ceda19c61e1769eb049d4e08220d9b447cde9b8da27540d"
+  },
+  "notes": [
+    "gold and test products are excluded upstream by data/splits/v1; dev and train are disjoint by product and group",
+    "dev is for hyperparameter selection only and must never enter training"
+  ]
+}
