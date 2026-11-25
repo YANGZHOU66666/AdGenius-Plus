@@ -1,0 +1,409 @@
+{
+  "schema_version": "bt_metrics_v1",
+  "design": "test_sft_opd_v1",
+  "anchor": "base",
+  "scale": "natural-log odds relative to the anchor; a difference of 1 is a 73% expected win rate",
+  "scoring": "per pair, the mean over AB and BA: 1 won both, 0.5 orders disagree, 0 lost both; a side without a usable ad loses the pair (both without: tie)",
+  "pseudo_tied_pairs_per_comparison": 0.5,
+  "cycle_rank": 7,
+  "bootstrap": {
+    "unit": "product",
+    "iterations": 2000,
+    "seed": 20261124,
+    "products": 1000
+  },
+  "systems": [
+    {
+      "system": "teacher_397b",
+      "score": 3.5308,
+      "score_ci95": [
+        3.3835,
+        3.6961
+      ],
+      "pairs": 2000
+    },
+    {
+      "system": "sft_8k",
+      "score": 2.802,
+      "score_ci95": [
+        2.6579,
+        2.9604
+      ],
+      "pairs": 4000
+    },
+    {
+      "system": "opd_8k",
+      "score": 2.6097,
+      "score_ci95": [
+        2.4673,
+        2.7687
+      ],
+      "pairs": 4000
+    },
+    {
+      "system": "sft_4k",
+      "score": 2.5257,
+      "score_ci95": [
+        2.3876,
+        2.6728
+      ],
+      "pairs": 3000
+    },
+    {
+      "system": "sft_2k",
+      "score": 2.4636,
+      "score_ci95": [
+        2.3286,
+        2.617
+      ],
+      "pairs": 3000
+    },
+    {
+      "system": "opd_4k",
+      "score": 2.461,
+      "score_ci95": [
+        2.3183,
+        2.6141
+      ],
+      "pairs": 3000
+    },
+    {
+      "system": "opd_2k",
+      "score": 2.3479,
+      "score_ci95": [
+        2.2184,
+        2.4935
+      ],
+      "pairs": 3000
+    },
+    {
+      "system": "sft_1k",
+      "score": 1.993,
+      "score_ci95": [
+        1.8613,
+        2.1436
+      ],
+      "pairs": 3000
+    },
+    {
+      "system": "opd_1k",
+      "score": 1.9356,
+      "score_ci95": [
+        1.8042,
+        2.0825
+      ],
+      "pairs": 3000
+    },
+    {
+      "system": "base",
+      "score": 0.0,
+      "score_ci95": [
+        0.0,
+        0.0
+      ],
+      "pairs": 4000
+    }
+  ],
+  "comparisons": [
+    {
+      "systems": [
+        "opd_1k",
+        "sft_1k"
+      ],
+      "pairs": 1000,
+      "wins": 355,
+      "ties": 263,
+      "losses": 382,
+      "forfeits": 0,
+      "win_rate": 0.4865,
+      "win_rate_ci95": [
+        0.459,
+        0.5135
+      ],
+      "bt_predicted_win_rate": 0.4857,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "opd_2k",
+        "sft_2k"
+      ],
+      "pairs": 1000,
+      "wins": 308,
+      "ties": 318,
+      "losses": 374,
+      "forfeits": 0,
+      "win_rate": 0.467,
+      "win_rate_ci95": [
+        0.4425,
+        0.492
+      ],
+      "bt_predicted_win_rate": 0.4711,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "opd_4k",
+        "sft_4k"
+      ],
+      "pairs": 1000,
+      "wins": 320,
+      "ties": 347,
+      "losses": 333,
+      "forfeits": 0,
+      "win_rate": 0.4935,
+      "win_rate_ci95": [
+        0.469,
+        0.517
+      ],
+      "bt_predicted_win_rate": 0.4838,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "opd_8k",
+        "sft_8k"
+      ],
+      "pairs": 1000,
+      "wins": 281,
+      "ties": 329,
+      "losses": 390,
+      "forfeits": 0,
+      "win_rate": 0.4455,
+      "win_rate_ci95": [
+        0.4205,
+        0.471
+      ],
+      "bt_predicted_win_rate": 0.4521,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "sft_2k",
+        "sft_1k"
+      ],
+      "pairs": 1000,
+      "wins": 459,
+      "ties": 310,
+      "losses": 231,
+      "forfeits": 0,
+      "win_rate": 0.614,
+      "win_rate_ci95": [
+        0.59,
+        0.638
+      ],
+      "bt_predicted_win_rate": 0.6155,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "sft_4k",
+        "sft_2k"
+      ],
+      "pairs": 1000,
+      "wins": 346,
+      "ties": 344,
+      "losses": 310,
+      "forfeits": 0,
+      "win_rate": 0.518,
+      "win_rate_ci95": [
+        0.494,
+        0.5425
+      ],
+      "bt_predicted_win_rate": 0.5155,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "sft_8k",
+        "sft_4k"
+      ],
+      "pairs": 1000,
+      "wins": 390,
+      "ties": 343,
+      "losses": 267,
+      "forfeits": 0,
+      "win_rate": 0.5615,
+      "win_rate_ci95": [
+        0.5375,
+        0.585
+      ],
+      "bt_predicted_win_rate": 0.5686,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "opd_2k",
+        "opd_1k"
+      ],
+      "pairs": 1000,
+      "wins": 444,
+      "ties": 311,
+      "losses": 245,
+      "forfeits": 0,
+      "win_rate": 0.5995,
+      "win_rate_ci95": [
+        0.5735,
+        0.625
+      ],
+      "bt_predicted_win_rate": 0.6016,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "opd_4k",
+        "opd_2k"
+      ],
+      "pairs": 1000,
+      "wins": 344,
+      "ties": 356,
+      "losses": 300,
+      "forfeits": 0,
+      "win_rate": 0.522,
+      "win_rate_ci95": [
+        0.496,
+        0.547
+      ],
+      "bt_predicted_win_rate": 0.5283,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "opd_8k",
+        "opd_4k"
+      ],
+      "pairs": 1000,
+      "wins": 363,
+      "ties": 355,
+      "losses": 282,
+      "forfeits": 0,
+      "win_rate": 0.5405,
+      "win_rate_ci95": [
+        0.5165,
+        0.5645
+      ],
+      "bt_predicted_win_rate": 0.5371,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "sft_1k",
+        "base"
+      ],
+      "pairs": 1000,
+      "wins": 820,
+      "ties": 119,
+      "losses": 61,
+      "forfeits": 0,
+      "win_rate": 0.8795,
+      "win_rate_ci95": [
+        0.862,
+        0.896
+      ],
+      "bt_predicted_win_rate": 0.8801,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "opd_1k",
+        "base"
+      ],
+      "pairs": 1000,
+      "wins": 804,
+      "ties": 134,
+      "losses": 62,
+      "forfeits": 0,
+      "win_rate": 0.871,
+      "win_rate_ci95": [
+        0.8535,
+        0.8885
+      ],
+      "bt_predicted_win_rate": 0.8739,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "sft_8k",
+        "base"
+      ],
+      "pairs": 1000,
+      "wins": 907,
+      "ties": 71,
+      "losses": 22,
+      "forfeits": 0,
+      "win_rate": 0.9425,
+      "win_rate_ci95": [
+        0.93,
+        0.9545
+      ],
+      "bt_predicted_win_rate": 0.9428,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "opd_8k",
+        "base"
+      ],
+      "pairs": 1000,
+      "wins": 898,
+      "ties": 76,
+      "losses": 26,
+      "forfeits": 0,
+      "win_rate": 0.936,
+      "win_rate_ci95": [
+        0.923,
+        0.9485
+      ],
+      "bt_predicted_win_rate": 0.9315,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "teacher_397b",
+        "sft_8k"
+      ],
+      "pairs": 1000,
+      "wins": 529,
+      "ties": 289,
+      "losses": 182,
+      "forfeits": 0,
+      "win_rate": 0.6735,
+      "win_rate_ci95": [
+        0.6505,
+        0.6975
+      ],
+      "bt_predicted_win_rate": 0.6745,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "teacher_397b",
+        "opd_8k"
+      ],
+      "pairs": 1000,
+      "wins": 591,
+      "ties": 251,
+      "losses": 158,
+      "forfeits": 0,
+      "win_rate": 0.7165,
+      "win_rate_ci95": [
+        0.6935,
+        0.7385
+      ],
+      "bt_predicted_win_rate": 0.7153,
+      "predicted_outside_ci": false
+    }
+  ],
+  "fit_check": {
+    "comparisons_with_prediction_outside_ci": 0,
+    "comparisons_not_testable": 0,
+    "note": "With cycle_rank 0 the comparisons form a tree and the fit reproduces every observed rate, so this check only has power when cycle_rank > 0. A comparison whose observed interval is a single value is not testable."
+  },
+  "pair_counts": {
+    "pairs_in_file": 16000,
+    "results": 16000,
+    "not_judged": 0,
+    "scored": 16000,
+    "forfeits": 0
+  }
+}

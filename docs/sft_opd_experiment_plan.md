@@ -2,7 +2,7 @@
 
 本文描述训练与评测方案的设计：用同一个教师，分别通过 SFT 和在策略蒸馏（OPD）训练 0.8B 学生，再比较两者的效果。
 
-状态截至 **2026-11-24**：学习率已选定（OPD `beta=0.5`、2e-6；SFT 5e-6）；正式训练已完成，两种方法 1k/2k/4k/8k 的 test 和 dev 输出以及参照系统（未训练学生、397B 老师）的 test 输出已入库（[训练报告](../results/training/formal_v1_report.md)）；test 评测尚未开始。设计依据、试点结果和工程备忘见[训练实验杂记](training_notes.md)。
+状态截至 **2026-11-24**：学习率已选定（OPD `beta=0.5`、2e-6；SFT 5e-6）；正式训练已完成，两种方法 1k/2k/4k/8k 的 test 和 dev 输出以及参照系统（未训练学生、397B 老师）的 test 输出已入库（[训练报告](../results/training/formal_v1_report.md)）；test 评测已完成（[test 评测报告](test_evaluation_v1.md)）。设计依据、试点结果和工程备忘见[训练实验杂记](training_notes.md)。
 
 ## 1. 研究问题
 
@@ -105,10 +105,10 @@ dev 上的学习率选择见第 5 节。
 
 ### 6.3 其他维度
 
-- **护栏指标**：长度分布、超过 35 词的比例、照抄标题的比例、开头多样性、教师给出的整句 logprob。这些只作为描述性结果报告，不参与选择。不用"每 token 平均 logprob"作为质量指标。
+- **护栏指标**：只报告平均词数、超过 35 词的比例和截断数，见[训练报告](../results/training/formal_v1_report.md)，只作描述，不参与选择。照抄标题的比例、开头多样性和教师给出的整句 logprob 决定不做。
 - **事实准确性**：用单条 rubric 评测。主评委不检查编造内容。
-- **人工盲评**：在 test 集的 8k checkpoint 输出中抽约 100 个商品，标注时隐藏模型身份。
-- **案例分析**：对代表性样本，用 397B 逐 token 打分，找出改进和退化的来源。
+- **人工盲评**：原计划在 test 集的 8k checkpoint 输出中抽约 100 个商品盲评，本轮未做。
+- **案例分析**：原计划用 397B 逐 token 打分分析代表性样本，本轮未做。
 
 ### 6.4 下结论的规则（事先定好）
 
@@ -127,5 +127,5 @@ dev 上的学习率选择见第 5 节。
 - [x] OPD 的损失设置：选定 `beta=0.5`、学习率 2e-6（[选择报告](../results/training/opd_lr_sweep_v1/report.md)）。
 - [x] 正式训练：已完成（[训练报告](../results/training/formal_v1_report.md)）。
 - [x] test 评测的具体设计：10 个系统、16 组对比，不用 GLM（见第 6.2 节）。
-- [ ] 单条 rubric 能否承担事实核查。
-- [ ] 人工盲评的标注人和规模。
+- [x] 单条 rubric 承担事实核查：默认评委 DeepSeek，见 [rubric 人机一致率报告](rubric_judge_agreement.md)；test 结果见 [test 评测报告](test_evaluation_v1.md)。
+- [ ] 人工盲评：本轮未做。

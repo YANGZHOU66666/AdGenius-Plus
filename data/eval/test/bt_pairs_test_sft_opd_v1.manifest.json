@@ -1,0 +1,238 @@
+{
+  "design_file": {
+    "path": "configs/eval/bt/test_sft_opd_v1.toml",
+    "sha256": "0af313a15e38cc872fde712a90214ce27042573759010bba99ff4c65f68f2565"
+  },
+  "design": "test_sft_opd_v1",
+  "anchor": "base",
+  "seed": 20261124,
+  "include_truncated": true,
+  "products": 1000,
+  "systems": {
+    "base": {
+      "path": "results/training/test_references_v1/generations/test/student_untrained.jsonl",
+      "sha256": "0e0db19a0670030405c6f5d75ac2c64bfdf60dd51a27acd588d346364c06b5f1",
+      "status_counts": {
+        "success": 979,
+        "truncated": 21
+      }
+    },
+    "sft_1k": {
+      "path": "results/training/sft_formal_v1/generations/test/scale_1k.jsonl",
+      "sha256": "efa7b24b4257285bf0b4efdc57d71de5612c55063b75a2744c0b838ef6aa5371",
+      "status_counts": {
+        "success": 1000
+      }
+    },
+    "sft_2k": {
+      "path": "results/training/sft_formal_v1/generations/test/scale_2k.jsonl",
+      "sha256": "42f2e7c9614b8b9602efa47dadcead856264022f360cd49fcfa8433b10f27c52",
+      "status_counts": {
+        "success": 1000
+      }
+    },
+    "sft_4k": {
+      "path": "results/training/sft_formal_v1/generations/test/scale_4k.jsonl",
+      "sha256": "78579a3f85bce239ecd25bbea03803fcb45bc854aa74f8c27230613ee0843e42",
+      "status_counts": {
+        "success": 1000
+      }
+    },
+    "sft_8k": {
+      "path": "results/training/sft_formal_v1/generations/test/scale_8k.jsonl",
+      "sha256": "a7945e84b86d2a59f74caa21981044070811d7b8d624fe075d55cb266d7aa09a",
+      "status_counts": {
+        "success": 1000
+      }
+    },
+    "opd_1k": {
+      "path": "results/training/opd_formal_v1/generations/test/scale_1k.jsonl",
+      "sha256": "628df32dc5d71cb13cdc01c2e4412d014c7aef7b01269b1b8e90e04f573229e1",
+      "status_counts": {
+        "success": 999,
+        "truncated": 1
+      }
+    },
+    "opd_2k": {
+      "path": "results/training/opd_formal_v1/generations/test/scale_2k.jsonl",
+      "sha256": "c02c6a1be157d2513d7b2edcd7c00b23d909f3b6b8e1e5a0e522680dd08e7d0a",
+      "status_counts": {
+        "success": 999,
+        "truncated": 1
+      }
+    },
+    "opd_4k": {
+      "path": "results/training/opd_formal_v1/generations/test/scale_4k.jsonl",
+      "sha256": "5ff8316a893d303480a8524cbb2065560f08aa0c2aeffeecebf0538a5095d335",
+      "status_counts": {
+        "success": 1000
+      }
+    },
+    "opd_8k": {
+      "path": "results/training/opd_formal_v1/generations/test/scale_8k.jsonl",
+      "sha256": "6c469ca83e19bed0d87f5607b2c4ace898a723824f1c98c17d53af50aa3b97fc",
+      "status_counts": {
+        "success": 1000
+      }
+    },
+    "teacher_397b": {
+      "path": "results/training/test_references_v1/generations/test/teacher_qwen397b.jsonl",
+      "sha256": "d81556f931b36ac8e3e5053917fe2cbdd9e72d7a54b827f2950642faf5282974",
+      "status_counts": {
+        "success": 1000
+      }
+    }
+  },
+  "comparisons": [
+    {
+      "systems": [
+        "opd_1k",
+        "sft_1k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "opd_2k",
+        "sft_2k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "opd_4k",
+        "sft_4k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "opd_8k",
+        "sft_8k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "sft_2k",
+        "sft_1k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "sft_4k",
+        "sft_2k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "sft_8k",
+        "sft_4k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "opd_2k",
+        "opd_1k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "opd_4k",
+        "opd_2k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "opd_8k",
+        "opd_4k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "sft_1k",
+        "base"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "opd_1k",
+        "base"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "sft_8k",
+        "base"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "opd_8k",
+        "base"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "teacher_397b",
+        "sft_8k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    },
+    {
+      "systems": [
+        "teacher_397b",
+        "opd_8k"
+      ],
+      "products": 1000,
+      "pairs": 1000,
+      "forfeits": 0
+    }
+  ],
+  "pairs": 16000,
+  "judge_calls_ab_ba": 32000,
+  "forfeits": 0,
+  "cycle_rank": 7,
+  "output": "data/eval/test/bt_pairs_test_sft_opd_v1.jsonl",
+  "output_sha256": "8287c34a018f3669e12fe2f1d5b224b0489cb9ee90b0ac43ff46cc77b2f593e2"
+}
