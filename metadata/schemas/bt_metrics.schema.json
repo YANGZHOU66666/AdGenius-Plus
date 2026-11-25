@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BTMetrics v1",
+  "description": "一次 Bradley–Terry 统计（scripts/summarize_bt.py 写出的 metrics.json）：各系统分数、各组对比的胜负与拟合检查。",
+  "type": "object",
+  "required": ["schema_version", "design", "anchor", "scale", "scoring", "pseudo_tied_pairs_per_comparison",
+               "cycle_rank", "bootstrap", "systems", "comparisons", "fit_check", "pair_counts"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "bt_metrics_v1"},
+    "design": {"$ref": "#/$defs/name", "description": "设计文件中的 design.name。"},
+    "anchor": {"$ref": "#/$defs/name", "description": "分数固定为 0 的系统。"},
+    "scale": {"type": "string", "description": "分数刻度的文字说明。"},
+    "scoring": {"type": "string", "description": "每对记分规则的文字说明。"},
+    "pseudo_tied_pairs_per_comparison": {"type": "number", "minimum": 0,
+                                         "description": "每组对比额外加入的虚拟平局对数。"},
+    "cycle_rank": {"type": "integer", "minimum": 0, "description": "比较图中独立环的个数：组数 − 系统数 + 1。"},
+    "bootstrap": {
+      "type": "object",
+      "required": ["unit", "iterations", "seed", "products"],
+      "additionalProperties": false,
+      "properties": {
+        "unit": {"const": "product"},
+        "iterations": {"type": "integer", "minimum": 1},
+        "seed": {"type": "integer"},
+        "products": {"type": "integer", "minimum": 1, "description": "参与重抽的商品数。"}
+      }
+    },
+    "systems": {
+      "type": "array",
+      "minItems": 2,
+      "description": "按 score 从高到低排列。",
+      "items": {
+        "type": "object",
+        "required": ["system", "score", "score_ci95", "pairs"],
+        "additionalProperties": false,
+        "properties": {
+          "system": {"$ref": "#/$defs/name"},
+          "score": {"type": "number", "description": "相对 anchor 的自然对数几率。"},
+          "score_ci95": {"$ref": "#/$defs/interval_or_null"},
+          "pairs": {"type": "integer", "minimum": 0, "description": "该系统参与的计分配对数。"}
+        }
+      }
+    },
+    "comparisons": {
+      "type": "array",
+      "minItems": 1,
+      "description": "顺序与设计文件中的 comparisons 相同；胜负按 systems[0] 统计。",
+      "items": {
+        "type": "object",
+        "required": ["systems", "pairs", "wins", "ties", "losses", "forfeits", "win_rate", "win_rate_ci95",
+                     "bt_predicted_win_rate", "predicted_outside_ci"],
+        "additionalProperties": false,
+        "properties": {
+          "systems": {"type": "array", "items": {"$ref": "#/$defs/name"}, "minItems": 2, "maxItems": 2},
+          "pairs": {"type": "integer", "minimum": 0},
+          "wins": {"type": "integer", "minimum": 0, "description": "两个顺序都判 systems[0] 赢的配对数。"},
+          "ties": {"type": "integer", "minimum": 0, "description": "两个顺序结论相反的配对数。"},
+          "losses": {"type": "integer", "minimum": 0},
+          "forfeits": {"type": "integer", "minimum": 0,
+                       "description": "因生成失败直接判出胜负（或双方都失败判平）的配对数，已计入 wins / ties / losses。"},
+          "win_rate": {"oneOf": [{"$ref": "#/$defs/rate"}, {"type": "null"}],
+                       "description": "(wins + 0.5 × ties) / pairs；没有计分配对时为 null。"},
+          "win_rate_ci95": {"$ref": "#/$defs/interval_or_null"},
+          "bt_predicted_win_rate": {"$ref": "#/$defs/rate"},
+          "predicted_outside_ci": {"type": ["boolean", "null"],
+                                   "description": "预测是否落在观察区间外；区间退化为单值时为 null（无法检查）。"}
+        }
+      }
+    },
+    "fit_check": {
+      "type": "object",
+      "required": ["comparisons_with_prediction_outside_ci", "comparisons_not_testable", "note"],
+      "additionalProperties": false,
+      "properties": {
+        "comparisons_with_prediction_outside_ci": {"type": "integer", "minimum": 0},
+        "comparisons_not_testable": {"type": "integer", "minimum": 0},
+        "note": {"type": "string"}
+      }
+    },
+    "pair_counts": {
+      "type": "object",
+      "required": ["pairs_in_file", "results", "not_judged", "scored", "forfeits"],
+      "additionalProperties": false,
+      "properties": {
+        "pairs_in_file": {"type": "integer", "minimum": 0},
+        "results": {"type": "integer", "minimum": 0, "description": "读入的 PairwiseResult 条数。"},
+        "not_judged": {"type": "integer", "minimum": 0, "description": "配对文件中没有评委结果的配对数。"},
+        "scored": {"type": "integer", "minimum": 0, "description": "有两个成功评委判断、已计分的配对数。"},
+        "forfeits": {"type": "integer", "minimum": 0, "description": "因生成失败、不经评委直接计分的配对数。"},
+        "incomplete": {"type": "integer", "minimum": 0, "description": "有顺序失败、未计分的配对数。"},
+        "not_in_design": {"type": "integer", "minimum": 0, "description": "两个系统的组合不在设计中的配对数。"}
+      }
+    }
+  },
+  "$defs": {
+    "name": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "interval_or_null": {
+      "description": "95% 区间 [下界, 上界]；没有重抽值时为 null。",
+      "oneOf": [
+        {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+        {"type": "null"}
+      ]
+    }
+  }
+}

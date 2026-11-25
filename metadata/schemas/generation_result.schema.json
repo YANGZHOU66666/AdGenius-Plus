@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "GenerationResult v1",
+  "title": "GenerationResult v1.1",
   "description": "一个商品候选广告的一次标准化生成结果。",
   "type": "object",
   "required": [
@@ -43,12 +43,12 @@
       "properties": {
         "status": {
           "type": "string",
-          "enum": ["success", "failed"],
-          "description": "生成是否得到可用的广告文案。"
+          "enum": ["success", "truncated", "failed"],
+          "description": "success：正常结束并得到非空文案；truncated：因输出长度上限停止，但已有非空文案，原文保留；failed：没有得到可用文案。"
         },
         "text": {
           "type": ["string", "null"],
-          "description": "成功时的广告文案；失败时为 null。"
+          "description": "success 时为完整文案；truncated 时为截断后的原文；failed 时为 null。"
         },
         "error": {
           "type": ["string", "null"],
@@ -63,7 +63,7 @@
             "invalid_output",
             "output_too_long"
           ],
-          "description": "成功时为 null；失败时为固定错误代码。"
+          "description": "success 时为 null；truncated 时固定为 output_too_long；failed 时为固定错误代码。"
         }
       },
       "allOf": [
@@ -76,6 +76,18 @@
             "properties": {
               "text": {"type": "string", "minLength": 1},
               "error": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"status": {"const": "truncated"}},
+            "required": ["status"]
+          },
+          "then": {
+            "properties": {
+              "text": {"type": "string", "minLength": 1, "pattern": "\\S"},
+              "error": {"const": "output_too_long"}
             }
           }
         },

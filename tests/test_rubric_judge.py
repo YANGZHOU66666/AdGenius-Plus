@@ -9,6 +9,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
+import jsonschema
+
 from adgenius.eval import rubric, rubric_metrics
 from adgenius.shared.llm import ModelConfig
 
@@ -146,6 +148,13 @@ class RubricJudgeTest(unittest.TestCase):
                 rubric._validator().validate(row)
             metrics = json.loads((Path(temp) / "out/metrics.json").read_text())
             self.assertEqual(metrics["paired_differences"][0]["shared_products"], 1)
+            self.assertEqual(metrics["schema_version"], "rubric_generator_metrics_v1")
+            validator = rubric._validator("rubric_generator_metrics.schema.json")
+            validator.validate(metrics)
+            broken = json.loads(json.dumps(metrics))
+            broken["by_generator"]["new_model"]["false_rate"] = 2
+            with self.assertRaises(jsonschema.ValidationError):
+                validator.validate(broken)
             with patch.object(rubric, "LLMClient", side_effect=AssertionError("no calls expected")), \
                     patch.dict("os.environ", {"DEEPSEEK_API_KEY": ""}):
                 self.assertEqual(rubric.run(args)["status"], "completed")

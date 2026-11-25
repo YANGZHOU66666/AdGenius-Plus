@@ -26,7 +26,7 @@ rubric 评委逐条检查一条广告是否与它的商品资料冲突，目前�
 | 模式 | 参数 | 判哪些广告 | 用途 |
 |---|---|---|---|
 | rubric 样本（默认） | `--gold-dir`，默认 `data/eval/gold` | [rubric_sample.jsonl](../data/eval/gold/rubric_sample.jsonl) 的 130 条 | 与人工标签比较，校准评委 |
-| 生成结果 | `--candidates <results_*.jsonl …>`，`--products <ProductItem>` | 给定文件中每条生成成功的广告 | 评测生成模型 |
+| 生成结果 | `--candidates <results_*.jsonl …>`，`--products <ProductItem>` | 给定文件中每条有广告的结果（success 和 truncated） | 评测生成模型 |
 
 ## 配置
 
@@ -61,7 +61,7 @@ PYTHONPATH=src .venv/bin/python scripts/evaluate_rubric.py \
 
 - `--products` 是这些广告对应的 ProductItem 文件，默认是 gold 的 100 件商品。换成 test 商品时传 test 的 ProductItem 文件。广告引用了文件里没有的商品时，脚本会报错。
 - 生成模型名取自生成运行 ID `gen_<model>_<时间>`；不符合这个格式的，用整个运行 ID 作为模型名。
-- 生成失败的条目没有广告可判，会跳过，并在 `skipped_failed_generations` 中按模型计数。不同文件中出现重复的 `candidate_id` 时会报错。
+- 因长度上限被截断（`truncated`）的广告照常判，因为这就是生成模型实际给出的内容。生成失败（`failed`）的条目没有广告可判，会跳过，并在 `skipped_failed_generations` 中按模型计数。不同文件中出现重复的 `candidate_id` 时会报错。
 - 比较新模型时，把旧模型的结果放进同一次运行，这样评委、prompt 和商品都相同。
 
 去掉 `--dry-run` 才会真正调用 API。先用 `--limit N` 取前 N 条、换一个单独的 run ID 试跑。`--workers` 是并发请求数，默认为 6。
@@ -91,7 +91,7 @@ PYTHONPATH=src .venv/bin/python scripts/evaluate_rubric.py \
 
 ## 指标
 
-**每次运行的 `metrics.json`**：按生成模型统计评委的判断。
+**每次运行的 `metrics.json`**：按生成模型统计评委的判断。格式见 [RubricGeneratorMetrics v1](../metadata/schemas/rubric_generator_metrics.schema.json)，写出前校验，带 `schema_version` 字段。
 
 | 字段 | 含义 |
 |---|---|
