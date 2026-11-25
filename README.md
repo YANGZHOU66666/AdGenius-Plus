@@ -1,145 +1,151 @@
 # AdGenius+
 
-Office Products 广告生成、离线评测与小模型微调实验。仓库结构见 [docs/architecture.md](docs/architecture.md)。
+**English** | [简体中文](README.zh-CN.md)
 
-所有现有数据的含义、来源、生产步骤、依赖关系和重建能力统一见 [数据说明与生产链路](docs/data_pipeline.md)。
+AdGenius+ compares two ways of distilling a large teacher (Qwen3.5-397B) into a small student (Qwen3.5-0.8B) that writes short ads for Amazon Office Products listings:
 
-小模型训练实验（SFT 与 OPD 对比）的训练与评测设计见 [SFT 与 OPD 蒸馏实验方案](docs/sft_opd_experiment_plan.md)（方案阶段）；设计依据、试点结果和工程备忘见 [训练实验杂记](docs/training_notes.md)。
+- **SFT**: supervised fine-tuning on ads written by the teacher;
+- **OPD**: on-policy distillation, where the student samples its own ads and the teacher scores them token by token.
 
-## 安装与 Key
+Both are evaluated with LLM judges that were first calibrated against human labels: a pairwise judge for ad quality, summarized with a Bradley–Terry model, and a rubric judge for factual consistency with the product information.
 
-Python 3.11+：
+📄 Paper (first draft): [docs/AdGenius_first_draft.pdf](docs/AdGenius_first_draft.pdf) · Full test report (Chinese): [docs/test_evaluation_v1.md](docs/test_evaluation_v1.md)
 
-```sh
-python -m venv .venv
-.venv/bin/python -m pip install -e .
-cp .env.example .env
+## Main results
+
+1,000 held-out test products, ten systems (SFT and OPD checkpoints at 1k/2k/4k/8k training products, the untrained student, the teacher), 32,000 pairwise judgments and 10,000 rubric checks. All runs use **a single training seed**.
+
+| Scale | OPD win rate vs SFT [95% CI] | Conflict rate OPD / SFT | Δ OPD − SFT, points [95% CI] |
+|---|---|---|---|
+| 1k | 0.486 [0.46, 0.51] | 7.7% / 11.4% | **−3.7** [−5.9, −1.5] |
+| 2k | **0.467** [0.44, 0.49] | 7.9% / 10.9% | **−3.0** [−5.2, −0.8] |
+| 4k | 0.493 [0.47, 0.52] | 7.5% / 9.2% | −1.7 [−3.7, +0.3] |
+| 8k | **0.446** [0.42, 0.47] | 6.1% / 8.0% | −1.9 [−3.8, 0.0] |
+
+Win rate counts both judge orders won as 1 and a split as 0.5. Intervals are product-level bootstrap intervals; the Δ intervals are computed exactly. Bold marks differences whose interval excludes no difference (0.5 or 0).
+
+- **Quality favors SFT; faithfulness favors OPD.** Pairwise point estimates favor SFT at every scale, significantly at 2k and 8k. OPD has fewer judged contradictions with the product information at every scale, significantly at 1k and 2k and borderline at 8k.
+- **Most of the gain comes from the first 1k products.** Against the untrained student, SFT 1k and OPD 1k win 0.88 and 0.87 of pairs, and the conflict rate drops from 17.9% to 7.7–11.4%. More data still helps, but less.
+- **The teacher is still clearly ahead**: Bradley–Terry score 3.53 versus 2.80 (SFT 8k) and 2.61 (OPD 8k), conflict rate 2.8%.
+- **Why the two judges disagree**: the pairwise judge sees only the two ads, not the product, so it cannot catch a claim that contradicts the product. Quality and faithfulness have to be measured separately.
+
+Differences of 2–5 points could partly come from training randomness, which one seed cannot rule out. Limitations are discussed in the paper.
+
+## Judges and their calibration
+
+| Judge | Measures | Human agreement | Details |
+|---|---|---|---|
+| Pairwise (DeepSeek, both A/B orders) | Which of two ads is better | 83.5% on 100 calibration pairs | [docs/pairwise_llm_judge.md](docs/pairwise_llm_judge.md), [4-judge comparison](results/pairwise/comparison/report.md) |
+| Rubric (DeepSeek) | Does the ad contradict the product information (`factual_support`) | accuracy 0.938, Cohen's κ 0.716 on 130 ads | [docs/rubric_llm_judge.md](docs/rubric_llm_judge.md), [agreement report](docs/rubric_judge_agreement.md), [rubric v0.2](docs/individual_rubric_v0.2.md) |
+
+The Bradley–Terry comparison design was committed before any test judgment ([configs/eval/bt/test_sft_opd_v1.toml](configs/eval/bt/test_sft_opd_v1.toml), method in [docs/bradley_terry_eval.md](docs/bradley_terry_eval.md)).
+
+## Pipeline
+
+```mermaid
+flowchart LR
+  A[Amazon Reviews 2023<br/>Office Products] --> B[Splits<br/>calibration 100 / test 1k<br/>train 8k / dev 200]
+  B --> C[Calibration set:<br/>ads from 4 generators]
+  C --> D[Human labels:<br/>pairwise + rubric]
+  D --> E[Choose and freeze judges]
+  B --> F[Teacher ads<br/>Qwen3.5-397B]
+  F --> G[SFT]
+  B --> H[OPD<br/>teacher scores student samples]
+  G --> I[Checkpoints at 1k/2k/4k/8k]
+  H --> I
+  I --> J[Generate on test]
+  E --> K[Pairwise judge → Bradley–Terry]
+  E --> L[Rubric judge → conflict rates]
+  J --> K
+  J --> L
 ```
 
-在 `.env` 填需要调用的平台 Key。共享包装器支持 OpenAI 兼容协议、Claude Messages、Google generateContent 和本地 Ollama；入口脚本显式加载 `.env`。配置见 `configs/models.toml`，Key 和虚拟环境不提交。
+## Repository layout
 
-| 模型别名 | 平台 / 环境变量 |
-|---|---|
-| `qwen` | 阿里云中国区百炼，`DASHSCOPE_API_KEY` |
-| `deepseek` | DeepSeek，`DEEPSEEK_API_KEY` |
-| `claude` | Anthropic，`ANTHROPIC_API_KEY` |
-| `gpt6_luna` | OpenAI，`OPENAI_API_KEY` |
-| `gemma_31b` | Google，`GEMINI_API_KEY` |
-| `glm53_flash` | 智谱，`ZAI_API_KEY` |
-| `longcat` | LongCat，`LONGCAT_API_KEY` |
-| `mistral` | Mistral，`MISTRAL_API_KEY` |
-| `qwen_local` | 本地 Ollama，无需 Key |
+```text
+src/adgenius/   shared LLM client and product rendering (shared/), judges and statistics (eval/)
+scripts/        data preparation, generation, judging, BT summaries; training in sft/, opd/, formal/
+tools/          local web workbenches for human pairwise and rubric labels
+configs/        model endpoints (models.toml), judge configs and BT designs (eval/)
+prompts/        judge prompts
+metadata/       JSON schemas for the shared record formats
+data/           splits, products, calibration (gold) set, training data, test pairs
+results/        per-item judge results, metrics and reports; training outputs and generations
+docs/           methods, reports and the paper draft
+tests/          offline tests
+deprecated/     retired pilots and older data, kept for provenance
+```
 
-阿里云默认北京兼容端点；可用 `DASHSCOPE_BASE_URL` 设置同地区工作空间的兼容 API 根地址。完整参数和调用记录格式见 [metadata/README.md](metadata/README.md) 与共享客户端代码。
+`artifacts/` (call logs, caches, checkpoints) and `.env` stay local and are not in Git. A data index is in [data/README.md](data/README.md) and a results index in [results/README.md](results/README.md).
 
-```sh
+## Quick start
+
+Python 3.11+.
+
+```bash
+python -m venv .venv && .venv/bin/python -m pip install -e .
+```
+
+These checks need no API key and no network:
+
+```bash
+PYTHONPATH=src .venv/bin/python -m unittest discover -s tests
+```
+
+```bash
+PYTHONPATH=src .venv/bin/python scripts/validate_gold_data.py
+```
+
+Recompute the test Bradley–Terry scores from the committed judge results (about 5 seconds):
+
+```bash
+PYTHONPATH=src .venv/bin/python scripts/summarize_bt.py --design configs/eval/bt/test_sft_opd_v1.toml --results results/pairwise/deepseek41_test_sft_opd_v1/results.jsonl --output-dir /tmp/bt_check
+```
+
+Recompute the test conflict rates and their intervals from the committed rubric results:
+
+```bash
+PYTHONPATH=src .venv/bin/python scripts/summarize_rubric.py --run-dir results/rubric/deepseek41_rubric_v1_test --generator-names base sft_1k sft_2k sft_4k sft_8k opd_1k opd_2k opd_4k opd_8k teacher_397b --output /tmp/rubric_check.json
+```
+
+`validate_gold_data.py` re-checks the calibration data, the human labels and the agreement statistics. All test generations, judge results and metrics are committed, so you can analyze them without calling any model.
+
+## Calling models
+
+Copy `.env.example` to `.env` and fill in the keys you need. Scripts load `.env` explicitly; endpoints are in [configs/models.toml](configs/models.toml).
+
+| Alias | Provider / variable | Used for |
+|---|---|---|
+| `deepseek` | DeepSeek, `DEEPSEEK_API_KEY` | pairwise and rubric judge (default) |
+| `qwen397b` | Alibaba Cloud Model Studio, `DASHSCOPE_API_KEY` | teacher ads |
+| `qwen`, `claude`, `gpt6_luna` | DashScope, Anthropic, OpenAI | candidate judges in calibration |
+| `gemma_31b`, `glm53_flash`, `longcat`, `qwen_local` | Google, Zhipu, LongCat, local Ollama | calibration ad generators |
+| — | Tinker, `TINKER_API_KEY` | teacher log-probs during OPD |
+
+```bash
 PYTHONPATH=src .venv/bin/python scripts/llm_smoke.py --model deepseek
 ```
 
-本地 Qwen 需要先启动 Ollama 并准备对应模型：
+## Reproducing the experiments
 
-```sh
-ollama pull qwen3.5:2b
-PYTHONPATH=src .venv/bin/python scripts/llm_smoke.py --model qwen_local
-```
-
-## 当前正式数据
-
-**队友 clone 后可直接读取完整 400 条广告、100 对 pair 和100 条当前人工标签，无需重新调用模型。**正式数据统一在 `data/eval/gold/`，完整索引见 [data/README.md](data/README.md)。
-
-```text
-data/eval/gold/
-├── product_items.jsonl
-├── results_qwen_local.jsonl
-├── results_gemma_31b.jsonl
-├── results_glm53_flash.jsonl
-├── results_longcat.jsonl
-├── candidate_pairs.jsonl
-├── candidate_pairs.manifest.json
-├── pairwise_annotations_zhou.jsonl
-└── manifest.json
-```
-
-商品、候选、pair 的内容和 ID 已冻结。人工标签仅提交最终 100 条，15 条修改已由用户确认；原始标注与复核记录仅在本地 `deprecated/` 保存，不提交 Git。`data/splits/v1/` 保留 gold 100、test 1,000、训练候选池 709,403 条的固定划分；gold/test 都不能进入训练。大规模原始数据和训练池索引保留获取/重建信息，不上传普通 Git。
-
-```sh
-# 离线校验400条候选、100对、100个人标和四模型当前统计，不用 Key。
-PYTHONPATH=src .venv/bin/python scripts/validate_gold_data.py
-```
-
-## 标注与评测
-
-启动英文人工标注台，默认加载正式 gold 及已有标签：
-
-```sh
-PYTHONPATH=src .venv/bin/python tools/pairwise_annotation.py
-```
-
-访问 http://127.0.0.1:8765。随机左右、保存结论、目录跳转和自动下一题的设计见 [标注台文档](docs/pairwise_annotation_workbench.md)。
-
-[四模型最新统计](results/pairwise/comparison/report.md)已随仓库共享。Qwen、DeepSeek、Claude 和 GPT-6 Luna 使用相同的广告文本进行独立 AB/BA 判断；说明与参数见 [Judge 文档](docs/pairwise_llm_judge.md)。新运行使用新的 run ID，标准结果写入 results/pairwise/<run_id>/，调用日志写入 artifacts/pairwise/<run_id>/：
-
-默认评委已选定为 **DeepSeek**，综合依据见四模型对比报告。省略 `--eval-config` 时加载 `configs/eval/pairwise.toml`，使用 `DEEPSEEK_API_KEY`、temperature 0、关闭 thinking、最多 1,024 个输出 tokens。Qwen 对照使用 `configs/eval/pairwise_qwen.toml`。
-
-```sh
-# 只检查计划，不联网、不写产物。
-PYTHONPATH=src .venv/bin/python scripts/evaluate_pairwise.py --run-id deepseek_gold_new --dry-run
-
-# 真实全量评测：100对，200次初始调用。
-PYTHONPATH=src .venv/bin/python scripts/evaluate_pairwise.py --run-id deepseek_gold_new
-```
-
-## 候选生成与补跑
-
-现有400条直接使用 `data/eval/gold/results_*.jsonl`。生成其他批次时指定新的运行目录；产物仍是四份 results 和四份 calls，已有文件不会覆盖：
-
-```sh
-PYTHONPATH=src .venv/bin/python scripts/generate_candidates.py   --input data/eval/gold/product_items.jsonl   --output-dir artifacts/generation/new_run
-
-PYTHONPATH=src .venv/bin/python scripts/retry_failed_candidates.py   --source-dir artifacts/generation/new_run --dry-run
-```
-
-生成、补跑的默认商品入口已统一到正式 gold；默认运行输出目录为 `artifacts/generation/gold/`，里面是原始运行快照和调用历史。修改运行输出不会自动替换冻结的数据集。详见 [生成与抽样方法](docs/gold_candidate_generation.md)。
-
-## 在代码中调用
-
-```python
-from adgenius.shared.llm import LLMClient, ModelConfig
-
-config = ModelConfig.from_toml("configs/models.toml", "deepseek")
-with LLMClient(config) as client:
-    response = client.generate(
-        [{"role": "user", "content": "Write a short product ad."}],
-        max_output_tokens=256,
-        temperature=0.2,
-    )
-print(response.text)
-```
-
-可传 `json_mode` 和原生 `provider_options`，后者直接进入请求 JSON body，不能覆盖 model/messages/token 上限等核心字段。模型配置的 request_options 用于 thinking 等平台参数。支持有限重试并保留结构化错误；不会自动修复模型 JSON 或隐藏失败。
-
-## Git 与归档
-
-共享：data/ 中的正式数据、results/ 中的逐条结果与统计，以及配置、代码和文档。artifacts/ 整体作为本地运行目录忽略。
-
-本地保存：`.env`；artifacts/ 下的完整 calls 日志、训练池缓存、checkpoint 和运行中间产物；以及外部大原始数据。旧试跑、废弃数据、原始人工标注及复核记录放在 [deprecated/](deprecated/README.md)；迁移索引记录移动前后的文件哈希。
-
-## 离线检查
-
-```sh
-PYTHONPATH=src .venv/bin/python -m unittest discover -s tests
-node --test tests/test_pairwise_annotation_frontend.cjs
-PYTHONPATH=src .venv/bin/python scripts/validate_gold_data.py
-```
-
-## 输入输出位置
-
-| 工作 | 输入 | 输出 |
+| Step | Entry point | Docs |
 |---|---|---|
-| 生成 / 补跑 | data/eval/gold/product_items.jsonl | artifacts/generation/<run>/，默认 gold |
-| Pair 抽样 | data/eval/gold/results_*.jsonl | 由 --output 明确指定，正式数据放 data/ |
-| 人工标注 | data/eval/gold/ | 同目录的人工标签 |
-| Pairwise Judge | data/eval/gold/ | results/pairwise/<run_id>/；calls 单独写 artifacts/pairwise/<run_id>/ |
-| 数据划分 | 外部原始 gzip | 小划分和商品放 data/；大训练池放 artifacts/cache/office_products/ |
+| Data splits and products | `scripts/build_data_split.py`, `build_test_products.py`, `build_train_split.py` | [data_split.md](docs/data_split.md), [data_pipeline.md](docs/data_pipeline.md) |
+| Calibration ads and pairs | `scripts/generate_candidates.py`, `build_candidate_pairs.py` | [gold_candidate_generation.md](docs/gold_candidate_generation.md) |
+| Human labeling | `tools/pairwise_annotation.py`, `tools/rubric_annotation.py` | [tools/README.md](tools/README.md) |
+| Judge calibration | `scripts/evaluate_pairwise.py`, `evaluate_rubric.py`, `compare_rubric.py` | [pairwise_llm_judge.md](docs/pairwise_llm_judge.md), [rubric_llm_judge.md](docs/rubric_llm_judge.md) |
+| Teacher data | `scripts/generate_teacher_data.py`, `generate_teacher_test.py` | [sft_opd_experiment_plan.md](docs/sft_opd_experiment_plan.md) |
+| SFT / OPD training (Colab GPU) | `scripts/sft/`, `scripts/opd/`, `scripts/formal/` | [training_notes.md](docs/training_notes.md), [training report](results/training/formal_v1_report.md) |
+| Test evaluation | `scripts/build_bt_pairs.py`, `evaluate_pairwise.py`, `summarize_bt.py`, `evaluate_rubric.py --candidates` | [bradley_terry_eval.md](docs/bradley_terry_eval.md), [test_evaluation_v1.md](docs/test_evaluation_v1.md) |
 
-详见 [正式结果索引](results/README.md)。生成、评测脚本提供 --output-dir；Judge 另有 --calls-dir。已有实验的原始 manifest 保留历史路径，新的输入输出采用当前结构。
+Most method documents are written in Chinese. Developer notes (file layout, Git boundary, input/output contract, calling the client from code) are in [docs/architecture.md](docs/architecture.md).
+
+## Data and license
+
+- Code: [MIT](LICENSE).
+- Our human labels, judge results, metrics, reports and documents: [CC BY 4.0](LICENSE-DATA.md).
+- Product information comes from the Office Products metadata of **Amazon Reviews 2023** (Hou et al., 2024, [arXiv:2403.03952](https://arxiv.org/abs/2403.03952)) and is not covered by our licenses; ads written by third-party models may also be subject to the providers' terms. See [LICENSE-DATA.md](LICENSE-DATA.md), which also has citation entries.
+
+## Authors
+
+Zhou Yang and Chengkai Fang · CS 289A, UC Berkeley, Fall 2026.

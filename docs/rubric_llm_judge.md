@@ -72,7 +72,7 @@ PYTHONPATH=src .venv/bin/python scripts/evaluate_rubric.py \
 - 用完尝试次数仍失败的，结果记为 `status = "failed"`、`error = "judge_failed"`，运行状态为 `completed_with_failures`。
 - 每次尝试都在调用日志末尾追加一行并立即落盘，日志是续跑的依据。`results.jsonl` 在运行中最多每 15 秒重写一次，结束或中断时按输入顺序完整写出。按 Ctrl+C 时，未开始的条目会取消，已发出的请求会等它返回并记入日志。
 - 中断或有失败时，用同一个 run ID 重新运行即可：已成功的条目会保留，只重做缺失或失败的条目。如果某次成功已经写进日志、还没来得及写进 `results.jsonl`，续跑时会从日志重建这条结果，不再调用 API。日志最后一行因崩溃只写了一半时，这一行会被丢弃，对应条目重新判。
-- 结果已全部成功时再运行，不需要密钥，也不调用 API，只重算 `metrics.json`。
+- 结果已全部成功时再运行，不需要密钥，也不调用 API，只重算 `metrics.json`。代码改动后 manifest 会拒绝续跑；这时用 [scripts/summarize_rubric.py](../scripts/summarize_rubric.py) 从已提交的结果重算 `metrics.json`（`--generator-names` 要与原运行一致）。调用次数和 token 只记在本地日志里，这个脚本沿用旧 `metrics.json` 中的值。
 - manifest 记录了配置、prompt、输入文件、代码与 schema 的哈希，以及条目顺序。其中任何一项变化，续跑都会被拒绝，这时请使用新的 run ID。不要为了续跑去改旧的 manifest。
 - 同一个运行目录不要同时开两个进程，目前没有加锁。
 
@@ -97,10 +97,10 @@ PYTHONPATH=src .venv/bin/python scripts/evaluate_rubric.py \
 | 字段 | 含义 |
 |---|---|
 | `by_generator.<模型>.false`、`false_rate` | 判为冲突的条数，以及占成功判断条数的比例 |
-| `false_rate_ci95` | 按商品 bootstrap（10,000 次，seed 20261124）得到的 95% 区间 |
+| `false_rate_ci95` | 按商品 bootstrap 得到的 95% 区间。每个模型在每件商品上只有一条广告时，bootstrap 分布精确计算（`bootstrap.method = "exact"`）；否则抽样 10,000 次，seed 20261124（`"sampled"`） |
 | `judge_failed` | 评委失败、未计入比例的条数 |
 | `false_without_quoted_conflict` | 判了冲突却没有引用原文的条数；按规则，这些不算冲突，应人工复查 |
-| `paired_differences` | 同一批商品上，两两模型冲突率之差（前者减后者），及按商品 bootstrap 得到的 95% 区间 |
+| `paired_differences` | 同一批商品上，两两模型冲突率之差（前者减后者），及按商品 bootstrap 得到的 95% 区间（计算方式同上） |
 | `calls` | 尝试次数、失败次数和 token 总数 |
 
 解读时要注意：
