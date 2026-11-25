@@ -1,0 +1,5 @@
+judge,rubric_correct,rubric_n,conflict_tp,conflict_fp,conflict_fn,conflict_f1,pairwise_order_mean
+DeepSeek,122,130,12,2,6,0.75,0.835
+GPT,119,130,14,7,4,0.717948717948718,0.8
+Claude,119,130,13,6,5,0.7027027027027027,0.735
+Qwen,97,130,4,19,14,0.1951219512195122,0.79

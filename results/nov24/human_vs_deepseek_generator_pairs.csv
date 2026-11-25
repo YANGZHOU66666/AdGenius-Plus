@@ -1,0 +1,7 @@
+first,second,n,human_first_share,deepseek_first_share
+gemma_31b,glm53_flash,21,0.23809523809523808,0.23809523809523808
+gemma_31b,longcat,16,0.3125,0.34375
+gemma_31b,qwen_local,16,0.9375,0.9375
+glm53_flash,longcat,9,0.4444444444444444,0.6111111111111112
+glm53_flash,qwen_local,27,0.9259259259259259,0.9444444444444444
+longcat,qwen_local,11,0.9090909090909091,1.0

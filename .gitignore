@@ -25,3 +25,6 @@ results/**/.run.lock
 deprecated/artifacts/eval/gold_generation/
 deprecated/artifacts/eval/pairwise/
 deprecated/data/raw/
+
+# Local workbench locks for the November 24 comparison
+/results/nov24/annotations/.rubric_*.lock

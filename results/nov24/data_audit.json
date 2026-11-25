@@ -1,0 +1,21 @@
+{
+  "training_split_audit": {
+    "gold": {
+      "records": 100,
+      "distinct_groups": 99
+    },
+    "test": {
+      "records": 1000,
+      "distinct_groups": 996
+    },
+    "dev": {
+      "records": 200,
+      "distinct_groups": 200
+    },
+    "train": {
+      "records": 8000,
+      "distinct_groups": 8000
+    }
+  },
+  "balanced_sample_overlap": 34
+}

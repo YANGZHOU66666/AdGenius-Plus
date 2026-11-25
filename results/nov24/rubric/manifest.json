@@ -1,0 +1,38 @@
+{
+  "analysis_kind": "rubric_judge_human_agreement",
+  "computed_on": "2026-11-24",
+  "new_api_calls": 0,
+  "positive_class": "factual_support = false (conflict)",
+  "bootstrap": {
+    "unit": "item",
+    "iterations": 10000,
+    "seed": 20261124
+  },
+  "human_annotations": {
+    "path": "data/eval/gold/rubric_annotations_zhou.jsonl",
+    "sha256": "edfdc4e37675eaabc68d4332aef470b55fa34fc2c603c1b092eaa0522c2176a7"
+  },
+  "rubric_sample": {
+    "path": "data/eval/gold/rubric_sample.jsonl",
+    "sha256": "9d99f20204f4d332417fdb55f917599b5e14c68b52265eef33aef33ac2dd3ac8"
+  },
+  "results": [
+    {
+      "path": "results/rubric/deepseek41_rubric_v1/results.jsonl",
+      "sha256": "9a1c5e0e04176cc71a671e4ff4e03682fa4e3a37b6a43272c5bb5fd3d3da6074"
+    },
+    {
+      "path": "results/rubric/claude55_rubric_v1/results.jsonl",
+      "sha256": "8f3e221a8f99cccffed11519df4b24f7f466688a6cc0f974384d3084be31bb8d"
+    },
+    {
+      "path": "results/rubric/gpt6_luna_rubric_v1/results.jsonl",
+      "sha256": "c8ee392dc4b04a3236cdc44fcea78429444b804c1f64a88c59d5010a0424abbe"
+    },
+    {
+      "path": "results/rubric/qwen37_rubric_v1/results.jsonl",
+      "sha256": "ab642ed742254fbfb1658ffa7dda48bd61b9ed389f16f23f4cac3ddf87304547"
+    }
+  ],
+  "metrics_sha256": "b499dcfaf4e40115cec8a462bb48f1fc21d2b8945201b389b010656bdcbb8a86"
+}

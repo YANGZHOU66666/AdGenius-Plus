@@ -1,0 +1,5 @@
+generator,n,mean_words,median_words,over_35
+gemma_31b,100,21.86,22.0,0
+glm53_flash,100,24.95,24.0,0
+longcat,100,26.37,25.5,1
+qwen_local,100,35.03,33.0,42

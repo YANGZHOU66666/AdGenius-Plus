@@ -1,0 +1,42 @@
+{
+  "computed_at": "2026-11-25T01:34:22.853259+00:00",
+  "new_api_calls": 0,
+  "design": {
+    "path": "configs/eval/bt/gold_generators.toml",
+    "sha256": "7e495b5ced1ea5250accf62a4b08cc510bd086403eac11968fbcec58d18248da"
+  },
+  "pairs": {
+    "path": "data/eval/gold/candidate_pairs.jsonl",
+    "sha256": "272895ca4931fdc918fc8a1be31c33878bb7f312017cef3c6481614ba5b4af59"
+  },
+  "results": [
+    {
+      "path": "results/pairwise/deepseek41_gold_v2/results.jsonl",
+      "sha256": "ebd124024cb71753d5d363c1cd0f9f26e6cb891dd503f251afc7c7c3602d34d3"
+    }
+  ],
+  "systems": {
+    "qwen_local": {
+      "path": "data/eval/gold/results_qwen_local.jsonl",
+      "sha256": "01597691ca634e65d95b2cf7043892e57f890a1234d950053cf9d1a86f675d89"
+    },
+    "gemma_31b": {
+      "path": "data/eval/gold/results_gemma_31b.jsonl",
+      "sha256": "ad2903b996f48367198b97849435d8544aeddab9793230e215efbedaeebe9ef0"
+    },
+    "glm53_flash": {
+      "path": "data/eval/gold/results_glm53_flash.jsonl",
+      "sha256": "d45f76793e30eb94a6cdef05e707ded1316a4e42d0cd0b9d1a56008461890b6a"
+    },
+    "longcat": {
+      "path": "data/eval/gold/results_longcat.jsonl",
+      "sha256": "723dea261d1ee17069a5b8592191ce2f811e35cdb18b42e16142449dd6b593ab"
+    }
+  },
+  "code_sha256": {
+    "src/adgenius/eval/bradley_terry.py": "87fb5af4aa7f284885d2bed4329347c26c7c45b5e2fe7b8009b5d319934648a1",
+    "scripts/summarize_bt.py": "bf91037b1d106307d1a842ff8dc356b4009860653af0645a50615285893df1fd",
+    "metadata/schemas/bt_metrics.schema.json": "dc57418eb9759d7aaa8659a9d2a463cf985dfbbb26d2e3fea8ab9345e5836ac4"
+  },
+  "metrics_sha256": "5f93af90a56ec45bc4ddd3817975a80a483ef34302aa21be94adfa17d723604f"
+}

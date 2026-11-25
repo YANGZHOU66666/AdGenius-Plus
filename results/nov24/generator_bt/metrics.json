@@ -1,0 +1,175 @@
+{
+  "schema_version": "bt_metrics_v1",
+  "design": "gold_generators",
+  "anchor": "qwen_local",
+  "scale": "natural-log odds relative to the anchor; a difference of 1 is a 73% expected win rate",
+  "scoring": "per pair, the mean over AB and BA: 1 won both, 0.5 orders disagree, 0 lost both; a side without a usable ad loses the pair (both without: tie)",
+  "pseudo_tied_pairs_per_comparison": 0.5,
+  "cycle_rank": 3,
+  "bootstrap": {
+    "unit": "product",
+    "iterations": 2000,
+    "seed": 20261124,
+    "products": 100
+  },
+  "systems": [
+    {
+      "system": "glm53_flash",
+      "score": 3.2341,
+      "score_ci95": [
+        2.3563,
+        4.7192
+      ],
+      "pairs": 57
+    },
+    {
+      "system": "longcat",
+      "score": 2.8945,
+      "score_ci95": [
+        2.0877,
+        4.3087
+      ],
+      "pairs": 36
+    },
+    {
+      "system": "gemma_31b",
+      "score": 2.228,
+      "score_ci95": [
+        1.3602,
+        3.6181
+      ],
+      "pairs": 53
+    },
+    {
+      "system": "qwen_local",
+      "score": 0.0,
+      "score_ci95": [
+        0.0,
+        0.0
+      ],
+      "pairs": 54
+    }
+  ],
+  "comparisons": [
+    {
+      "systems": [
+        "gemma_31b",
+        "qwen_local"
+      ],
+      "pairs": 16,
+      "wins": 15,
+      "ties": 0,
+      "losses": 1,
+      "forfeits": 0,
+      "win_rate": 0.9375,
+      "win_rate_ci95": [
+        0.7857,
+        1.0
+      ],
+      "bt_predicted_win_rate": 0.9027,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "glm53_flash",
+        "qwen_local"
+      ],
+      "pairs": 27,
+      "wins": 25,
+      "ties": 1,
+      "losses": 1,
+      "forfeits": 0,
+      "win_rate": 0.9444,
+      "win_rate_ci95": [
+        0.8571,
+        1.0
+      ],
+      "bt_predicted_win_rate": 0.9621,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "longcat",
+        "qwen_local"
+      ],
+      "pairs": 11,
+      "wins": 11,
+      "ties": 0,
+      "losses": 0,
+      "forfeits": 0,
+      "win_rate": 1.0,
+      "win_rate_ci95": [
+        1.0,
+        1.0
+      ],
+      "bt_predicted_win_rate": 0.9476,
+      "predicted_outside_ci": null
+    },
+    {
+      "systems": [
+        "gemma_31b",
+        "glm53_flash"
+      ],
+      "pairs": 21,
+      "wins": 3,
+      "ties": 4,
+      "losses": 14,
+      "forfeits": 0,
+      "win_rate": 0.2381,
+      "win_rate_ci95": [
+        0.087,
+        0.4062
+      ],
+      "bt_predicted_win_rate": 0.2677,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "gemma_31b",
+        "longcat"
+      ],
+      "pairs": 16,
+      "wins": 4,
+      "ties": 3,
+      "losses": 9,
+      "forfeits": 0,
+      "win_rate": 0.3438,
+      "win_rate_ci95": [
+        0.1429,
+        0.5667
+      ],
+      "bt_predicted_win_rate": 0.3393,
+      "predicted_outside_ci": false
+    },
+    {
+      "systems": [
+        "glm53_flash",
+        "longcat"
+      ],
+      "pairs": 9,
+      "wins": 3,
+      "ties": 5,
+      "losses": 1,
+      "forfeits": 0,
+      "win_rate": 0.6111,
+      "win_rate_ci95": [
+        0.3846,
+        0.8182
+      ],
+      "bt_predicted_win_rate": 0.5841,
+      "predicted_outside_ci": false
+    }
+  ],
+  "fit_check": {
+    "comparisons_with_prediction_outside_ci": 0,
+    "comparisons_not_testable": 1,
+    "note": "With cycle_rank 0 the comparisons form a tree and the fit reproduces every observed rate, so this check only has power when cycle_rank > 0. A comparison whose observed interval is a single value is not testable."
+  },
+  "pair_counts": {
+    "pairs_in_file": 100,
+    "results": 100,
+    "not_judged": 0,
+    "scored": 100,
+    "forfeits": 0
+  }
+}
