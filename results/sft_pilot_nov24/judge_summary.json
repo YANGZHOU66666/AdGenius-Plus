@@ -1,0 +1,19 @@
+{
+  "matched_products": 32,
+  "sft_win_share_on_scored_pairs": 0.796875,
+  "pairwise": {
+    "sft": 24,
+    "order_disagreement": 3,
+    "base": 5
+  },
+  "rubric": {
+    "base": {
+      "no_conflict": 25,
+      "conflict": 7
+    },
+    "sft": {
+      "no_conflict": 26,
+      "conflict": 6
+    }
+  }
+}

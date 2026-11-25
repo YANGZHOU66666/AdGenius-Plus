@@ -1,0 +1,145 @@
+{
+  "config_fingerprint": "46ee6cf49cc414deb3d4f6dc81c59dcdfff59af72fce4672179d0de12db099ba",
+  "created_at": "2026-11-25T03:12:15.137796+00:00",
+  "run_id": "deepseek_rubric_pilot_128x32",
+  "specification": {
+    "candidate_ids": [
+      "cand_a19b66ed78f4b5d675a57af1",
+      "cand_21efae684897b375b6900b4d",
+      "cand_c17256f6acfe46d94b42c57d",
+      "cand_1e29ff5c16eb971439bb8a47",
+      "cand_e7861e490cbe8dcba713bc11",
+      "cand_a4b49b9b0598717a07673a0c",
+      "cand_7b3d7ed0cb0452d69433f5bf",
+      "cand_d5869034a28a2d63d097b962",
+      "cand_1793ad6ffda1eab64d666a6b",
+      "cand_b38445a290b38e233cb999da",
+      "cand_68c44bafd3e3773ded68ca5b",
+      "cand_d06b133fccdb31965374be72",
+      "cand_b2fd9b1f859bf8c778eccca5",
+      "cand_0216304c14707e14adeee77f",
+      "cand_e8dc018e2f05f6e397673098",
+      "cand_0d12168725cecb7edee56aa7",
+      "cand_22ba886f37bd2111b42a3f8a",
+      "cand_a0cc173df312d37fb4356c3f",
+      "cand_bb29b0ca7c847032c4a49c8e",
+      "cand_abecd8a556ff3693de3adcf3",
+      "cand_70a6bff085c5d6dba884ab29",
+      "cand_f93f7a9b20152525eefc299b",
+      "cand_225b9f806aef6553ab2cf5e1",
+      "cand_de4894498ea8c15c882e8a15",
+      "cand_1bd4506ee9ee664bc81b8d05",
+      "cand_d590d1cae1bb2f4585a30124",
+      "cand_123852f8daac3bda6ee0cc3e",
+      "cand_c3cae56bb4f5d41cdd4c424e",
+      "cand_6a3ca334cf0dd38b5deb3664",
+      "cand_a95273c76a282fec9949b1ae",
+      "cand_eecfdb86a72af1e37aae4f4d",
+      "cand_b45e0325015080edc7df4879",
+      "cand_1473a70ec67a7c0dab28dfcf",
+      "cand_75845b0b60825c3130837ba8",
+      "cand_46d0fd2c64f08302ac720d1b",
+      "cand_7c7d84d4f920f15d2ee46b45",
+      "cand_ed9a2cfc197dd2c219ec4c16",
+      "cand_ffcff5c148b622e5c260148e",
+      "cand_abf7ae17faa4e9beee4fac56",
+      "cand_d720e61d763d6b95e97805f7",
+      "cand_605f23d14235b21ddba89f4f",
+      "cand_b99ec5d200a27ca15adbdb45",
+      "cand_e14f9989d924a5d0ce3cbf7c",
+      "cand_a35cc6d62314062a0c0d2416",
+      "cand_a4ed4f863eccbd8950e39635",
+      "cand_90fa051cdb1ac71e7137663d",
+      "cand_5556b43ed039a8915a0b8ea0",
+      "cand_b13b5f4ead98de4ccc1a3754",
+      "cand_587ac24b9b05eb0018140694",
+      "cand_f4b25c7a43c2557b348e52f5",
+      "cand_43596acccf38e633eb282770",
+      "cand_994fbce454d83c88a2f22a24",
+      "cand_564ba67d2ede691667d7d7c8",
+      "cand_e38f0182d4470b9c945d993f",
+      "cand_55e6cc4b1dcc53cb83e8c5ec",
+      "cand_1aee2144872bfc150a3bfca7",
+      "cand_28a82e1e98cb320678ff939f",
+      "cand_dbd02af6c74636fde64aa483",
+      "cand_c60368f20916558393dd0afc",
+      "cand_cc7c80cc0babe950f25d539a",
+      "cand_2a91700794bc863a1a0f4e62",
+      "cand_2ecaff84152725e8e8c43b7c",
+      "cand_370e4ffa87a8ebea90d404a7",
+      "cand_eecb0449d1dfb7789e310a47"
+    ],
+    "code_and_schema_sha256": {
+      "metadata/schemas/generation_result.schema.json": "5257f57840afe12c4ee1f4b128847593b2d909ac2195428af12240de6ddfa381",
+      "metadata/schemas/rubric_result.schema.json": "628494befa22a9ab328653673ee70e158b00885f58558167091ec841e5a94ede",
+      "src/adgenius/eval/rubric.py": "185c5530bf89043daec19bfd95334aa30b43a4d17abb9236ac63c9772d56c324",
+      "src/adgenius/eval/rubric_metrics.py": "115aea60f360758a3b3853d09f58dc671e578d41af5dd93214b1ad02bd221801",
+      "src/adgenius/shared/llm.py": "db7159a70e475f745ba206919e77eb1ac2f9bfab6fd3006ef631cca628e11c8f",
+      "src/adgenius/shared/product.py": "e1954b41058405519682fc0558f05bcef2667539e2b7cb3ea2c85f5a7435b919"
+    },
+    "input_files": {
+      "candidates_0": {
+        "path": "results/sft_pilot_nov24/results_base.jsonl",
+        "sha256": "b680d74770575f9aefaf443da8691c4788c08ae58786abc92be7972c7ec019de"
+      },
+      "candidates_1": {
+        "path": "results/sft_pilot_nov24/results_sft.jsonl",
+        "sha256": "261102d4398b91c10f5d8b267bd233691e295c9c42551754e4f81d72a98ff1c1"
+      },
+      "eval_config": {
+        "path": "configs/eval/rubric_deepseek.toml",
+        "sha256": "7f06e0ff3c4f39b94ffa2485cc3906802faec1c10dfd8b4c3b06506ac311ec46"
+      },
+      "product_items": {
+        "path": "results/sft_pilot_nov24/dev_products.jsonl",
+        "sha256": "61a3232c2aa63a4ad6cf29ce923fd5f8d28c3fdd357daa9b5ef2596b5aed4307"
+      },
+      "system_prompt": {
+        "path": "prompts/eval/rubric/system_v1.txt",
+        "sha256": "d5b09ff9e4a6a9aa27823b7b4290967e785b8d82404a37dd540c76c259592733"
+      },
+      "user_prompt": {
+        "path": "prompts/eval/rubric/user_v1.txt",
+        "sha256": "43d19bf16bcb5098b09f6c9903ef647a9bbaa2c90c94567167b75e113cd819f1"
+      }
+    },
+    "input_mode": "candidates",
+    "model_config": {
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "base_url": "https://api.deepseek.com",
+      "base_url_env": "",
+      "max_retries": 2,
+      "max_tokens_parameter": "max_tokens",
+      "model": "deepseek-flash",
+      "provider": "openai_compatible",
+      "request_options": {
+        "thinking": {
+          "type": "disabled"
+        }
+      },
+      "timeout_seconds": 60.0
+    },
+    "settings": {
+      "criteria": [
+        "factual_support"
+      ],
+      "human_annotation_protocol_version": "rubric-v0.2",
+      "input_mode": "product_and_ad",
+      "max_attempts": 4,
+      "max_output_tokens": 1024,
+      "model_alias": "deepseek",
+      "protocol_version": "rubric-v0.2",
+      "provider_options": {
+        "thinking": {
+          "type": "disabled"
+        }
+      },
+      "system_prompt": "prompts/eval/rubric/system_v1.txt",
+      "temperature": 0.0,
+      "user_prompt": "prompts/eval/rubric/user_v1.txt"
+    },
+    "skipped_failed_generations": {}
+  },
+  "status": "completed",
+  "updated_at": "2026-11-25T03:12:37.057171+00:00"
+}

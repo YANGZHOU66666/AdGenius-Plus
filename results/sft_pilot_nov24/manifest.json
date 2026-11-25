@@ -1,0 +1,27 @@
+{
+  "seed": 20261124,
+  "train": 128,
+  "dev": 32,
+  "trainable_params": 200704,
+  "train_seconds": 28.502712375018746,
+  "model": "mlx-community/Qwen3.5-0.8B-4bit",
+  "revision": "da28692b5f139cb0ec58a356b437486b7dac7462",
+  "decoding": "greedy",
+  "max_new_tokens": 96,
+  "lr": 0.0001,
+  "lora": {
+    "rank": 8,
+    "scale": 8.0,
+    "dropout": 0.0
+  },
+  "batch_size": 1,
+  "adapter_sha256": "e87e37b9e4dc4140d8fa63f92e00682fb0c9746abd93e775d1d47f0363f4d687",
+  "source_hashes": {
+    "dev_products.jsonl": "c8b60f2a71ba6c6649862cb2e0399bd2bdacb2b138764e5591777186bb06a8bb",
+    "teacher_qwen397b_train.jsonl": "8da5b35f73968df4c407508c100911fbd4982d65fa1bcbc5a08dcf3a4e31e19d",
+    "teacher_qwen397b_dev.jsonl": "f0a5a6d70704e5200894168a1b84d139e4c57b82e73a6d21479bd14c1e40e368",
+    "split_index.jsonl": "125cbb895fdb4b684ceda19c61e1769eb049d4e08220d9b447cde9b8da27540d",
+    "train_products.jsonl": "d5bb1758a5443e60a86d2c42016323243529ed2cd4eb70389e82e08205e68bba"
+  },
+  "base_sha256": "f5a0d9dd3efa73510542a8023d610ff26be2b4b020d181cfc4bedaa1fcc5dd9e"
+}

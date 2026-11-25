@@ -1,0 +1,61 @@
+{
+  "bootstrap": {
+    "iterations": 10000,
+    "seed": 20261124,
+    "unit": "product"
+  },
+  "by_generator": {
+    "base": {
+      "candidates": 32,
+      "false": 7,
+      "false_rate": 0.2188,
+      "false_rate_ci95": [
+        0.0938,
+        0.375
+      ],
+      "false_without_quoted_conflict": 0,
+      "judge_failed": 0,
+      "judged": 32,
+      "products": 32
+    },
+    "sft": {
+      "candidates": 32,
+      "false": 6,
+      "false_rate": 0.1875,
+      "false_rate_ci95": [
+        0.0625,
+        0.3438
+      ],
+      "false_without_quoted_conflict": 0,
+      "judge_failed": 0,
+      "judged": 32,
+      "products": 32
+    }
+  },
+  "calls": {
+    "attempts": 64,
+    "failed_attempts": 0,
+    "input_tokens": 66870,
+    "output_tokens": 5145
+  },
+  "criterion": "factual_support",
+  "input_mode": "candidates",
+  "note": "Judged conflict rates, not human labels. Judges miss some human-labelled conflicts (docs/rubric_judge_agreement.md), so use these to compare generators judged by the same run rather than as absolute conflict rates.",
+  "paired_differences": [
+    {
+      "difference_ci95": [
+        -0.125,
+        0.1875
+      ],
+      "false_rate_difference": 0.0312,
+      "generators": [
+        "base",
+        "sft"
+      ],
+      "shared_products": 32
+    }
+  ],
+  "positive_class": "conflict (factual_support = false)",
+  "run_id": "deepseek_rubric_pilot_128x32",
+  "skipped_failed_generations": {}
+}

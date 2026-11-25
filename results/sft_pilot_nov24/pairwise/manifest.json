@@ -1,0 +1,110 @@
+{
+  "run_id": "deepseek_pairwise_pilot_128x32",
+  "created_at": "2026-11-25T03:08:38.548262+00:00",
+  "status": "completed",
+  "config_fingerprint": "57ac2e424bebcd20d9db41b6eb35bdb8cc885f4bdd099b64317d85e544469061",
+  "specification": {
+    "settings": {
+      "model_alias": "deepseek",
+      "protocol_version": "pairwise-v0.2",
+      "input_mode": "ad_text_only",
+      "human_annotation_protocol_version": "pairwise-v0.1",
+      "system_prompt": "prompts/eval/pairwise/system_v2.txt",
+      "user_prompt": "prompts/eval/pairwise/user_v2.txt",
+      "temperature": 0.0,
+      "max_output_tokens": 1024,
+      "timeout_seconds": 90.0,
+      "max_retries": 3,
+      "retry_delay": 2.0,
+      "provider_options": {
+        "thinking": {
+          "type": "disabled"
+        }
+      }
+    },
+    "model_config": {
+      "provider": "openai_compatible",
+      "model": "deepseek-flash",
+      "base_url": "https://api.deepseek.com",
+      "base_url_env": "",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "timeout_seconds": 90.0,
+      "max_retries": 0,
+      "request_options": {
+        "thinking": {
+          "type": "disabled"
+        }
+      },
+      "max_tokens_parameter": "max_tokens"
+    },
+    "input_files": {
+      "pairs": {
+        "path": "/Users/fck/cs289/AdGenius-Plus/results/sft_pilot_nov24/candidate_pairs.jsonl",
+        "sha256": "0e2b87d136a5e5129f6ebdec487b55d70d7f15b49f73b7533051ca6f039547c8"
+      },
+      "system_prompt": {
+        "path": "/Users/fck/cs289/AdGenius-Plus/prompts/eval/pairwise/system_v2.txt",
+        "sha256": "9ac00914af0f951d98829092345c161198c828bb5e4346aef13a26b0894f82bd"
+      },
+      "user_prompt": {
+        "path": "/Users/fck/cs289/AdGenius-Plus/prompts/eval/pairwise/user_v2.txt",
+        "sha256": "2806432e1633b77e1b68c39e5b34ac415fc577cd04bce22ebab8a52a133d3938"
+      },
+      "eval_config": {
+        "path": "/Users/fck/cs289/AdGenius-Plus/configs/eval/pairwise_deepseek.toml",
+        "sha256": "f55e0c933110b595683a6b61b36c8b82a4eb47d12763bf6559ea3f48d3bfac63"
+      }
+    },
+    "code_and_schema_sha256": {
+      "src/adgenius/eval/pairwise.py": "5c4ff3dbf76c94bc695f52ae934e738cc7988172b97adaf87cc1cf297ac52ba5",
+      "src/adgenius/eval/pairwise_metrics.py": "6ac26bf9a0db767f85eb08b2b3056a67425872e6724638413082bf7fe345a352",
+      "src/adgenius/shared/llm.py": "db7159a70e475f745ba206919e77eb1ac2f9bfab6fd3006ef631cca628e11c8f",
+      "metadata/schemas/candidate_pair.schema.json": "d7ef2171dd36ec53accd11bbfc9866a4b880fb0d4d16acde40281514c0181c06",
+      "metadata/schemas/pairwise_result.schema.json": "91aff01278768450a9c7de2fb62b98a58366aade8c1a263252117abdbc469b1b"
+    },
+    "selected_pair_ids": [
+      "pair_train_product_196397",
+      "pair_train_product_462908",
+      "pair_train_product_527894",
+      "pair_train_product_708999",
+      "pair_train_product_217435",
+      "pair_train_product_354076",
+      "pair_train_product_122574",
+      "pair_train_product_085144",
+      "pair_train_product_142315",
+      "pair_train_product_235378",
+      "pair_train_product_542600",
+      "pair_train_product_187925",
+      "pair_train_product_576687",
+      "pair_train_product_301700",
+      "pair_train_product_256682",
+      "pair_train_product_094828",
+      "pair_train_product_329595",
+      "pair_train_product_376069",
+      "pair_train_product_652513",
+      "pair_train_product_412575",
+      "pair_train_product_323330",
+      "pair_train_product_582342",
+      "pair_train_product_128764",
+      "pair_train_product_177197",
+      "pair_train_product_616186",
+      "pair_train_product_659641",
+      "pair_train_product_395619",
+      "pair_train_product_389839",
+      "pair_train_product_593929",
+      "pair_train_product_126471",
+      "pair_train_product_576366",
+      "pair_train_product_070068"
+    ],
+    "orders": [
+      "AB",
+      "BA"
+    ],
+    "display_labels": [
+      "1",
+      "2"
+    ]
+  },
+  "calls_file": "/Users/fck/cs289/AdGenius-Plus/artifacts/pairwise/deepseek_pairwise_pilot_128x32/calls.jsonl",
+  "updated_at": "2026-11-25T03:12:15.038426+00:00"
+}

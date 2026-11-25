@@ -1,0 +1,37 @@
+{
+  "arms": {
+    "base": {
+      "n": 32,
+      "mean_product_nll": 2.098165573552251,
+      "token_weighted_nll": 2.0717846191395926,
+      "teacher_perplexity": 7.938978536121751,
+      "mean_words": 48.5625,
+      "within35": 9,
+      "empty_count": 0,
+      "below25": 4,
+      "token_limit_hits": 12
+    },
+    "sft": {
+      "n": 32,
+      "mean_product_nll": 1.8084137802943587,
+      "token_weighted_nll": 1.7818701729041948,
+      "teacher_perplexity": 5.940956651833382,
+      "mean_words": 30.96875,
+      "within35": 25,
+      "empty_count": 0,
+      "below25": 11,
+      "token_limit_hits": 3
+    }
+  },
+  "better_reference_nll": 32,
+  "paired_product_nll_difference": -0.28975179325789213,
+  "nll_difference_ci95": [
+    -0.3444868391379714,
+    -0.2374507077038288
+  ],
+  "compliance_difference": 0.5,
+  "compliance_difference_ci95": [
+    0.25,
+    0.71875
+  ]
+}
