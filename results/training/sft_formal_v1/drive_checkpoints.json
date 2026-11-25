@@ -1,0 +1,727 @@
+{
+ "root": "gdrive:adgenius_checkpoints/sft_formal_v1",
+ "listed_utc": "2026-11-24 (rclone lsjson --hash, after the run)",
+ "total_bytes": 78494231520,
+ "files": [
+  {
+   "path": "full/step_0025/UPLOAD_OK",
+   "size": 3,
+   "md5": "eff5bc1ef8ec9d03e640fc4370f5eacd"
+  },
+  {
+   "path": "full/step_0025/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "full/step_0025/config.json",
+   "size": 1759,
+   "md5": "e02a05273801d6f93d93b09919e4f917"
+  },
+  {
+   "path": "full/step_0025/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "full/step_0025/model.safetensors",
+   "size": 3009613648,
+   "md5": "23212e872b13e01d128ad814aeac4db1"
+  },
+  {
+   "path": "full/step_0025/optimizer.pt",
+   "size": 6019424431,
+   "md5": "9f4a64dd9f5506f49f0e167e91a500d7"
+  },
+  {
+   "path": "full/step_0025/rng_state.pth",
+   "size": 14645,
+   "md5": "87a5d1a69cb7b1bb843f1a18362f87f0"
+  },
+  {
+   "path": "full/step_0025/scheduler.pt",
+   "size": 1465,
+   "md5": "82561abb22db69d1aeb9acf7e7c17e89"
+  },
+  {
+   "path": "full/step_0025/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "full/step_0025/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  },
+  {
+   "path": "full/step_0025/trainer_state.json",
+   "size": 7511,
+   "md5": "a34d2fb9b89a097ce7b3e13a1fa1e41f"
+  },
+  {
+   "path": "full/step_0025/training_args.bin",
+   "size": 5841,
+   "md5": "4571c914edca8f2a0e6675f07d6c9235"
+  },
+  {
+   "path": "full/step_0050/UPLOAD_OK",
+   "size": 3,
+   "md5": "eff5bc1ef8ec9d03e640fc4370f5eacd"
+  },
+  {
+   "path": "full/step_0050/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "full/step_0050/config.json",
+   "size": 1759,
+   "md5": "e02a05273801d6f93d93b09919e4f917"
+  },
+  {
+   "path": "full/step_0050/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "full/step_0050/model.safetensors",
+   "size": 3009613648,
+   "md5": "f3359e6cab26e09125b6ad1ee655c5c7"
+  },
+  {
+   "path": "full/step_0050/optimizer.pt",
+   "size": 6019424431,
+   "md5": "2bfaf6724dca8546dcf9d1d5763216d1"
+  },
+  {
+   "path": "full/step_0050/rng_state.pth",
+   "size": 14645,
+   "md5": "87a5d1a69cb7b1bb843f1a18362f87f0"
+  },
+  {
+   "path": "full/step_0050/scheduler.pt",
+   "size": 1465,
+   "md5": "a0cf8cff3d3a4bf3ff2cffe0538f91ca"
+  },
+  {
+   "path": "full/step_0050/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "full/step_0050/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  },
+  {
+   "path": "full/step_0050/trainer_state.json",
+   "size": 14268,
+   "md5": "378969b0fd542517e637ac5b372c0340"
+  },
+  {
+   "path": "full/step_0050/training_args.bin",
+   "size": 5841,
+   "md5": "4571c914edca8f2a0e6675f07d6c9235"
+  },
+  {
+   "path": "full/step_0075/UPLOAD_OK",
+   "size": 3,
+   "md5": "eff5bc1ef8ec9d03e640fc4370f5eacd"
+  },
+  {
+   "path": "full/step_0075/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "full/step_0075/config.json",
+   "size": 1759,
+   "md5": "e02a05273801d6f93d93b09919e4f917"
+  },
+  {
+   "path": "full/step_0075/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "full/step_0075/model.safetensors",
+   "size": 3009613648,
+   "md5": "b247b3ec528946fad723599c9389a2b7"
+  },
+  {
+   "path": "full/step_0075/optimizer.pt",
+   "size": 6019424431,
+   "md5": "fc2ede73b6de087786f40384f383b5f1"
+  },
+  {
+   "path": "full/step_0075/rng_state.pth",
+   "size": 14645,
+   "md5": "87a5d1a69cb7b1bb843f1a18362f87f0"
+  },
+  {
+   "path": "full/step_0075/scheduler.pt",
+   "size": 1465,
+   "md5": "eff0ddc46ce31477191b1cc54fb087eb"
+  },
+  {
+   "path": "full/step_0075/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "full/step_0075/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  },
+  {
+   "path": "full/step_0075/trainer_state.json",
+   "size": 21046,
+   "md5": "0cc1c1e27185a01cf6f235ae86581f72"
+  },
+  {
+   "path": "full/step_0075/training_args.bin",
+   "size": 5841,
+   "md5": "4571c914edca8f2a0e6675f07d6c9235"
+  },
+  {
+   "path": "full/step_0100/UPLOAD_OK",
+   "size": 3,
+   "md5": "eff5bc1ef8ec9d03e640fc4370f5eacd"
+  },
+  {
+   "path": "full/step_0100/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "full/step_0100/config.json",
+   "size": 1759,
+   "md5": "e02a05273801d6f93d93b09919e4f917"
+  },
+  {
+   "path": "full/step_0100/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "full/step_0100/model.safetensors",
+   "size": 3009613648,
+   "md5": "aff31872928250616d9aa3c39a58899c"
+  },
+  {
+   "path": "full/step_0100/optimizer.pt",
+   "size": 6019424431,
+   "md5": "14bcee10b5a6aed502fa7a3935a66a8a"
+  },
+  {
+   "path": "full/step_0100/rng_state.pth",
+   "size": 14645,
+   "md5": "87a5d1a69cb7b1bb843f1a18362f87f0"
+  },
+  {
+   "path": "full/step_0100/scheduler.pt",
+   "size": 1465,
+   "md5": "5802fa91488f19242770718c58072fd7"
+  },
+  {
+   "path": "full/step_0100/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "full/step_0100/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  },
+  {
+   "path": "full/step_0100/trainer_state.json",
+   "size": 27817,
+   "md5": "e943a6a7415149b26dea464b9282d185"
+  },
+  {
+   "path": "full/step_0100/training_args.bin",
+   "size": 5841,
+   "md5": "4571c914edca8f2a0e6675f07d6c9235"
+  },
+  {
+   "path": "full/step_0125/UPLOAD_OK",
+   "size": 3,
+   "md5": "eff5bc1ef8ec9d03e640fc4370f5eacd"
+  },
+  {
+   "path": "full/step_0125/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "full/step_0125/config.json",
+   "size": 1759,
+   "md5": "e02a05273801d6f93d93b09919e4f917"
+  },
+  {
+   "path": "full/step_0125/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "full/step_0125/model.safetensors",
+   "size": 3009613648,
+   "md5": "408bc40682218301ef1d4e29beb440b5"
+  },
+  {
+   "path": "full/step_0125/optimizer.pt",
+   "size": 6019424431,
+   "md5": "bfbe85385e9e42af11ad19c5c867a0ba"
+  },
+  {
+   "path": "full/step_0125/rng_state.pth",
+   "size": 14645,
+   "md5": "87a5d1a69cb7b1bb843f1a18362f87f0"
+  },
+  {
+   "path": "full/step_0125/scheduler.pt",
+   "size": 1465,
+   "md5": "8336bb5c26ade5cf914f7cb273249206"
+  },
+  {
+   "path": "full/step_0125/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "full/step_0125/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  },
+  {
+   "path": "full/step_0125/trainer_state.json",
+   "size": 34615,
+   "md5": "8842c3616ffff831d38f877fcdd9a75b"
+  },
+  {
+   "path": "full/step_0125/training_args.bin",
+   "size": 5841,
+   "md5": "4571c914edca8f2a0e6675f07d6c9235"
+  },
+  {
+   "path": "full/step_0150/UPLOAD_OK",
+   "size": 3,
+   "md5": "eff5bc1ef8ec9d03e640fc4370f5eacd"
+  },
+  {
+   "path": "full/step_0150/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "full/step_0150/config.json",
+   "size": 1759,
+   "md5": "e02a05273801d6f93d93b09919e4f917"
+  },
+  {
+   "path": "full/step_0150/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "full/step_0150/model.safetensors",
+   "size": 3009613648,
+   "md5": "f4de5c51f403115b2997911e7028f75c"
+  },
+  {
+   "path": "full/step_0150/optimizer.pt",
+   "size": 6019424431,
+   "md5": "8ab2e65c40f780a7141215e739177eeb"
+  },
+  {
+   "path": "full/step_0150/rng_state.pth",
+   "size": 14645,
+   "md5": "87a5d1a69cb7b1bb843f1a18362f87f0"
+  },
+  {
+   "path": "full/step_0150/scheduler.pt",
+   "size": 1465,
+   "md5": "10865470bee6a4d99dcf4cc84e9550c1"
+  },
+  {
+   "path": "full/step_0150/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "full/step_0150/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  },
+  {
+   "path": "full/step_0150/trainer_state.json",
+   "size": 41404,
+   "md5": "4b6d6b83bf983888f28b5445ff762cbb"
+  },
+  {
+   "path": "full/step_0150/training_args.bin",
+   "size": 5841,
+   "md5": "4571c914edca8f2a0e6675f07d6c9235"
+  },
+  {
+   "path": "full/step_0175/UPLOAD_OK",
+   "size": 3,
+   "md5": "eff5bc1ef8ec9d03e640fc4370f5eacd"
+  },
+  {
+   "path": "full/step_0175/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "full/step_0175/config.json",
+   "size": 1759,
+   "md5": "e02a05273801d6f93d93b09919e4f917"
+  },
+  {
+   "path": "full/step_0175/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "full/step_0175/model.safetensors",
+   "size": 3009613648,
+   "md5": "e7effd98da0adffab135f15576b6fc18"
+  },
+  {
+   "path": "full/step_0175/optimizer.pt",
+   "size": 6019424431,
+   "md5": "7f6a559db82eb096aa6efda67f991f4e"
+  },
+  {
+   "path": "full/step_0175/rng_state.pth",
+   "size": 14645,
+   "md5": "87a5d1a69cb7b1bb843f1a18362f87f0"
+  },
+  {
+   "path": "full/step_0175/scheduler.pt",
+   "size": 1465,
+   "md5": "5f5549750b8623b5e557b26d41a4491e"
+  },
+  {
+   "path": "full/step_0175/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "full/step_0175/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  },
+  {
+   "path": "full/step_0175/trainer_state.json",
+   "size": 48207,
+   "md5": "f67b97f6dc825ce34adc2d06990eb3c2"
+  },
+  {
+   "path": "full/step_0175/training_args.bin",
+   "size": 5841,
+   "md5": "4571c914edca8f2a0e6675f07d6c9235"
+  },
+  {
+   "path": "full/step_0200/UPLOAD_OK",
+   "size": 3,
+   "md5": "eff5bc1ef8ec9d03e640fc4370f5eacd"
+  },
+  {
+   "path": "full/step_0200/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "full/step_0200/config.json",
+   "size": 1759,
+   "md5": "e02a05273801d6f93d93b09919e4f917"
+  },
+  {
+   "path": "full/step_0200/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "full/step_0200/model.safetensors",
+   "size": 3009613648,
+   "md5": "f955858fb24ab1367f02477a0e4f0cda"
+  },
+  {
+   "path": "full/step_0200/optimizer.pt",
+   "size": 6019424431,
+   "md5": "3f33c69bef9d77bb8c754d1053c1be66"
+  },
+  {
+   "path": "full/step_0200/rng_state.pth",
+   "size": 14645,
+   "md5": "87a5d1a69cb7b1bb843f1a18362f87f0"
+  },
+  {
+   "path": "full/step_0200/scheduler.pt",
+   "size": 1465,
+   "md5": "d07d2c14e086249994922748c01dcc0d"
+  },
+  {
+   "path": "full/step_0200/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "full/step_0200/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  },
+  {
+   "path": "full/step_0200/trainer_state.json",
+   "size": 54996,
+   "md5": "c977212a4aab825cf695b5b26df01d5e"
+  },
+  {
+   "path": "full/step_0200/training_args.bin",
+   "size": 5841,
+   "md5": "4571c914edca8f2a0e6675f07d6c9235"
+  },
+  {
+   "path": "logs/attempts.jsonl",
+   "size": 1477,
+   "md5": "e9dd7f0c83eb8a792c89f1db664120a2"
+  },
+  {
+   "path": "logs/progress.json",
+   "size": 140,
+   "md5": "fc3bd868c13646d87fe29cc19944bbd5"
+  },
+  {
+   "path": "logs/run_report.json",
+   "size": 40865,
+   "md5": "d48127af795dc1f6cf6c4edc6fd0a468"
+  },
+  {
+   "path": "logs/status_sft.json",
+   "size": 1262,
+   "md5": "0d677fb6de86f7927bdf202f7a3e6670"
+  },
+  {
+   "path": "logs/train.log",
+   "size": 117555,
+   "md5": "fcbef624bc140dc254915660a0b53356"
+  },
+  {
+   "path": "logs/uploads.log",
+   "size": 309,
+   "md5": "de75e3256cdbc3d5ac9600d265b13523"
+  },
+  {
+   "path": "outputs/base/test.jsonl",
+   "size": 423506,
+   "md5": "64b3ec9f49737f24df60b9e266a7665d"
+  },
+  {
+   "path": "outputs/base/test.log",
+   "size": 55581,
+   "md5": "0327a6c8887c1e4b0097b32f663ac124"
+  },
+  {
+   "path": "outputs/scale_1k/dev.jsonl",
+   "size": 53529,
+   "md5": "d5fa489a23e34e51dcd7084b8eef5fdf"
+  },
+  {
+   "path": "outputs/scale_1k/dev.log",
+   "size": 23273,
+   "md5": "8f84cd36f3ec87bbdb4575fb8f485ed2"
+  },
+  {
+   "path": "outputs/scale_1k/test.jsonl",
+   "size": 264010,
+   "md5": "fdc3014d93edfed25f70b3d31da3b870"
+  },
+  {
+   "path": "outputs/scale_1k/test.log",
+   "size": 40197,
+   "md5": "b9525dba8ad719c5411d1d6c8009e4c8"
+  },
+  {
+   "path": "outputs/scale_2k/dev.jsonl",
+   "size": 52857,
+   "md5": "470f181aa0bee7630be5424b702b3804"
+  },
+  {
+   "path": "outputs/scale_2k/dev.log",
+   "size": 22976,
+   "md5": "5b960b8b2b3165b0da93dad2dcc4d648"
+  },
+  {
+   "path": "outputs/scale_2k/test.jsonl",
+   "size": 260931,
+   "md5": "6489e596ab918ee917157951f4a9c06e"
+  },
+  {
+   "path": "outputs/scale_2k/test.log",
+   "size": 39685,
+   "md5": "e4532c2fcf89b7d41b40a9637f3c4afd"
+  },
+  {
+   "path": "outputs/scale_4k/dev.jsonl",
+   "size": 56575,
+   "md5": "d36e1ba08df4351391af3c55fa71903c"
+  },
+  {
+   "path": "outputs/scale_4k/dev.log",
+   "size": 23685,
+   "md5": "5b6c30c5d398f5b7a497dcc432762c9e"
+  },
+  {
+   "path": "outputs/scale_4k/test.jsonl",
+   "size": 279309,
+   "md5": "37fb09a807d48969a9889acee2467a9d"
+  },
+  {
+   "path": "outputs/scale_4k/test.log",
+   "size": 41201,
+   "md5": "20b3c78d8b4a8a760cd1824d860d0f7c"
+  },
+  {
+   "path": "outputs/scale_8k/dev.jsonl",
+   "size": 54258,
+   "md5": "4de3ac992a4d02e43b7320cf04666b80"
+  },
+  {
+   "path": "outputs/scale_8k/dev.log",
+   "size": 23080,
+   "md5": "fc8b93635c7e6e4c6cd73b4e3476c0bc"
+  },
+  {
+   "path": "outputs/scale_8k/test.jsonl",
+   "size": 268224,
+   "md5": "52577260ce5b46ac53d7ed5d3e192f0e"
+  },
+  {
+   "path": "outputs/scale_8k/test.log",
+   "size": 40687,
+   "md5": "2074b86ba5e26cb1989f318dfd47a433"
+  },
+  {
+   "path": "weights_bf16/scale_1k/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "weights_bf16/scale_1k/config.json",
+   "size": 1760,
+   "md5": "0ca6e022a8df5a444a2f2de2841aeb7e"
+  },
+  {
+   "path": "weights_bf16/scale_1k/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "weights_bf16/scale_1k/model.safetensors",
+   "size": 1504827608,
+   "md5": "2818dedbd78325aeb058d2162e214182"
+  },
+  {
+   "path": "weights_bf16/scale_1k/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "weights_bf16/scale_1k/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  },
+  {
+   "path": "weights_bf16/scale_2k/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "weights_bf16/scale_2k/config.json",
+   "size": 1760,
+   "md5": "0ca6e022a8df5a444a2f2de2841aeb7e"
+  },
+  {
+   "path": "weights_bf16/scale_2k/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "weights_bf16/scale_2k/model.safetensors",
+   "size": 1504827608,
+   "md5": "b0699fc64ace115c8b64466e7b5cec5c"
+  },
+  {
+   "path": "weights_bf16/scale_2k/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "weights_bf16/scale_2k/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  },
+  {
+   "path": "weights_bf16/scale_4k/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "weights_bf16/scale_4k/config.json",
+   "size": 1760,
+   "md5": "0ca6e022a8df5a444a2f2de2841aeb7e"
+  },
+  {
+   "path": "weights_bf16/scale_4k/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "weights_bf16/scale_4k/model.safetensors",
+   "size": 1504827608,
+   "md5": "d0809e867a7f8f1ecb6777e7b2e3aaee"
+  },
+  {
+   "path": "weights_bf16/scale_4k/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "weights_bf16/scale_4k/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  },
+  {
+   "path": "weights_bf16/scale_8k/chat_template.jinja",
+   "size": 7755,
+   "md5": "3dd635d8e716410fb409839dfac61ea9"
+  },
+  {
+   "path": "weights_bf16/scale_8k/config.json",
+   "size": 1760,
+   "md5": "0ca6e022a8df5a444a2f2de2841aeb7e"
+  },
+  {
+   "path": "weights_bf16/scale_8k/generation_config.json",
+   "size": 164,
+   "md5": "d3d0e1e7a179c897b12f84d19bf6253f"
+  },
+  {
+   "path": "weights_bf16/scale_8k/model.safetensors",
+   "size": 1504827608,
+   "md5": "8d03806b1a5f3f34e47136841182c64b"
+  },
+  {
+   "path": "weights_bf16/scale_8k/tokenizer.json",
+   "size": 19989339,
+   "md5": "d615027776db8aec84b662442f973cbb"
+  },
+  {
+   "path": "weights_bf16/scale_8k/tokenizer_config.json",
+   "size": 1465,
+   "md5": "78ef101cd0e2b9336e81a81c613aff8b"
+  }
+ ]
+}
