@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RubricGeneratorMetrics v1",
+  "description": "一次 rubric 评委运行按生成模型的统计（scripts/evaluate_rubric.py 写入 results/rubric/<run_id>/metrics.json）：评委判出的冲突率及两两差。",
+  "type": "object",
+  "required": ["schema_version", "run_id", "input_mode", "criterion", "positive_class", "bootstrap", "by_generator",
+               "paired_differences", "note", "calls"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "rubric_generator_metrics_v1"},
+    "run_id": {"$ref": "#/$defs/name"},
+    "input_mode": {"enum": ["rubric_sample", "candidates"]},
+    "criterion": {"const": "factual_support"},
+    "positive_class": {"type": "string"},
+    "skipped_failed_generations": {
+      "type": "object",
+      "description": "仅 candidates 模式：按生成模型计数的生成失败条目（没有广告可判，已跳过）。",
+      "additionalProperties": {"type": "integer", "minimum": 1}
+    },
+    "bootstrap": {
+      "type": "object",
+      "required": ["unit", "iterations", "seed"],
+      "additionalProperties": false,
+      "properties": {
+        "unit": {"const": "product"},
+        "iterations": {"type": "integer", "minimum": 1},
+        "seed": {"type": "integer"}
+      }
+    },
+    "by_generator": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["candidates", "judged", "judge_failed", "false", "false_without_quoted_conflict", "products",
+                     "false_rate", "false_rate_ci95"],
+        "additionalProperties": false,
+        "properties": {
+          "candidates": {"type": "integer", "minimum": 0, "description": "送去评委的广告条数。"},
+          "judged": {"type": "integer", "minimum": 0, "description": "评委成功判断的条数。"},
+          "judge_failed": {"type": "integer", "minimum": 0},
+          "false": {"type": "integer", "minimum": 0, "description": "判为冲突的条数。"},
+          "false_without_quoted_conflict": {"type": "integer", "minimum": 0,
+                                            "description": "判为冲突却没有引用原文的条数。"},
+          "products": {"type": "integer", "minimum": 0},
+          "false_rate": {"oneOf": [{"$ref": "#/$defs/rate"}, {"type": "null"}],
+                         "description": "false / judged；没有成功判断时为 null。"},
+          "false_rate_ci95": {"$ref": "#/$defs/interval_or_null"}
+        }
+      }
+    },
+    "paired_differences": {
+      "type": "array",
+      "description": "同一批商品上两两生成模型的冲突率差（generators[0] − generators[1]）。",
+      "items": {
+        "type": "object",
+        "required": ["generators", "shared_products", "false_rate_difference", "difference_ci95"],
+        "additionalProperties": false,
+        "properties": {
+          "generators": {"type": "array", "items": {"$ref": "#/$defs/name"}, "minItems": 2, "maxItems": 2},
+          "shared_products": {"type": "integer", "minimum": 1},
+          "false_rate_difference": {"type": "number", "minimum": -1, "maximum": 1},
+          "difference_ci95": {"$ref": "#/$defs/interval_or_null"}
+        }
+      }
+    },
+    "note": {"type": "string"},
+    "calls": {
+      "type": "object",
+      "required": ["attempts", "failed_attempts", "input_tokens", "output_tokens"],
+      "additionalProperties": false,
+      "properties": {
+        "attempts": {"type": "integer", "minimum": 0},
+        "failed_attempts": {"type": "integer", "minimum": 0},
+        "input_tokens": {"type": "integer", "minimum": 0},
+        "output_tokens": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "name": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "interval_or_null": {
+      "description": "95% 区间 [下界, 上界]；没有重抽值时为 null。",
+      "oneOf": [
+        {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+        {"type": "null"}
+      ]
+    }
+  }
+}

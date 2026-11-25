@@ -1,0 +1,28 @@
+# Smoke design on the gold calibration set: the four frozen generators, all six pairs.
+# Summarize the existing frozen pairwise runs (one random pair per product) with
+#   --pairs data/eval/gold/candidate_pairs.jsonl --results results/pairwise/deepseek41_gold_v2/results.jsonl
+# The pairs path below is only used if this design is built with scripts/build_bt_pairs.py.
+[design]
+name = "gold_generators"
+products = "data/eval/gold/product_items.jsonl"
+anchor = "qwen_local"
+pairs = "data/eval/gold/bt_pairs_gold_generators.jsonl"
+
+[systems]
+qwen_local = "data/eval/gold/results_qwen_local.jsonl"
+gemma_31b = "data/eval/gold/results_gemma_31b.jsonl"
+glm53_flash = "data/eval/gold/results_glm53_flash.jsonl"
+longcat = "data/eval/gold/results_longcat.jsonl"
+
+[[comparisons]]
+systems = ["gemma_31b", "qwen_local"]
+[[comparisons]]
+systems = ["glm53_flash", "qwen_local"]
+[[comparisons]]
+systems = ["longcat", "qwen_local"]
+[[comparisons]]
+systems = ["gemma_31b", "glm53_flash"]
+[[comparisons]]
+systems = ["gemma_31b", "longcat"]
+[[comparisons]]
+systems = ["glm53_flash", "longcat"]

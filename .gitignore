@@ -14,6 +14,7 @@ dist/
 # Curated data/ and formal results/ are shared; runtime files stay local.
 /artifacts/
 data/**/.pairwise_*.lock
+data/**/.rubric_*.lock
 results/**/.run.lock
 
 # Share only final human labels; keep original labels and review history local.

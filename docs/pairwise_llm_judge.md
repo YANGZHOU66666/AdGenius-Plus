@@ -12,7 +12,7 @@ The evaluator compares ad communication quality against current human labels usi
 - Prompts: `prompts/eval/pairwise/system_v2.txt` and `user_v2.txt`.
 - Protocol: `pairwise-v0.2`, ad text only. No product metadata, source model names, IDs or human labels are sent to the judge.
 
-The prompt asks which ad communicates more effectively to a reader scrolling a social media feed, considering clarity, useful specificity, appeal, naturalness and focus. Factual accuracy is a separate rubric task. More attributes, more words or complete sentences do not automatically imply better advertising.
+The prompt asks which ad communicates more effectively to a reader scrolling a social media feed, considering clarity, useful specificity, appeal, naturalness and focus. Factual accuracy is a separate rubric task; see [the rubric judge guide](rubric_llm_judge.md). To compare many generation systems and fit Bradley–Terry scores, see [the Bradley–Terry guide](bradley_terry_eval.md). More attributes, more words or complete sentences do not automatically imply better advertising.
 
 Each pair is requested as AB and BA independently. Display labels are Ad 1 and Ad 2; the strict JSON choice is the string "1" or "2" with a nonempty reason. The evaluator maps this to the fixed candidate identity, so stored A/B choices always refer to candidate_mapping, even for reversed presentation. Neither request sees the other order's result.
 
@@ -54,7 +54,13 @@ Use the matching eval config rather than only overriding model_alias: provider-s
 
 There are at most four attempts per order with the default three retries. Retryable transport/provider failures include timeouts, 408/429 and 5xx. Invalid JSON, refusal and truncation are logged failures; rerunning the same unchanged run can retry those failed directions. Successful directions are reused. Only one process can write a run directory at a time.
 
-Resume validates input, prompt, configuration, schema and code fingerprints. Existing archived or pre-organization run IDs retain their captured historical paths and hashes. File organization and revised human labels mean that a new experiment needs a fresh run ID. Do not rewrite old manifests to bypass this check. Current CLI execution is synchronous.
+Resume validates input, prompt, configuration, schema and code fingerprints. Existing archived or pre-organization run IDs retain their captured historical paths and hashes. File organization and revised human labels mean that a new experiment needs a fresh run ID. Do not rewrite old manifests to bypass this check.
+
+## Concurrency
+
+`--workers N` (default 8) judges N pairs at the same time, each worker with its own HTTP client. The AB and BA requests of one pair still run one after the other in the same worker. The worker count is not part of the run fingerprint, so a run can be resumed with a different value. Rate-limit responses (429) are retried with backoff and Retry-After as before; lower `--workers` if a provider keeps returning them.
+
+Every attempt is appended to calls.jsonl as one fsync'd line, so the journal grows linearly with the number of calls instead of being rewritten each time. A line cut off by a crash during an append is dropped on resume and that order is retried. results.jsonl, decisions.jsonl and metrics.json are derived from the journal: they are refreshed at most every 15 seconds during a run and written in pair order when the run ends or is interrupted. On Ctrl+C, pending pairs are cancelled and requests already in flight are allowed to finish and be logged.
 
 ## Results and sharing
 

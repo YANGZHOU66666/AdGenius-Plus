@@ -9,6 +9,8 @@
 | [CandidatePair](schemas/candidate_pair.schema.json) | 两条成功候选的冻结比较对。 |
 | [PairwiseResult](schemas/pairwise_result.schema.json) | 模型 AB/BA 两次判断，或一位人工的一次独立判断。 |
 | [RubricResult](schemas/rubric_result.schema.json) | 模型或一位人工对单条候选的逐项评分。 |
+| [BTMetrics](schemas/bt_metrics.schema.json) | 一次 Bradley–Terry 统计的结果文件 `results/bt/<design>/metrics.json`。 |
+| [RubricGeneratorMetrics](schemas/rubric_generator_metrics.schema.json) | 一次 rubric 评委运行按生成模型的统计 `results/rubric/<run_id>/metrics.json`。 |
 
 所有 schema 使用 JSON Schema Draft 2020-12。评估结果中的 `protocol_version` 指向评判规则版本，与数据结构版本分开管理。
 
@@ -375,3 +377,12 @@ JSON Schema：[schemas/rubric_result.schema.json](schemas/rubric_result.schema.j
 `ProductItem` 的三个一级字段保持不变。商品属于哪个 split、用于 gold 校准或最终 test 评测，记录在数据集 manifest 中；`judge_type` 表示评判来源，不表示商品用途。gold 商品本身不等于人工标签，标签通过 `pair_id` 或 `candidate_id` 引用固定评测对象。
 
 本次仅增加格式定义和示例，不生成候选、人工标签或模型评估结果，也不变更已有冻结数据。
+
+## 最终评测的统计文件
+
+[BTMetrics v1](schemas/bt_metrics.schema.json) 和 [RubricGeneratorMetrics v1](schemas/rubric_generator_metrics.schema.json) 约定两份最终评测结果的格式：前者是各生成系统的 Bradley–Terry 分数和各组对比的胜负，后者是各生成模型被 rubric 评委判出的冲突率。论文结果表和画图脚本都从这两份文件读取。
+
+- 两份文件都是单个 JSON 对象，带 `schema_version` 字段（`bt_metrics_v1`、`rubric_generator_metrics_v1`），格式变化时递增。
+- `scripts/summarize_bt.py` 和 `scripts/evaluate_rubric.py` 在写文件前按 schema 校验，不合格时不写出。
+- 字段含义见 [Bradley–Terry 评测链路](../docs/bradley_terry_eval.md)第 4 节和 [rubric 评委使用说明](../docs/rubric_llm_judge.md)的指标一节。
+- 评委校准阶段的统计（pairwise 和 rubric 的 `comparison/metrics.json`、pairwise 每次运行的 `metrics.json`）不使用 schema：它们只供人阅读，数值由 `scripts/validate_gold_data.py` 重算核对。

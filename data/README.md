@@ -10,6 +10,9 @@ For the complete dataset descriptions, production lineage, ID joins and rebuild 
 | `eval/gold/results_<model>.jsonl` | Four complete GenerationResult files, 100 candidates each | Yes |
 | `eval/gold/candidate_pairs.jsonl` | 100 frozen CandidatePairs, one per product | Yes |
 | `eval/gold/pairwise_annotations_zhou.jsonl` | 100 current human labels | Yes |
+| `eval/gold/rubric_sample.jsonl` | 130 candidates frozen for rubric human labels: all 100 qwen_local, plus 10 each from the other three models on 30 distinct products; shuffled; built by `scripts/build_rubric_sample.py` | Yes |
+| `eval/gold/rubric_sample.manifest.json` | Rubric sample inputs and hashes, seed and generator counts | Yes |
+| `eval/gold/rubric_annotations_zhou.jsonl` | 130 current human rubric labels on `rubric_sample` (`factual_support`, protocol `rubric-v0.2`); 18 false | Yes |
 | `eval/gold/manifest.json` | Counts, schemas, hashes, generator models, prompt and inference settings | Yes |
 | `eval/gold/candidate_pairs.manifest.json` | Pair sources and hashes, sampling seed and model combinations | Yes |
 | `eval/test/product_items.jsonl` | 1,000 frozen test ProductItems (`test_product_000000`…), converted from `processed/v1/test_products.jsonl` with the gold rule | Yes |
@@ -36,7 +39,7 @@ From the repository root, after installing dependencies:
 PYTHONPATH=src .venv/bin/python scripts/validate_gold_data.py
 ```
 
-This validates schemas, hashes, all 400 candidate identities, product coverage, pair sampling and human winner mapping. It also recomputes the four published judges' agreement against the current labels. It requires no API key, HTTP call log or original large raw download.
+This validates schemas, hashes, all 400 candidate identities, product coverage, pair sampling and human winner mapping. It also recomputes the four published judges' agreement against the current labels. For rubric it re-draws the 130-item sample from its seed, checks the human factual_support labels against the sample, and checks that results/rubric/comparison/ matches the current labels and the four judge runs. It requires no API key, HTTP call log or original large raw download.
 
 ## Formal results, local runtime and archive
 
