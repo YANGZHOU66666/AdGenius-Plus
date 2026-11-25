@@ -44,7 +44,8 @@ def make_candidates(path: Path, alias: str, texts) -> None:
 
 def run_args(temp: str, **overrides):
     values = dict(env_file=None, eval_config=str(ROOT / "configs/eval/rubric_deepseek.toml"),
-                  gold_dir=str(Path(temp) / "gold"), candidates=None, products=None, limit=None, run_id="test_run",
+                  gold_dir=str(Path(temp) / "gold"), candidates=None, products=None, generator_names=None,
+                  limit=None, run_id="test_run",
                   output_dir=str(Path(temp) / "out"), calls_dir=str(Path(temp) / "calls"), dry_run=False, workers=1)
     values.update(overrides)
     return SimpleNamespace(**values)
@@ -160,6 +161,36 @@ class RubricJudgeTest(unittest.TestCase):
                 self.assertEqual(rubric.run(args)["status"], "completed")
             with self.assertRaises(ValueError):
                 rubric.run(run_args(temp, products=str(gold / "product_items.jsonl")))
+
+    def test_journal_is_append_only_and_recovers_results(self):
+        with tempfile.TemporaryDirectory() as temp:
+            gold = Path(temp) / "gold"
+            gold.mkdir()
+            make_gold(gold)
+            new = Path(temp) / "results_new.jsonl"
+            make_candidates(new, "new_model", ["Ad zero", "Ad one"])
+            args = run_args(temp, candidates=[str(new)], products=str(gold / "product_items.jsonl"),
+                            generator_names=["short"])
+            ok = '{"value": true, "conflicts": [], "reason": "ok"}'
+            with patch.object(rubric, "LLMClient", lambda config: FakeClient([ok, ok])), \
+                    patch.dict("os.environ", {"DEEPSEEK_API_KEY": "test"}):
+                rubric.run(args)
+            out, calls_path = Path(temp) / "out", Path(temp) / "calls/calls.jsonl"
+            metrics = json.loads((out / "metrics.json").read_text())
+            self.assertEqual(list(metrics["by_generator"]), ["short"])
+            complete_results = (out / "results.jsonl").read_bytes()
+            complete_calls = calls_path.read_bytes()
+            # A crash after the journal append but before results.jsonl was written, plus a cut-off line.
+            (out / "results.jsonl").unlink()
+            calls_path.write_bytes(complete_calls + b'{"trace_id": "call_rb_cut')
+            with patch.object(rubric, "LLMClient", side_effect=AssertionError("no calls expected")), \
+                    patch.dict("os.environ", {"DEEPSEEK_API_KEY": ""}):
+                self.assertEqual(rubric.run(args)["status"], "completed")
+            self.assertEqual((out / "results.jsonl").read_bytes(), complete_results)
+            self.assertEqual(calls_path.read_bytes(), complete_calls)
+            with self.assertRaises(ValueError):
+                rubric.run(run_args(temp, candidates=[str(new)], products=str(gold / "product_items.jsonl"),
+                                    generator_names=["a", "b"], run_id="other"))
 
     def test_candidates_reject_duplicates_and_unknown_products(self):
         with tempfile.TemporaryDirectory() as temp:

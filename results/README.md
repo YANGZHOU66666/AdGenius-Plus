@@ -30,7 +30,19 @@ Each result file has 130 RubricResult model records (`factual_support`) on data/
 
 ## Bradley–Terry comparisons
 
-scripts/summarize_bt.py writes results/bt/<design name>/ (metrics.json, report.md, manifest.json): win/tie/loss per compared system pair and Bradley–Terry scores with product-bootstrap intervals, computed from pairwise judge results without API calls. Designs live in configs/eval/bt/. See [the Bradley–Terry guide](../docs/bradley_terry_eval.md). No formal run yet.
+scripts/summarize_bt.py writes results/bt/<design name>/ (metrics.json, report.md, manifest.json): win/tie/loss per compared system pair and Bradley–Terry scores with product-bootstrap intervals, computed from pairwise judge results without API calls. Designs live in configs/eval/bt/. See [the Bradley–Terry guide](../docs/bradley_terry_eval.md).
+
+## Test evaluation (v1)
+
+The final evaluation of the SFT and OPD checkpoints on the 1,000 test products. Report: [docs/test_evaluation_v1.md](../docs/test_evaluation_v1.md).
+
+| Output | Contents |
+|---|---|
+| pairwise/deepseek41_test_sft_opd_v1/ | DeepSeek AB/BA judgments for the 16,000 pairs in data/eval/test/bt_pairs_test_sft_opd_v1.jsonl (16 comparisons, 10 systems) |
+| bt/test_sft_opd_v1/ | Bradley–Terry scores and per-comparison win/tie/loss for configs/eval/bt/test_sft_opd_v1.toml |
+| rubric/deepseek41_rubric_v1_test/ | factual_support judgments for all 10,000 test ads and the conflict rate per system |
+
+Call journals are in artifacts/pairwise/deepseek41_test_sft_opd_v1/ and artifacts/rubric/deepseek41_rubric_v1_test/.
 
 ## Training experiments
 

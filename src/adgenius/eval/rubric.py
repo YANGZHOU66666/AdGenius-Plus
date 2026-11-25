@@ -8,6 +8,10 @@ model records in input order.
 Two inputs: the frozen human-labelled rubric sample (default), or ``--candidates`` GenerationResult
 files from any generator, judged in full against ``--products``. Each run writes metrics.json with the
 judged conflict rate per generator; the generator name is never sent to the judge.
+
+Every attempt is appended to the call journal as one fsync'd line; the journal is the recovery source.
+results.jsonl is rewritten at most every few seconds during a run and in input order when it ends or
+is interrupted; a success that is in the journal but not yet in results.jsonl is rebuilt on resume.
 """
 
 from __future__ import annotations
@@ -23,7 +27,7 @@ import threading
 import time
 import tomllib
 import uuid
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -40,6 +44,7 @@ GOLD = REPO_ROOT / "data" / "eval" / "gold"
 SCHEMA_DIR = REPO_ROOT / "metadata" / "schemas"
 CRITERION = "factual_support"
 METRICS_SCHEMA_VERSION = "rubric_generator_metrics_v1"
+SAVE_INTERVAL_SECONDS = 15.0
 OUTPUT_SCHEMA = {
     "type": "object", "additionalProperties": False, "required": ["value", "conflicts", "reason"],
     "properties": {
@@ -74,6 +79,44 @@ def _write_rows(path: Path, rows: list[dict[str, Any]]) -> None:
     temporary = path.with_name(path.name + ".tmp")
     temporary.write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows), encoding="utf-8")
     os.replace(temporary, path)
+
+
+def _read_journal(path: Path) -> list[dict[str, Any]]:
+    """Read the call journal, dropping a final line cut off by a crash during an append.
+
+    A record is only saved after its call line is complete, so a cut-off attempt is not referenced
+    anywhere; that item is simply judged again.
+    """
+    if not path.exists():
+        return []
+    raw = path.read_bytes()
+    if raw and not raw.endswith(b"\n"):
+        temporary = path.with_name(path.name + ".tmp")
+        temporary.write_bytes(raw[:raw.rfind(b"\n") + 1])
+        os.replace(temporary, path)
+        print(f"Dropped an incomplete final line from {path}", file=sys.stderr, flush=True)
+    return _read_jsonl(path)
+
+
+class _Journal:
+    """Append-only call journal shared by worker threads: one fsync'd line per attempt."""
+
+    def __init__(self, path: Path, rows: list[dict[str, Any]]):
+        self.path, self.rows, self.lock = path, rows, threading.Lock()
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+    def append(self, row: dict[str, Any]) -> None:
+        line = (json.dumps(row, ensure_ascii=False) + "\n").encode("utf-8")
+        with self.lock:
+            with self.path.open("ab") as handle:
+                handle.write(line)
+                handle.flush()
+                os.fsync(handle.fileno())
+            self.rows.append(row)
+
+    def snapshot(self) -> list[dict[str, Any]]:
+        with self.lock:
+            return list(self.rows)
 
 
 def load_settings(path: Path) -> dict[str, Any]:
@@ -124,18 +167,21 @@ def generator_name(run_id: str) -> str:
     return match.group(1) if match else run_id
 
 
-def load_candidates(candidate_paths: list[Path], products_path: Path,
-                    limit: int | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def load_candidates(candidate_paths: list[Path], products_path: Path, limit: int | None = None,
+                    names: list[str] | None = None) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Every usable GenerationResult in the given files, in file order.
 
     Success and truncated ads are judged (a truncated ad is what the generator produced). Failed
-    generations have no ad to judge; they are counted per generator and skipped.
+    generations have no ad to judge; they are counted per generator and skipped. ``names`` gives one
+    generator name per file; by default it is derived from each record's run ID.
     """
+    if names is not None and (len(names) != len(candidate_paths) or len(set(names)) != len(names)):
+        raise ValueError("--generator-names needs one distinct name per --candidates file")
     products = {p["product_id"]: p for p in _read_jsonl(products_path)}
     validator = _validator("generation_result.schema.json")
     items, seen = [], set()
     skipped: dict[str, int] = {}
-    for path in candidate_paths:
+    for index, path in enumerate(candidate_paths):
         for row in _read_jsonl(path):
             validator.validate(row)
             candidate_id, product_id = row["candidate_id"], row["product_id"]
@@ -144,7 +190,7 @@ def load_candidates(candidate_paths: list[Path], products_path: Path,
             seen.add(candidate_id)
             if product_id not in products:
                 raise ValueError(f"Candidate {candidate_id} refers to a product missing from {products_path}")
-            generator = generator_name(row["run_id"])
+            generator = names[index] if names else generator_name(row["run_id"])
             result = row["generation_result"]
             if result["status"] not in ("success", "truncated") or not (result["text"] or "").strip():
                 skipped[generator] = skipped.get(generator, 0) + 1
@@ -242,11 +288,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         products_path = Path(args.products).resolve() if args.products else GOLD / "product_items.jsonl"
         paths["product_items"] = products_path
         paths.update({f"candidates_{i}": path for i, path in enumerate(candidate_paths)})
-        items, extra = load_candidates(candidate_paths, products_path, args.limit)
+        items, extra = load_candidates(candidate_paths, products_path, args.limit, args.generator_names)
         mode = "candidates"
     else:
-        if args.products:
-            raise ValueError("--products is used with --candidates; the rubric sample uses --gold-dir")
+        if args.products or args.generator_names:
+            raise ValueError("--products and --generator-names are used with --candidates")
         gold = Path(args.gold_dir).resolve()
         paths.update(rubric_sample=gold / "rubric_sample.jsonl", product_items=gold / "product_items.jsonl")
         items = load_items(gold, args.limit)
@@ -280,15 +326,34 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     results_path = output / "results.jsonl"
     saved = {r["candidate_id"]: r for r in _read_jsonl(results_path)} if results_path.exists() else {}
-    calls = _read_jsonl(calls_path) if calls_path.exists() else []
+    calls = _read_journal(calls_path)
+    by_id = {item["candidate_id"]: item for item in items}
+    for row in calls:
+        # A success logged before a crash but not yet written to results.jsonl.
+        item = by_id.get(row["candidate_id"])
+        if (row["status"] == "success" and item is not None
+                and saved.get(item["candidate_id"], {}).get("rubric_result", {}).get("status") != "success"):
+            saved[item["candidate_id"]] = result_record(item, run_id, settings["protocol_version"],
+                                                        parse_verdict(row["text"]), row["trace_id"])
     todo = [it for it in items if saved.get(it["candidate_id"], {}).get("rubric_result", {}).get("status") != "success"]
     if todo and config.api_key_env and not os.environ.get(config.api_key_env, "").strip():
         raise ValueError(f"Set {config.api_key_env} in .env or the environment")
-    validator, lock, local = _validator(), threading.Lock(), threading.local()
+    journal = _Journal(calls_path, calls)
+    validator, lock, save_lock, local = _validator(), threading.Lock(), threading.Lock(), threading.local()
+    last_save = [time.monotonic()]
 
-    def save() -> None:
-        _write_rows(results_path, [saved[it["candidate_id"]] for it in items if it["candidate_id"] in saved])
-        _write_rows(calls_path, calls)
+    def save(force: bool = True) -> None:
+        if not save_lock.acquire(blocking=force):
+            return
+        try:
+            if not force and time.monotonic() - last_save[0] < SAVE_INTERVAL_SECONDS:
+                return
+            with lock:
+                rows = [saved[it["candidate_id"]] for it in items if it["candidate_id"] in saved]
+            _write_rows(results_path, rows)
+            last_save[0] = time.monotonic()
+        finally:
+            save_lock.release()
 
     def work(item: dict[str, Any]) -> None:
         if not hasattr(local, "client"):
@@ -307,31 +372,43 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
                 error = f"{type(exc).__name__}: {str(exc)[:300]}"
                 row.update(status="failed", error=error, text=text, usage=usage,
                            latency_seconds=time.perf_counter() - started)
-                with lock:
-                    calls.append(row)
-                time.sleep(2 ** attempt)
+                journal.append(row)
+                if attempt < settings["max_attempts"]:
+                    time.sleep(2 ** attempt)
                 continue
             record = result_record(item, run_id, settings["protocol_version"], verdict, trace)
             validator.validate(record)
             row.update(status="success", text=text, usage=usage, latency_seconds=time.perf_counter() - started)
+            journal.append(row)
             with lock:
-                calls.append(row)
                 saved[item["candidate_id"]] = record
-                save()
+            save(force=False)
             return
         record = result_record(item, run_id, settings["protocol_version"], None, trace, "judge_failed")
         validator.validate(record)
         with lock:
             saved[item["candidate_id"]] = record
-            save()
+        save(force=False)
         print(f"FAILED {item['item_id']}: {error}", file=sys.stderr, flush=True)
 
     manifest.update(status="running", updated_at=_now())
     output.mkdir(parents=True, exist_ok=True)
     manifest_path.write_bytes(_json_bytes(manifest))
-    with ThreadPoolExecutor(args.workers) as pool:
-        list(pool.map(work, todo))
+    executor = ThreadPoolExecutor(args.workers)
+    try:
+        for future in as_completed([executor.submit(work, item) for item in todo]):
+            future.result()
+    except BaseException:
+        # Pending items are cancelled; requests already in flight finish and are journaled.
+        executor.shutdown(wait=True, cancel_futures=True)
+        save()
+        manifest.update(status="interrupted", updated_at=_now())
+        manifest_path.write_bytes(_json_bytes(manifest))
+        raise
+    finally:
+        executor.shutdown(wait=True)
     save()
+    calls = journal.snapshot()
     failed = sum(saved[it["candidate_id"]]["rubric_result"]["status"] != "success" for it in items)
     metrics = {"schema_version": METRICS_SCHEMA_VERSION, "run_id": run_id, "input_mode": mode,
                **generator_rates([saved[it["candidate_id"]] for it in items], items, calls), **extra}
@@ -351,6 +428,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--candidates", nargs="+", metavar="RESULTS_JSONL",
                         help="GenerationResult files to judge in full instead of the human-labelled rubric sample")
     parser.add_argument("--products", help="ProductItem file for --candidates; default data/eval/gold/product_items.jsonl")
+    parser.add_argument("--generator-names", nargs="+", metavar="NAME",
+                        help="One short system name per --candidates file (default: derived from run IDs)")
     parser.add_argument("--gold-dir", default=str(GOLD), help="rubric sample mode only")
     parser.add_argument("--output-dir", help="default: results/rubric/<run_id>")
     parser.add_argument("--calls-dir", help="default: artifacts/rubric/<run_id>")

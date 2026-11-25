@@ -1,0 +1,66 @@
+{
+  "computed_at": "2026-11-25T03:46:26.436014+00:00",
+  "new_api_calls": 0,
+  "design": {
+    "path": "configs/eval/bt/test_sft_opd_v1.toml",
+    "sha256": "0af313a15e38cc872fde712a90214ce27042573759010bba99ff4c65f68f2565"
+  },
+  "pairs": {
+    "path": "data/eval/test/bt_pairs_test_sft_opd_v1.jsonl",
+    "sha256": "8287c34a018f3669e12fe2f1d5b224b0489cb9ee90b0ac43ff46cc77b2f593e2"
+  },
+  "results": [
+    {
+      "path": "results/pairwise/deepseek41_test_sft_opd_v1/results.jsonl",
+      "sha256": "6a9b8ec929764116f810e23d447973b568e127b90b2e1f3014acba46bd27ec8d"
+    }
+  ],
+  "systems": {
+    "base": {
+      "path": "results/training/test_references_v1/generations/test/student_untrained.jsonl",
+      "sha256": "0e0db19a0670030405c6f5d75ac2c64bfdf60dd51a27acd588d346364c06b5f1"
+    },
+    "sft_1k": {
+      "path": "results/training/sft_formal_v1/generations/test/scale_1k.jsonl",
+      "sha256": "efa7b24b4257285bf0b4efdc57d71de5612c55063b75a2744c0b838ef6aa5371"
+    },
+    "sft_2k": {
+      "path": "results/training/sft_formal_v1/generations/test/scale_2k.jsonl",
+      "sha256": "42f2e7c9614b8b9602efa47dadcead856264022f360cd49fcfa8433b10f27c52"
+    },
+    "sft_4k": {
+      "path": "results/training/sft_formal_v1/generations/test/scale_4k.jsonl",
+      "sha256": "78579a3f85bce239ecd25bbea03803fcb45bc854aa74f8c27230613ee0843e42"
+    },
+    "sft_8k": {
+      "path": "results/training/sft_formal_v1/generations/test/scale_8k.jsonl",
+      "sha256": "a7945e84b86d2a59f74caa21981044070811d7b8d624fe075d55cb266d7aa09a"
+    },
+    "opd_1k": {
+      "path": "results/training/opd_formal_v1/generations/test/scale_1k.jsonl",
+      "sha256": "628df32dc5d71cb13cdc01c2e4412d014c7aef7b01269b1b8e90e04f573229e1"
+    },
+    "opd_2k": {
+      "path": "results/training/opd_formal_v1/generations/test/scale_2k.jsonl",
+      "sha256": "c02c6a1be157d2513d7b2edcd7c00b23d909f3b6b8e1e5a0e522680dd08e7d0a"
+    },
+    "opd_4k": {
+      "path": "results/training/opd_formal_v1/generations/test/scale_4k.jsonl",
+      "sha256": "5ff8316a893d303480a8524cbb2065560f08aa0c2aeffeecebf0538a5095d335"
+    },
+    "opd_8k": {
+      "path": "results/training/opd_formal_v1/generations/test/scale_8k.jsonl",
+      "sha256": "6c469ca83e19bed0d87f5607b2c4ace898a723824f1c98c17d53af50aa3b97fc"
+    },
+    "teacher_397b": {
+      "path": "results/training/test_references_v1/generations/test/teacher_qwen397b.jsonl",
+      "sha256": "d81556f931b36ac8e3e5053917fe2cbdd9e72d7a54b827f2950642faf5282974"
+    }
+  },
+  "code_sha256": {
+    "src/adgenius/eval/bradley_terry.py": "87fb5af4aa7f284885d2bed4329347c26c7c45b5e2fe7b8009b5d319934648a1",
+    "scripts/summarize_bt.py": "bf91037b1d106307d1a842ff8dc356b4009860653af0645a50615285893df1fd",
+    "metadata/schemas/bt_metrics.schema.json": "dc57418eb9759d7aaa8659a9d2a463cf985dfbbb26d2e3fea8ab9345e5836ac4"
+  },
+  "metrics_sha256": "185b920aae1c8a15f0e412a2e08d08540f33f8d45465b212261b12edda72ed4d"
+}

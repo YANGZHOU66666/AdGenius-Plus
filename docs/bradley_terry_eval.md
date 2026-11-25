@@ -32,8 +32,8 @@ include_truncated = true              # 截断的广告照常送评委（默认�
 seed = 20261124                       # 商品顺序和 max_products 抽样（默认）
 
 [systems]
-base = "data/eval/test/results_base.jsonl"    # 每个系统一份 GenerationResult
-sft_1k = "data/eval/test/results_sft_1k.jsonl"
+base = "results/training/test_references_v1/generations/test/student_untrained.jsonl"   # 每个系统一份 GenerationResult
+sft_1k = "results/training/sft_formal_v1/generations/test/scale_1k.jsonl"
 
 [[comparisons]]
 systems = ["sft_1k", "base"]          # 先写预期更强的一方，胜率按它统计
@@ -46,17 +46,17 @@ systems = ["sft_1k", "base"]          # 先写预期更强的一方，胜率按�
 
 | 设计 | 内容 |
 |---|---|
-| [test_sft_opd_v1.toml](../configs/eval/bt/test_sft_opd_v1.toml) | 正式 test 评测：11 个系统、18 组对比，cycle rank 8。每组 1,000 对，共 18,000 对、36,000 次评委调用 |
+| [test_sft_opd_v1.toml](../configs/eval/bt/test_sft_opd_v1.toml) | 正式 test 评测：10 个系统、16 组对比，cycle rank 7。每组 1,000 对，共 16,000 对、32,000 次评委调用 |
 | [gold_generators.toml](../configs/eval/bt/gold_generators.toml) | gold 上 4 个生成模型的两两对比，用于冒烟测试 |
 
-`test_sft_opd_v1` 的 18 组对比：
+`test_sft_opd_v1` 的 16 组对比（2026-11-24 在任何 test 评委判断之前定下，不含 GLM）：
 
 | 类别 | 对比 | 组数 |
 |---|---|---:|
 | 主结论 | OPD 对 SFT，1k / 2k / 4k / 8k | 4 |
 | 规模链 | SFT 1k–2k、2k–4k、4k–8k；OPD 同样三组 | 6 |
 | 起点 | 训练前学生对 SFT 1k、OPD 1k、SFT 8k、OPD 8k | 4 |
-| 参照 | GLM 对 SFT 8k、GLM 对 OPD 8k、GLM 对 397B、397B 对 SFT 8k | 4 |
+| 参照 | 397B 对 SFT 8k、397B 对 OPD 8k | 2 |
 
 ## 3. 运行
 
@@ -70,7 +70,7 @@ scripts/import_generation_outputs.py --system sft_1k --run-id gen_sft_1k_2026112
   --output data/eval/test/results_sft_1k.jsonl
 ```
 
-参照模型（GLM、397B 教师）在 test 上的广告用 `generate_candidates.py` 或教师脚本生成，本身就是 GenerationResult。
+当前 test 上的 10 份输出（`results/training/*_formal_v1/generations/test/`、`results/training/test_references_v1/generations/test/`）入库时已经是 GenerationResult v1.1，不需要这一步。
 
 **② 生成配对。** 先用 `--check` 看计划：每组的商品数、送评委的配对数、因生成失败直接判出的 forfeit 数、总调用次数、cycle rank。确认后去掉 `--check`，写出配对文件和 manifest。脚本不会覆盖已有文件。
 
