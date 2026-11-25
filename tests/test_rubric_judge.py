@@ -243,6 +243,23 @@ class RubricMetricsTest(unittest.TestCase):
         pair = rates["paired_differences"][0]
         self.assertEqual((pair["generators"], pair["shared_products"]), (["a", "b"], 3))
         self.assertAlmostEqual(pair["false_rate_difference"], 0.3333)
+        self.assertEqual(rates["bootstrap"]["method"], "exact")
+
+    def test_exact_intervals_match_full_enumeration(self):
+        import itertools as it
+
+        def brute(values):
+            n = len(values)
+            means = sorted(sum(values[i] for i in draw) / n for draw in it.product(range(n), repeat=n))
+            def percentile(level):
+                return next(round(m, 4) for k, m in enumerate(means) if (k + 1) / len(means) >= level - 1e-12)
+            return [percentile(0.025), percentile(0.975)]
+
+        for diffs in ([1, 0, -1, 1, 0, 1], [0, 0, 1, 0, 0, 0], [-1, -1, 0, 1, 0, 0]):
+            self.assertEqual(rubric_metrics.exact_difference_interval(diffs), brute(diffs))
+        for values in ([1, 0, 0, 1, 0, 0], [0, 0, 0, 0, 1, 0]):
+            self.assertEqual(rubric_metrics.exact_rate_interval(values), brute(values))
+        self.assertEqual(rubric_metrics.exact_difference_interval([0, 0, 0]), [0.0, 0.0])
 
 
 if __name__ == "__main__":

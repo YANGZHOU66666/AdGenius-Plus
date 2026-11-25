@@ -23,6 +23,8 @@
       "additionalProperties": false,
       "properties": {
         "unit": {"const": "product"},
+        "method": {"enum": ["exact", "sampled"],
+                   "description": "exact：每个商品只有一个 0/1 分数，bootstrap 分布精确计算，iterations 和 seed 不起作用；sampled：按 iterations 和 seed 抽样。旧文件没有这个字段，表示 sampled。"},
         "iterations": {"type": "integer", "minimum": 1},
         "seed": {"type": "integer"}
       }
