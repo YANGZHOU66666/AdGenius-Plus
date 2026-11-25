@@ -56,3 +56,24 @@ Use independent identifiers for independent concepts: source split, dataset, ann
 - Data splitting writes small manifests/products to data/ and the full train pool to artifacts/cache/office_products/.
 - Smoke responses, when requested with --output, belong under artifacts/smoke/.
 - The offline data validator reads data/ and results/; runtime logs and large source downloads are optional.
+
+## Git boundary
+
+Shared in Git: the formal datasets in data/, per-item results and metrics in results/, configs, code and docs. `artifacts/` is ignored as a whole and holds full call journals, the train-pool cache, checkpoints and run intermediates. `.env` and large raw source downloads also stay local. Old pilots, retired data and the original human labels with their review history live in [deprecated/](../deprecated/README.md); its migration index records file hashes before and after each move.
+
+## Calling the shared client from code
+
+```python
+from adgenius.shared.llm import LLMClient, ModelConfig
+
+config = ModelConfig.from_toml("configs/models.toml", "deepseek")
+with LLMClient(config) as client:
+    response = client.generate(
+        [{"role": "user", "content": "Write a short product ad."}],
+        max_output_tokens=256,
+        temperature=0.2,
+    )
+print(response.text)
+```
+
+The client speaks the OpenAI-compatible protocol, Claude Messages, Google generateContent and local Ollama. `json_mode` and native `provider_options` can be passed; the latter go straight into the request JSON body but cannot override the model, messages or token limit. A model's `request_options` in models.toml carry platform settings such as thinking. Retries are bounded and errors stay structured; the client never repairs model JSON or hides a failure. The Alibaba Cloud endpoint defaults to Beijing; set `DASHSCOPE_BASE_URL` to use another workspace's compatible API root. Record formats are in [metadata/README.md](../metadata/README.md).
