@@ -60,17 +60,18 @@ PYTHONPATH=src .venv/bin/python scripts/evaluate_rubric.py \
 ```
 
 - `--products` 是这些广告对应的 ProductItem 文件，默认是 gold 的 100 件商品。换成 test 商品时传 test 的 ProductItem 文件。广告引用了文件里没有的商品时，脚本会报错。
-- 生成模型名取自生成运行 ID `gen_<model>_<时间>`；不符合这个格式的，用整个运行 ID 作为模型名。
+- 生成模型名取自生成运行 ID `gen_<model>_<时间>`；不符合这个格式的，用整个运行 ID 作为模型名。也可以用 `--generator-names` 按文件顺序给每个 `--candidates` 文件指定一个短名，比如 `sft_1k opd_1k`。
 - 因长度上限被截断（`truncated`）的广告照常判，因为这就是生成模型实际给出的内容。生成失败（`failed`）的条目没有广告可判，会跳过，并在 `skipped_failed_generations` 中按模型计数。不同文件中出现重复的 `candidate_id` 时会报错。
 - 比较新模型时，把旧模型的结果放进同一次运行，这样评委、prompt 和商品都相同。
 
-去掉 `--dry-run` 才会真正调用 API。先用 `--limit N` 取前 N 条、换一个单独的 run ID 试跑。`--workers` 是并发请求数，默认为 6。
+去掉 `--dry-run` 才会真正调用 API。先用 `--limit N` 取前 N 条、换一个单独的 run ID 试跑。`--workers` 是并发请求数，默认为 6；大批量时可以调到 32。
 
 ## 重试与续跑
 
 - 每条广告最多尝试 `max_attempts` 次（默认 4 次），两次之间等待 2、4、8 秒。网络错误和 JSON 解析失败都会重试。
 - 用完尝试次数仍失败的，结果记为 `status = "failed"`、`error = "judge_failed"`，运行状态为 `completed_with_failures`。
-- 中断或有失败时，用同一个 run ID 重新运行即可：已成功的条目会保留，只重做缺失或失败的条目。
+- 每次尝试都在调用日志末尾追加一行并立即落盘，日志是续跑的依据。`results.jsonl` 在运行中最多每 15 秒重写一次，结束或中断时按输入顺序完整写出。按 Ctrl+C 时，未开始的条目会取消，已发出的请求会等它返回并记入日志。
+- 中断或有失败时，用同一个 run ID 重新运行即可：已成功的条目会保留，只重做缺失或失败的条目。如果某次成功已经写进日志、还没来得及写进 `results.jsonl`，续跑时会从日志重建这条结果，不再调用 API。日志最后一行因崩溃只写了一半时，这一行会被丢弃，对应条目重新判。
 - 结果已全部成功时再运行，不需要密钥，也不调用 API，只重算 `metrics.json`。
 - manifest 记录了配置、prompt、输入文件、代码与 schema 的哈希，以及条目顺序。其中任何一项变化，续跑都会被拒绝，这时请使用新的 run ID。不要为了续跑去改旧的 manifest。
 - 同一个运行目录不要同时开两个进程，目前没有加锁。
